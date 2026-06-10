@@ -17,19 +17,153 @@
       "id": "dna_aufbau_01a",
       "operator": "erläutern",
       "title": "Aufbau eines Nukleotids und DNA-Strangs",
-      "task": "Erläutern Sie den grundlegenden Aufbau der DNA. Gehen Sie dabei auf den Aufbau eines Nukleotids, die Verknüpfung der Nukleotide zu DNA-Strängen und die Bildung des Phosphat-Zucker-Rückgrats ein."
+      "task": "Erläutern Sie den grundlegenden Aufbau der DNA. Gehen Sie dabei auf den Aufbau eines Nukleotids, die Verknüpfung der Nukleotide zu DNA-Strängen und die Bildung des Phosphat-Zucker-Rückgrats ein.",
+      "hints": [
+        "Beginnen Sie mit den drei Bausteinen eines Nukleotids: Phosphatgruppe, Desoxyribose und Base.",
+        "Beschreiben Sie danach, dass viele Nukleotide zu langen DNA-Strängen verbunden sind.",
+        "Achten Sie darauf, zwischen dem Phosphat-Zucker-Rückgrat und den nach innen ragenden Basen zu unterscheiden."
+      ],
+      "expectationHorizon": [
+        "Ein Nukleotid besteht aus Phosphatgruppe, Desoxyribose und einer Base.",
+        "Viele Nukleotide sind zu einem langen DNA-Strang verbunden.",
+        "Zucker und Phosphat bilden das Phosphat-Zucker-Rückgrat.",
+        "Die Basen ragen nach innen und tragen die genetische Information in ihrer Reihenfolge."
+      ],
+      "sampleSolution": "Die DNA ist aus vielen Nukleotiden aufgebaut. Jedes Nukleotid besteht aus einer Phosphatgruppe, dem Zucker Desoxyribose und einer Base. Viele Nukleotide sind zu langen DNA-Strängen verbunden. Dabei bilden Zucker und Phosphat das Phosphat-Zucker-Rückgrat, während die Basen nach innen ragen. Die Reihenfolge der Basen enthält die genetische Information.",
+      "checkCriteria": [
+        {
+          "label": "Nukleotid aus Phosphatgruppe, Desoxyribose und Base",
+          "keywords": [
+            "phosphat",
+            "desoxyribose",
+            "base"
+          ]
+        },
+        {
+          "label": "Viele Nukleotide bilden einen DNA-Strang",
+          "keywords": [
+            "nukleotid",
+            "strang"
+          ]
+        },
+        {
+          "label": "Zucker und Phosphat bilden das Phosphat-Zucker-Rückgrat",
+          "keywords": [
+            "zucker",
+            "phosphat",
+            "rückgrat"
+          ]
+        },
+        {
+          "label": "Basen ragen nach innen",
+          "keywords": [
+            "base",
+            "innen"
+          ]
+        }
+      ]
     },
     {
       "id": "dna_aufbau_01b",
       "operator": "erläutern",
       "title": "Basenpaarung und Wasserstoffbrückenbindungen",
-      "task": "Erläutern Sie, wie die beiden DNA-Einzelstränge miteinander verbunden sind. Gehen Sie dabei auf die komplementäre Basenpaarung und die Anzahl der Wasserstoffbrückenbindungen zwischen den Basen ein."
+      "task": "Erläutern Sie, wie die beiden DNA-Einzelstränge miteinander verbunden sind. Gehen Sie dabei auf die komplementäre Basenpaarung und die Anzahl der Wasserstoffbrückenbindungen zwischen den Basen ein.",
+      "hints": [
+        "Nennen Sie zuerst, dass DNA aus zwei Einzelsträngen besteht.",
+        "Ordnen Sie dann die komplementären Basenpaare zu.",
+        "Ergänzen Sie die Anzahl der Wasserstoffbrückenbindungen bei A-T und G-C."
+      ],
+      "expectationHorizon": [
+        "DNA besteht aus zwei Einzelsträngen.",
+        "Adenin paart komplementär mit Thymin, Guanin paart komplementär mit Cytosin.",
+        "A-T wird durch zwei Wasserstoffbrückenbindungen verbunden.",
+        "G-C wird durch drei Wasserstoffbrückenbindungen verbunden."
+      ],
+      "sampleSolution": "Die DNA besteht aus zwei Einzelsträngen. Diese werden durch Wasserstoffbrückenbindungen zwischen komplementären Basen zusammengehalten. Adenin paart mit Thymin und bildet dabei zwei Wasserstoffbrückenbindungen. Guanin paart mit Cytosin und bildet drei Wasserstoffbrückenbindungen. Dadurch passt die Basenfolge des einen Strangs zur Basenfolge des anderen Strangs.",
+      "checkCriteria": [
+        {
+          "label": "DNA besteht aus zwei Einzelsträngen",
+          "keywords": [
+            "zwei",
+            "einzelsträng"
+          ]
+        },
+        {
+          "label": "Adenin-Thymin und Guanin-Cytosin werden korrekt zugeordnet",
+          "keywords": [
+            "adenin",
+            "thymin",
+            "guanin",
+            "cytosin"
+          ]
+        },
+        {
+          "label": "A-T wird über zwei Wasserstoffbrückenbindungen verbunden",
+          "keywords": [
+            "adenin",
+            "thymin",
+            "zwei"
+          ]
+        },
+        {
+          "label": "G-C wird über drei Wasserstoffbrückenbindungen verbunden",
+          "keywords": [
+            "guanin",
+            "cytosin",
+            "drei"
+          ]
+        }
+      ]
     },
     {
       "id": "dna_aufbau_01c",
       "operator": "erklären",
       "title": "Bedeutung von 3' und 5'",
-      "task": "Erklären Sie die Bedeutung der Bezeichnungen 3' und 5' bei DNA-Strängen. Gehen Sie dabei auch darauf ein, was mit der antiparallelen Anordnung der beiden DNA-Stränge gemeint ist."
+      "task": "Erklären Sie die Bedeutung der Bezeichnungen 3' und 5' bei DNA-Strängen. Gehen Sie dabei auch darauf ein, was mit der antiparallelen Anordnung der beiden DNA-Stränge gemeint ist.",
+      "hints": [
+        "Die Bezeichnungen 3' und 5' geben die Richtung eines DNA-Strangs an.",
+        "Überlegen Sie, welche Enden eines DNA-Strangs dadurch unterschieden werden.",
+        "Antiparallel bedeutet, dass die beiden Stränge entgegengesetzt orientiert sind."
+      ],
+      "expectationHorizon": [
+        "3' und 5' beschreiben die Richtung eines DNA-Strangs.",
+        "Ein DNA-Strang besitzt ein 5'-Ende und ein 3'-Ende.",
+        "Die beiden DNA-Stränge sind antiparallel angeordnet.",
+        "Ein Strang verläuft in 5'-zu-3'-Richtung, der Gegenstrang in 3'-zu-5'-Richtung."
+      ],
+      "sampleSolution": "Die Bezeichnungen 3' und 5' geben die Richtung eines DNA-Strangs an. Ein DNA-Strang besitzt ein 5'-Ende und ein 3'-Ende. In der DNA-Doppelstruktur sind die beiden Einzelstränge antiparallel angeordnet. Das bedeutet, dass ein Strang in 5'-zu-3'-Richtung verläuft, während der andere Strang entgegengesetzt in 3'-zu-5'-Richtung verläuft.",
+      "checkCriteria": [
+        {
+          "label": "3' und 5' werden als Richtung des DNA-Strangs erklärt",
+          "keywords": [
+            "3",
+            "5",
+            "richtung"
+          ]
+        },
+        {
+          "label": "5'-Ende und 3'-Ende werden unterschieden",
+          "keywords": [
+            "5",
+            "3",
+            "ende"
+          ]
+        },
+        {
+          "label": "Antiparallele Anordnung wird als entgegengesetzte Orientierung erklärt",
+          "keywords": [
+            "antiparallel",
+            "entgegengesetzt"
+          ]
+        },
+        {
+          "label": "Richtungen 5' zu 3' und 3' zu 5' werden beschrieben",
+          "keywords": [
+            "5",
+            "3"
+          ]
+        }
+      ]
     }
   ]
 }

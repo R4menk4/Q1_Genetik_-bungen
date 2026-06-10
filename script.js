@@ -23,17 +23,17 @@
       ],
       expectation: [
         "Ein Nukleotid besteht aus Phosphatgruppe, Desoxyribose und einer Base.",
-        "Nukleotide sind über Phosphodiesterbindungen zu einem DNA-Strang verknüpft.",
+        "Viele Nukleotide sind zu einem langen DNA-Strang verbunden.",
         "Zucker und Phosphat bilden das außenliegende Phosphat-Zucker-Rückgrat.",
         "Die Basen ragen nach innen und tragen die genetische Information in ihrer Reihenfolge."
       ],
       solution:
-        "Die DNA ist aus vielen Nukleotiden aufgebaut. Jedes Nukleotid besteht aus einer Phosphatgruppe, dem Zucker Desoxyribose und einer Base. Die Nukleotide werden über Phosphodiesterbindungen zwischen Zucker und Phosphat miteinander verbunden. Dadurch entsteht ein stabiler DNA-Strang mit einem Phosphat-Zucker-Rückgrat, während die Basen nach innen zeigen und die Reihenfolge der Erbinformation bilden.",
+        "Die DNA ist aus vielen Nukleotiden aufgebaut. Jedes Nukleotid besteht aus einer Phosphatgruppe, dem Zucker Desoxyribose und einer Base. Viele Nukleotide sind zu langen DNA-Strängen verbunden. Dabei bilden Zucker und Phosphat das Phosphat-Zucker-Rückgrat, während die Basen nach innen ragen. Die Reihenfolge der Basen enthält die genetische Information.",
       criteria: [
         { label: "Nukleotid aus Phosphat, Desoxyribose und Base", keywords: ["phosphat", "desoxyribose", "base"] },
-        { label: "Verknüpfung der Nukleotide über Zucker und Phosphat", keywords: ["zucker", "phosphat", "verknüpf"] },
+        { label: "Viele Nukleotide bilden einen DNA-Strang", keywords: ["nukleotid", "strang"] },
         { label: "Phosphat-Zucker-Rückgrat wird erklärt", keywords: ["rückgrat", "phosphat", "zucker"] },
-        { label: "Basen als Träger der Information werden benannt", keywords: ["base", "information"] }
+        { label: "Basen ragen nach innen", keywords: ["base", "innen"] }
       ]
     },
     dna_aufbau_01b: {
