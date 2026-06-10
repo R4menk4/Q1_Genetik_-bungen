@@ -259,20 +259,20 @@
           "label": "Folgestrang",
           "targetType": "added-box",
           "x": 4.0,
-          "y": 34.0,
-          "width": 16.0,
-          "height": 9.0,
-          "note": "neu ergänztes Kästchen links unter dem oberen Strang"
+          "y": 43.5,
+          "width": 18.0,
+          "height": 8.5,
+          "note": "neu ergänztes Kästchen links unter dem oberen, diskontinuierlich synthetisierten Strang"
         },
         {
           "id": "leitstrang_box",
           "label": "Leitstrang",
           "targetType": "added-box",
           "x": 4.0,
-          "y": 78.0,
-          "width": 16.0,
-          "height": 9.0,
-          "note": "neu ergänztes Kästchen links unter dem unteren Strang"
+          "y": 86.0,
+          "width": 18.0,
+          "height": 8.5,
+          "note": "neu ergänztes Kästchen links unter dem unteren, kontinuierlich synthetisierten Strang"
         }
       ],
       "correctAssignments": {
@@ -281,8 +281,8 @@
         "rna_primer_box": "RNA-Primer",
         "helicase_box": "Helicase",
         "nukleotide_box": "Nukleotide",
-        "folgestrang_box": "Folgestrang",
-        "leitstrang_box": "Leitstrang"
+        "folgestrang_box": "Leitstrang",
+        "leitstrang_box": "Folgestrang"
       },
       "sampleSolution": [
         "DNA-Polymerase → oberes linkes Kästchen",
@@ -290,8 +290,8 @@
         "RNA-Primer → oberes mittleres kleines Kästchen",
         "Helicase → rechtes oberes Kästchen",
         "Nukleotide → rechtes unteres Kästchen",
-        "Folgestrang → zusätzlich ergänztes Kästchen links unter dem oberen Strang",
-        "Leitstrang → zusätzlich ergänztes Kästchen links unter dem unteren Strang"
+        "Leitstrang → zusätzlich ergänztes Kästchen links unter dem oberen Kästchen",
+        "Folgestrang → zusätzlich ergänztes Kästchen links unter dem unteren Kästchen"
       ]
     },
     {
@@ -509,6 +509,428 @@
           ]
         }
       ]
+    }
+  ]
+}
+,
+{
+  "id": "transkription_01",
+  "title": "DNA und RNA vergleichen",
+  "topic": "Transkription",
+  "difficulty": "mittel",
+  "materials": [
+    {
+      "type": "image",
+      "title": "Material 1: Vergleich von Ribose und Desoxyribose",
+      "src": "assets/images/zucker_bearbeitet.png",
+      "alt": "Vergleichende Darstellung von Ribose und Desoxyribose mit nummerierten Kohlenstoffatomen.",
+      "creditId": "zucker_bearbeitet_01"
+    }
+  ],
+  "subtasks": [
+    {
+      "id": "transkription_01_teilaufgabe_3_1",
+      "format": "dna-rna-compare",
+      "operator": "vergleichen",
+      "title": "Teilaufgabe 3.1: DNA und RNA strukturell vergleichen",
+      "task": "Vergleichen Sie DNA und RNA hinsichtlich ihres Aufbaus. Nutzen Sie dazu das Material zum Vergleich von Ribose und Desoxyribose sowie die Tabelle.",
+      "sugarTask": "Benennen Sie die beiden im Material dargestellten Zucker.",
+      "differenceTask": "Erläutern Sie den strukturellen Unterschied zwischen Ribose und Desoxyribose mithilfe des Materials.",
+      "tableTask": "Füllen Sie die Tabelle zum Vergleich von DNA und RNA aus. Nennen Sie bei den Basen jeweils alle vier Basen; die Reihenfolge ist egal.",
+      "hints": [
+        "Vergleichen Sie zuerst die 2'-Stelle der beiden Zucker im Material.",
+        "Achten Sie darauf, ob dort eine OH-Gruppe oder nur ein H-Atom vorhanden ist.",
+        "Bei den Basen unterscheidet sich DNA und RNA durch Thymin bzw. Uracil.",
+        "DNA liegt meist als Doppelstrang vor, RNA meist als Einzelstrang.",
+        "Im Kontext der Proteinbiosynthese speichert DNA die Information, während mRNA die Information für die Translation nutzbar macht."
+      ],
+      "expectationHorizon": [
+        "Linker Zucker wird als Ribose erkannt.",
+        "Rechter Zucker wird als Desoxyribose erkannt.",
+        "Der Unterschied an der 2'-Stelle wird erläutert.",
+        "Ribose besitzt an der 2'-Stelle eine OH-Gruppe.",
+        "Desoxyribose besitzt an der 2'-Stelle nur ein H-Atom; dort fehlt ein Sauerstoffatom.",
+        "DNA enthält Desoxyribose.",
+        "RNA enthält Ribose.",
+        "DNA enthält die Basen Adenin, Thymin, Guanin und Cytosin.",
+        "RNA enthält die Basen Adenin, Uracil, Guanin und Cytosin.",
+        "DNA liegt meist als Doppelstrang vor.",
+        "RNA liegt meist als Einzelstrang vor.",
+        "DNA speichert die Erbinformation bzw. dient als Vorlage für die Transkription.",
+        "RNA, insbesondere mRNA, überträgt bzw. nutzt die Information für die Translation."
+      ],
+      "sampleSolution": {
+        "sugars": {
+          "left": "Ribose",
+          "right": "Desoxyribose"
+        },
+        "difference": "Die Ribose besitzt an der 2'-Stelle eine OH-Gruppe. Bei der Desoxyribose befindet sich an der 2'-Stelle nur ein H-Atom; dort fehlt also im Vergleich zur Ribose ein Sauerstoffatom. Daher wird dieser Zucker als Desoxyribose bezeichnet.",
+        "table": [
+          {
+            "feature": "Zucker",
+            "dna": "Desoxyribose",
+            "rna": "Ribose"
+          },
+          {
+            "feature": "Basen",
+            "dna": "Adenin, Thymin, Guanin, Cytosin",
+            "rna": "Adenin, Uracil, Guanin, Cytosin"
+          },
+          {
+            "feature": "Strangstruktur",
+            "dna": "meist Doppelstrang",
+            "rna": "meist Einzelstrang"
+          },
+          {
+            "feature": "Funktion im Kontext der Proteinbiosynthese",
+            "dna": "speichert die Erbinformation und dient als Vorlage für die Transkription",
+            "rna": "überträgt bzw. nutzt die genetische Information; mRNA dient als Vorlage für die Translation"
+          }
+        ]
+      }
+    },
+    {
+      "id": "transkription_01_teilaufgabe_3_2",
+      "format": "transcription-structure-match",
+      "operator": "benennen und zuordnen",
+      "title": "Strukturen der Transkription benennen und Funktionen zuordnen",
+      "task": "Benennen Sie die nummerierten Strukturen der Transkription. Ordnen Sie anschließend jeder Struktur die passende Funktion zu.",
+      "hintText": "Bei der Benennung der Strukturen werden Groß-/Kleinschreibung und Bindestriche nicht berücksichtigt.",
+      "material": {
+        "type": "image",
+        "title": "Material 2: Transkriptionsblase",
+        "src": "assets/images/transkription.png",
+        "alt": "Schematische Darstellung einer Transkriptionsblase mit nummerierten Strukturen.",
+        "creditId": "transkription_bild_01"
+      },
+      "items": [
+        {
+          "number": 1,
+          "structure": "Transkriptionsblase",
+          "accepted": [
+            "Transkriptionsblase"
+          ],
+          "functionId": "A"
+        },
+        {
+          "number": 2,
+          "structure": "nicht-codogener Strang",
+          "accepted": [
+            "nicht-codogener Strang",
+            "nicht codogener Strang"
+          ],
+          "functionId": "B"
+        },
+        {
+          "number": 3,
+          "structure": "codogener Strang",
+          "accepted": [
+            "codogener Strang"
+          ],
+          "functionId": "C"
+        },
+        {
+          "number": 4,
+          "structure": "mRNA",
+          "accepted": [
+            "mRNA",
+            "mrna"
+          ],
+          "functionId": "D"
+        },
+        {
+          "number": 5,
+          "structure": "RNA-Polymerase",
+          "accepted": [
+            "RNA-Polymerase",
+            "RNA Polymerase",
+            "rna polymerase"
+          ],
+          "functionId": "E"
+        },
+        {
+          "number": 6,
+          "structure": "DNA",
+          "accepted": [
+            "DNA"
+          ],
+          "functionId": "F"
+        }
+      ],
+      "functions": [
+        {
+          "id": "A",
+          "text": "Bereich der DNA, in dem der Doppelstrang geöffnet ist und die Transkription stattfindet."
+        },
+        {
+          "id": "B",
+          "text": "DNA-Strang, dessen Basensequenz weitgehend der mRNA entspricht; in der DNA steht jedoch Thymin statt Uracil."
+        },
+        {
+          "id": "C",
+          "text": "DNA-Strang, der bei der Transkription als Vorlage für die mRNA dient."
+        },
+        {
+          "id": "D",
+          "text": "RNA-Molekül, das die genetische Information vom DNA-Abschnitt übernimmt und später als Vorlage für die Translation dient."
+        },
+        {
+          "id": "E",
+          "text": "Enzym, das die DNA lokal öffnet und die mRNA aus RNA-Nukleotiden synthetisiert."
+        },
+        {
+          "id": "F",
+          "text": "Molekül, das die Erbinformation speichert und aus zwei antiparallelen Einzelsträngen besteht."
+        }
+      ],
+      "hints": [
+        "Die Transkriptionsblase ist der lokal geöffnete Bereich der DNA.",
+        "Der codogene Strang ist der DNA-Strang, der als Vorlage für die mRNA dient.",
+        "Der nicht-codogene Strang entspricht in seiner Basensequenz weitgehend der mRNA, enthält aber Thymin statt Uracil.",
+        "Die RNA-Polymerase ist das Enzym, das die mRNA synthetisiert.",
+        "Die mRNA entsteht komplementär zum codogenen Strang."
+      ]
+    },
+    {
+      "id": "transkription_01_teilaufgabe_3_3",
+      "format": "transcription-process-text",
+      "operator": "erläutern",
+      "title": "Ablauf der Transkription erläutern",
+      "task": "Erläutern Sie den Ablauf der Transkription.",
+      "hintText": "Achten Sie darauf, Transkription und Translation nicht zu vermischen.",
+      "hints": [
+        "Überlegen Sie zuerst, wo die Transkription bei Eukaryoten stattfindet.",
+        "Die RNA-Polymerase bindet an einen DNA-Abschnitt und öffnet den DNA-Doppelstrang lokal.",
+        "Nur einer der beiden DNA-Stränge dient als Vorlage: der codogene Strang.",
+        "Die mRNA wird komplementär zum codogenen Strang gebildet.",
+        "Achten Sie darauf: In RNA wird Uracil statt Thymin eingebaut.",
+        "Am Ende löst sich die mRNA von der DNA und kann für die Translation genutzt werden."
+      ],
+      "expectationHorizon": [
+        "Transkription ist ein Teilprozess der Proteinbiosynthese.",
+        "Bei Eukaryoten findet die Transkription im Zellkern statt.",
+        "Die RNA-Polymerase bindet an einen bestimmten DNA-Abschnitt.",
+        "Die DNA wird lokal geöffnet; es entsteht eine Transkriptionsblase.",
+        "Der codogene Strang dient als Vorlage für die mRNA.",
+        "Die RNA-Polymerase lagert komplementäre RNA-Nukleotide an.",
+        "Die mRNA wird komplementär zum codogenen Strang gebildet.",
+        "In der RNA wird Uracil statt Thymin verwendet.",
+        "Wichtige Basenpaarungen: A-U und G-C.",
+        "Die mRNA wird in 5'→3'-Richtung synthetisiert.",
+        "Die mRNA löst sich von der DNA.",
+        "Die mRNA kann anschließend bei der Translation als Vorlage dienen."
+      ],
+      "sampleSolution": "Bei der Transkription wird ein Abschnitt der DNA in eine mRNA umgeschrieben. Bei Eukaryoten findet dieser Vorgang im Zellkern statt. Die RNA-Polymerase bindet an einen bestimmten Bereich der DNA und öffnet den DNA-Doppelstrang lokal, sodass eine Transkriptionsblase entsteht. Einer der beiden DNA-Stränge dient dabei als Vorlage; dieser wird codogener Strang oder Matrizenstrang genannt. Die RNA-Polymerase lagert freie RNA-Nukleotide komplementär an den codogenen Strang an und verknüpft sie zu einer mRNA. Dabei paart Adenin der DNA mit Uracil der RNA und Guanin mit Cytosin. In der RNA wird also Uracil statt Thymin verwendet. Die mRNA wird in 5'→3'-Richtung gebildet. Am Ende löst sich die mRNA von der DNA und kann anschließend bei der Translation als Vorlage für die Bildung einer Aminosäurekette dienen."
+    },
+    {
+      "id": "transkription_01_teilaufgabe_3_4",
+      "format": "mrna-sequence",
+      "operator": "ermitteln und erklären",
+      "title": "mRNA-Sequenz aus dem codogenen Strang ableiten",
+      "task": "Ermitteln Sie die mRNA-Sequenz, die durch Transkription aus dem angegebenen codogenen DNA-Strang entsteht. Erklären Sie kurz Ihr Vorgehen.",
+      "sequenceMaterial": "codogener DNA-Strang:\n3'-TAC GGA CTT ACC-5'",
+      "correctSequence": "AUGCCUGAAUGG",
+      "hints": [
+        "Der codogene DNA-Strang dient als Vorlage für die mRNA.",
+        "Die mRNA entsteht komplementär zum codogenen Strang.",
+        "In RNA wird Uracil statt Thymin verwendet.",
+        "Basenpaarung: DNA-A → RNA-U, DNA-T → RNA-A, DNA-G → RNA-C, DNA-C → RNA-G.",
+        "Die mRNA wird in 5'→3'-Richtung angegeben."
+      ],
+      "expectationHorizon": [
+        "Der codogene DNA-Strang wird als Vorlage genutzt.",
+        "Die mRNA wird komplementär zum codogenen Strang gebildet.",
+        "Die mRNA enthält Uracil statt Thymin.",
+        "Aus `3'-TAC GGA CTT ACC-5'` entsteht `5'-AUG CCU GAA UGG-3'`.",
+        "Die mRNA wird in 5'→3'-Richtung angegeben.",
+        "Eine Gliederung in Tripletts/Codons ist sinnvoll."
+      ],
+      "sampleSolution": "Aus dem codogenen DNA-Strang `3'-TAC GGA CTT ACC-5'` entsteht die mRNA-Sequenz `5'-AUG CCU GAA UGG-3'`. Der codogene Strang dient als Vorlage, sodass die mRNA komplementär gebildet wird. Dabei paart DNA-T mit RNA-A, DNA-A mit RNA-U, DNA-C mit RNA-G und DNA-G mit RNA-C. Da es sich um RNA handelt, wird Uracil statt Thymin eingebaut. Die mRNA wird in 5'→3'-Richtung angegeben."
+    },
+    {
+      "id": "transkription_01_teilaufgabe_3_5",
+      "format": "transcription-error-analysis",
+      "operator": "beurteilen und korrigieren",
+      "title": "Fehler in einer Schülerlösung erkennen",
+      "task": "Beurteilen Sie die Schülerlösung fachlich. Nennen und korrigieren Sie die Fehler.",
+      "studentSolution": "Aus dem codogenen DNA-Strang 3'-TAC GGA CTT ACC-5' entsteht die mRNA 3'-AUG CCU GAA UGG-5'. Da die mRNA aus RNA besteht, enthält sie Thymin statt Uracil.",
+      "hints": [
+        "Prüfen Sie zuerst, ob die Basenfolge zur Vorlage passt.",
+        "Achten Sie anschließend auf die Richtung, in der die mRNA angegeben wird.",
+        "mRNA wird üblicherweise in 5'→3'-Richtung notiert.",
+        "Vergleichen Sie die Aussage zu Thymin und Uracil mit dem Aufbau von RNA.",
+        "In RNA kommt Uracil statt Thymin vor."
+      ],
+      "expectationHorizon": [
+        "Die Schülerlösung wird fachlich beurteilt und nicht nur abgeschrieben.",
+        "Die Basenfolge `AUG CCU GAA UGG` wird als grundsätzlich passend erkannt.",
+        "Die Richtungsangabe `3' ... 5'` bei der mRNA wird als falsch erkannt.",
+        "Die korrekte mRNA wird als `5'-AUG CCU GAA UGG-3'` angegeben.",
+        "Es wird erklärt, dass RNA Uracil statt Thymin enthält.",
+        "Die Aussage „mRNA enthält Thymin statt Uracil“ wird korrigiert.",
+        "Die Korrektur wird fachlich begründet, z. B. mit komplementärer Basenpaarung und RNA-spezifischen Basen."
+      ],
+      "sampleSolution": "Die Schülerlösung ist teilweise richtig, enthält aber zwei wichtige Fehler. Die Basenfolge `AUG CCU GAA UGG` passt grundsätzlich zum angegebenen codogenen DNA-Strang. Die mRNA ist jedoch falsch herum angegeben: Sie wird in 5'→3'-Richtung notiert. Korrekt lautet die mRNA daher `5'-AUG CCU GAA UGG-3'`. Außerdem ist die Aussage zu Thymin und Uracil falsch. RNA enthält Uracil statt Thymin, nicht Thymin statt Uracil. Deshalb darf in der mRNA kein Thymin vorkommen."
+    }
+  ]
+}
+,
+{
+  "id": "translation_01",
+  "title": "Strukturen der Translation erkennen und Funktionen zuordnen",
+  "topic": "Translation",
+  "difficulty": "mittel",
+  "materials": [],
+  "subtasks": [
+    {
+      "id": "translation_01_teilaufgabe_4_1",
+      "format": "translation-structure-match",
+      "operator": "benennen, zuordnen und kurz erläutern",
+      "title": "Strukturen der Translation benennen und Funktionen zuordnen",
+      "task": "Benennen Sie die nummerierten Strukturen der Translation. Ordnen Sie anschließend jeder Struktur die passende Funktion zu.",
+      "hintText": "Bei der Benennung der Strukturen werden Groß-/Kleinschreibung und Bindestriche nicht berücksichtigt.",
+      "material": {
+        "type": "image",
+        "title": "Material 1: Translation am Ribosom",
+        "src": "assets/images/translation.png",
+        "alt": "Schematische Darstellung der Translation mit nummerierten Strukturen.",
+        "creditId": "translation_bild_01"
+      },
+      "items": [
+        { "number": 1, "structure": "Aminosäurekette / Polypeptidkette", "accepted": ["Aminosäurekette", "Aminosaeurekette", "Polypeptidkette", "Peptidkette"], "functionId": "A" },
+        { "number": 2, "structure": "Aminosäure", "accepted": ["Aminosäure", "Aminosaeure"], "functionId": "B" },
+        { "number": 3, "structure": "Anticodon", "accepted": ["Anticodon", "Anti-Codon", "Antikodon"], "functionId": "C" },
+        { "number": 4, "structure": "mRNA", "accepted": ["mRNA", "messenger RNA", "Boten-RNA", "Boten RNA"], "functionId": "D" },
+        { "number": 5, "structure": "kleine Untereinheit des Ribosoms", "accepted": ["kleine Untereinheit", "kleine Untereinheit des Ribosoms", "kleine ribosomale Untereinheit", "kleine Ribosomenuntereinheit"], "functionId": "E", "vague": ["Ribosom"] },
+        { "number": 6, "structure": "Codon", "accepted": ["Codon", "Kodon"], "functionId": "F" },
+        { "number": 7, "structure": "große Untereinheit des Ribosoms", "accepted": ["große Untereinheit", "grosse Untereinheit", "große Untereinheit des Ribosoms", "grosse Untereinheit des Ribosoms", "große ribosomale Untereinheit", "grosse ribosomale Untereinheit", "große Ribosomenuntereinheit", "grosse Ribosomenuntereinheit"], "functionId": "G", "vague": ["Ribosom"] },
+        { "number": 8, "structure": "tRNA", "accepted": ["tRNA", "transfer RNA", "Transfer-RNA", "Transfer RNA"], "functionId": "H" }
+      ],
+      "functions": [
+        { "id": "A", "text": "Entsteht durch die Verknüpfung mehrerer Aminosäuren und bildet die Grundlage eines Proteins." },
+        { "id": "B", "text": "Baustein der entstehenden Polypeptidkette." },
+        { "id": "C", "text": "Basentriplett der tRNA, das komplementär zu einem Codon der mRNA passt." },
+        { "id": "D", "text": "Dient bei der Translation als Vorlage; ihre Codons legen die Reihenfolge der Aminosäuren fest." },
+        { "id": "E", "text": "Bindet an die mRNA und ist Teil des funktionsfähigen Ribosoms." },
+        { "id": "F", "text": "Basentriplett auf der mRNA, das für eine Aminosäure oder ein Stopp-Signal steht." },
+        { "id": "G", "text": "Bildet zusammen mit der kleinen Untereinheit das Ribosom und ermöglicht die Verknüpfung der Aminosäuren." },
+        { "id": "H", "text": "Transportiert eine bestimmte Aminosäure zum Ribosom." }
+      ],
+      "hints": [
+        "Die mRNA ist der rote Strang und dient als Vorlage der Translation.",
+        "Ein Codon ist ein Basentriplett auf der mRNA.",
+        "Das Anticodon befindet sich auf der tRNA und passt komplementär zum Codon.",
+        "Die tRNA transportiert eine bestimmte Aminosäure zum Ribosom.",
+        "Die kleine und große Untereinheit bilden zusammen das Ribosom.",
+        "A-, P- und E-Stelle beschreiben Bindungsorte für tRNAs im Ribosom."
+      ],
+      "apeSolution": {
+        "a": "An der A-Stelle bindet die nächste passende tRNA mit ihrer Aminosäure an das Codon der mRNA.",
+        "p": "An der P-Stelle befindet sich die tRNA, die die wachsende Polypeptidkette trägt.",
+        "e": "An der E-Stelle verlässt die entladene tRNA das Ribosom."
+      }
+    },
+    {
+      "id": "translation_01_teilaufgabe_4_2",
+      "format": "translation-process-text",
+      "operator": "erläutern",
+      "title": "Ablauf der Translation erläutern",
+      "task": "Erläutern Sie den Ablauf der Translation von der mRNA bis zur entstehenden Aminosäurekette.",
+      "hintText": "Achten Sie darauf, Translation und Transkription nicht zu vermischen.",
+      "hints": [
+        "Überlegen Sie zuerst, wo die Translation stattfindet und welches Molekül als Vorlage dient.",
+        "Die mRNA wird am Ribosom in Basentripletts, den Codons, gelesen.",
+        "Eine tRNA bringt eine passende Aminosäure zum Ribosom.",
+        "Das Anticodon der tRNA passt komplementär zum Codon der mRNA.",
+        "Die Aminosäuren werden zu einer wachsenden Aminosäurekette bzw. Polypeptidkette verknüpft.",
+        "Ein Stoppcodon beendet die Translation."
+      ],
+      "expectationHorizon": [
+        "Translation ist ein Teilprozess der Proteinbiosynthese.",
+        "Die Translation findet an Ribosomen im Cytoplasma bzw. an Ribosomen statt.",
+        "Die mRNA dient als Vorlage.",
+        "Die mRNA wird in Basentripletts gelesen.",
+        "Diese Basentripletts auf der mRNA heißen Codons.",
+        "Die Translation beginnt am Startcodon AUG.",
+        "tRNAs transportieren passende Aminosäuren zum Ribosom.",
+        "Das Anticodon der tRNA passt komplementär zum Codon der mRNA.",
+        "Die Aminosäuren werden miteinander verknüpft.",
+        "Es entsteht eine Aminosäurekette bzw. Polypeptidkette.",
+        "Das Ribosom bewegt sich schrittweise entlang der mRNA.",
+        "Bei einem Stoppcodon endet die Translation.",
+        "Die Aminosäurekette bzw. Polypeptidkette wird freigesetzt."
+      ],
+      "sampleSolution": "Bei der Translation wird die Basensequenz der mRNA in eine Aminosäuresequenz übersetzt. Die Translation findet an Ribosomen im Cytoplasma statt. Die mRNA bindet an das Ribosom und wird dort in Basentripletts gelesen. Diese Basentripletts auf der mRNA heißen Codons. Am Startcodon AUG beginnt die Translation. Passende tRNAs lagern sich mit ihrem Anticodon komplementär an die Codons der mRNA an und bringen jeweils eine bestimmte Aminosäure mit. Im Ribosom werden die Aminosäuren miteinander zu einer wachsenden Aminosäurekette bzw. Polypeptidkette verknüpft. Das Ribosom bewegt sich schrittweise entlang der mRNA, sodass nacheinander weitere tRNAs binden können. Erreicht das Ribosom ein Stoppcodon, endet die Translation und die Aminosäurekette bzw. Polypeptidkette wird freigesetzt."
+    },
+    {
+      "id": "translation_01_teilaufgabe_4_3",
+      "format": "amino-acid-sequence",
+      "operator": "ermitteln",
+      "title": "Aminosäuresequenz aus einer mRNA ableiten",
+      "task": "Ermitteln Sie mithilfe der Codesonne die Aminosäuren zu den einzelnen Codons der angegebenen mRNA und geben Sie anschließend die entstehende Aminosäuresequenz an.",
+      "hintText": "Beachten Sie, dass Stoppcodons nicht für eine Aminosäure codieren.",
+      "material": {
+        "type": "image",
+        "title": "Material 2: Codesonne",
+        "src": "assets/images/Codesonne.png",
+        "alt": "Codesonne zur Zuordnung von mRNA-Codons zu Aminosäuren.",
+        "creditId": "codesonne_01"
+      },
+      "sequenceMaterial": "mRNA:\n5'-AUG GCU UUU CCG AAU UGA-3'",
+      "codons": [
+        { "codon": "AUG", "abbr3": "Met", "fullName": "Methionin" },
+        { "codon": "GCU", "abbr3": "Ala", "fullName": "Alanin" },
+        { "codon": "UUU", "abbr3": "Phe", "fullName": "Phenylalanin" },
+        { "codon": "CCG", "abbr3": "Pro", "fullName": "Prolin" },
+        { "codon": "AAU", "abbr3": "Asn", "fullName": "Asparagin" },
+        { "codon": "UGA", "abbr3": "Stopp", "fullName": "Stoppcodon / keine Aminosäure" }
+      ],
+      "hints": [
+        "Die Codesonne wird mit den Codons der mRNA verwendet.",
+        "Lesen Sie das Codon von innen nach außen: 1. Base, 2. Base, 3. Base.",
+        "Für jedes Codon wird eine passende Aminosäure bestimmt.",
+        "Das Codon UGA ist ein Stoppcodon.",
+        "Das Stoppcodon gehört nicht zur Aminosäuresequenz."
+      ],
+      "expectationHorizon": [
+        "Die mRNA wird in Codons eingeteilt.",
+        "Die Codesonne wird mit den Codons der mRNA genutzt.",
+        "AUG codiert für Methionin / Met.",
+        "GCU codiert für Alanin / Ala.",
+        "UUU codiert für Phenylalanin / Phe.",
+        "CCG codiert für Prolin / Pro.",
+        "AAU codiert für Asparagin / Asn.",
+        "UGA wird als Stoppcodon erkannt.",
+        "Stoppcodons codieren nicht für Aminosäuren.",
+        "Die Aminosäuresequenz lautet Met – Ala – Phe – Pro – Asn bzw. ausgeschrieben Methionin – Alanin – Phenylalanin – Prolin – Asparagin."
+      ],
+      "sampleSolution": "AUG → Met / Methionin, GCU → Ala / Alanin, UUU → Phe / Phenylalanin, CCG → Pro / Prolin, AAU → Asn / Asparagin, UGA → Stoppcodon / keine Aminosäure. Die Aminosäuresequenz lautet Met – Ala – Phe – Pro – Asn bzw. Methionin – Alanin – Phenylalanin – Prolin – Asparagin."
+    },
+    {
+      "id": "translation_01_teilaufgabe_4_4",
+      "format": "translation-error-analysis",
+      "operator": "beurteilen und korrigieren",
+      "title": "Fehler in einer Schülerlösung erkennen",
+      "task": "Beurteilen Sie die Schülerlösung fachlich. Nennen und korrigieren Sie die Fehler.",
+      "studentSolution": "Bei der Translation wird die DNA am Ribosom abgelesen. Immer drei Basen bilden ein Anticodon, das in der Codesonne nachgeschlagen wird. Die tRNA bringt dann ein passendes Codon und daraus entsteht eine Aminosäure. Das Stoppcodon codiert für die letzte Aminosäure und beendet danach die Translation.",
+      "hints": [
+        "Überlegen Sie zuerst, welches Molekül bei der Translation am Ribosom vorliegt.",
+        "Unterscheiden Sie Codon und Anticodon.",
+        "Die Codesonne wird mit mRNA-Codons benutzt.",
+        "Die tRNA transportiert eine passende Aminosäure.",
+        "Ein Stoppcodon codiert nicht für eine Aminosäure."
+      ],
+      "expectationHorizon": [
+        "Die Schülerlösung wird fachlich beurteilt.",
+        "Es wird korrigiert, dass bei der Translation die mRNA und nicht die DNA abgelesen wird.",
+        "Es wird korrigiert, dass drei Basen auf der mRNA ein Codon bilden.",
+        "Es wird korrigiert, dass das Anticodon auf der tRNA liegt.",
+        "Es wird erklärt, dass die Codesonne mit mRNA-Codons verwendet wird.",
+        "Es wird korrigiert, dass die tRNA eine Aminosäure zum Ribosom transportiert.",
+        "Es wird korrigiert, dass Stoppcodons nicht für eine Aminosäure codieren.",
+        "Es wird erklärt, dass ein Stoppcodon die Translation beendet."
+      ],
+      "sampleSolution": "Die Schülerlösung enthält mehrere fachliche Fehler. Bei der Translation wird nicht die DNA, sondern die mRNA am Ribosom abgelesen. Drei Basen auf der mRNA bilden ein Codon; das Anticodon befindet sich dagegen auf der tRNA. In der Codesonne werden die Codons der mRNA nachgeschlagen. Die tRNA bringt außerdem keine Codons, sondern jeweils eine passende Aminosäure zum Ribosom. Auch die Aussage zum Stoppcodon ist falsch: Ein Stoppcodon codiert nicht für eine Aminosäure, sondern beendet die Translation."
     }
   ]
 }

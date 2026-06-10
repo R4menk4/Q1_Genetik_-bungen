@@ -3,15 +3,18 @@
 
   const TASKS_URL = "data/tasks.json";
   const CREDITS_URL = "data/imageCredits.json";
+  const SELF_CHECK_URL = "data/selfCheckCompetencies.json";
   const STORAGE_PREFIX = "klausurtrainer_molekulargenetik";
+  const SELF_CHECK_STORAGE_KEY = "molekulargenetik_selfcheck_status";
 
   const topics = [
+    { title: "Selbstcheck", subtitle: "Kann ich das schon?", active: true, view: "selfcheck" },
     { title: "DNA-Aufbau", active: true, taskId: "dna_aufbau_01" },
     { title: "DNA-Replikation", active: true, taskId: "dna_replikation_01" },
-    { title: "Transkription", active: false },
-    { title: "Translation", active: false },
-    { title: "Mutationen", active: false },
-    { title: "Gemischte Klausuraufgaben", active: false }
+    { title: "Transkription", active: true, taskId: "transkription_01" },
+    { title: "Translation", active: true, taskId: "translation_01" },
+    { title: "Gemischte Klausuraufgaben", active: false },
+    { title: "Operatoren-Trainer", active: false }
   ];
 
   const fallbackContent = {
@@ -83,7 +86,10 @@
   const state = {
     tasks: [],
     credits: [],
+    selfCheckCompetencies: [],
+    selfCheckStatus: readJson(SELF_CHECK_STORAGE_KEY, {}),
     currentTask: null,
+    openedFromSelfCheck: false,
     checks: readJson(`${STORAGE_PREFIX}_checks`, {}),
     anonymousId: getOrCreateAnonymousId()
   };
@@ -91,10 +97,13 @@
   const elements = {
     homeView: document.getElementById("homeView"),
     taskView: document.getElementById("taskView"),
+    selfCheckView: document.getElementById("selfCheckView"),
     topicGrid: document.getElementById("topicGrid"),
     taskContainer: document.getElementById("taskContainer"),
+    selfCheckContainer: document.getElementById("selfCheckContainer"),
     backHomeButton: document.getElementById("backHomeButton"),
-    exportButton: document.getElementById("exportButton"),
+    backSelfCheckButton: document.getElementById("backSelfCheckButton"),
+    selfCheckBackHomeButton: document.getElementById("selfCheckBackHomeButton"),
     navButtons: Array.from(document.querySelectorAll("[data-view-target]"))
   };
 
@@ -121,14 +130,11 @@
 
   function bindNavigation() {
     elements.backHomeButton.addEventListener("click", () => showView("home"));
-    elements.exportButton.addEventListener("click", exportResults);
+    elements.backSelfCheckButton.addEventListener("click", () => openSelfCheck());
+    elements.selfCheckBackHomeButton.addEventListener("click", () => showView("home"));
     elements.navButtons.forEach((button) => {
       button.addEventListener("click", () => {
-        if (button.dataset.viewTarget === "task") {
-          openTask("dna_aufbau_01");
-        } else {
-          showView("home");
-        }
+        showView("home");
       });
     });
   }
@@ -138,20 +144,27 @@
     topics.forEach((topic) => {
       const card = document.createElement("button");
       card.type = "button";
-      card.className = "topic-card";
+      card.className = topic.view === "selfcheck" ? "topic-card topic-card-selfcheck" : "topic-card";
       card.disabled = !topic.active;
       card.innerHTML = `
         <span class="topic-title">${escapeHtml(topic.title)}</span>
-        <span class="topic-state">${topic.active ? "Aufgabe öffnen" : "kommt später"}</span>
+        ${topic.subtitle ? `<span class="topic-subtitle">${escapeHtml(topic.subtitle)}</span>` : ""}
+        <span class="topic-state">${topic.active ? (topic.view === "selfcheck" ? "Selbstcheck öffnen" : "Aufgabe öffnen") : "kommt später"}</span>
       `;
       if (topic.active) {
-        card.addEventListener("click", () => openTask(topic.taskId));
+        card.addEventListener("click", () => {
+          if (topic.view === "selfcheck") {
+            openSelfCheck();
+          } else {
+            openTask(topic.taskId);
+          }
+        });
       }
       elements.topicGrid.append(card);
     });
   }
 
-  async function openTask(preferredId) {
+  async function openTask(preferredId, options = {}) {
     if (!state.tasks.length) {
       try {
         state.tasks = normalizeTasks(await fetchJson(TASKS_URL));
@@ -174,18 +187,247 @@
     }
 
     state.currentTask = task;
+    state.openedFromSelfCheck = Boolean(options.fromSelfCheck);
     renderTask(task);
     showView("task");
+    if (options.targetSubtaskId) {
+      requestAnimationFrame(() => focusSubtask(options.targetSubtaskId));
+    }
   }
 
   function showView(viewName) {
     const isTask = viewName === "task";
-    elements.homeView.classList.toggle("active", !isTask);
+    const isSelfCheck = viewName === "selfcheck";
+    elements.homeView.classList.toggle("active", viewName === "home");
     elements.taskView.classList.toggle("active", isTask);
+    elements.selfCheckView.classList.toggle("active", isSelfCheck);
+    elements.backSelfCheckButton.classList.toggle("hidden", !state.openedFromSelfCheck || !isTask);
     elements.navButtons.forEach((button) => {
       button.classList.toggle("active", button.dataset.viewTarget === viewName);
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  async function openSelfCheck() {
+    state.openedFromSelfCheck = false;
+    showView("selfcheck");
+    if (!state.selfCheckCompetencies.length) {
+      try {
+        state.selfCheckCompetencies = normalizeSelfCheckCompetencies(await fetchJson(SELF_CHECK_URL));
+      } catch (error) {
+        renderSelfCheckError("Der Selbstcheck konnte nicht geladen werden. Prüfe bitte, ob data/selfCheckCompetencies.json vorhanden ist.");
+        return;
+      }
+    }
+    renderSelfCheck();
+  }
+
+  function renderSelfCheckError(message) {
+    elements.selfCheckContainer.innerHTML = `<div class="message-box">${escapeHtml(message)}</div>`;
+  }
+
+  function renderSelfCheck() {
+    const competencies = state.selfCheckCompetencies;
+    const total = competencies.length;
+    const checkedTotal = competencies.filter((item) => isSelfCheckChecked(item.id)).length;
+    const grouped = groupCompetenciesByCategory(competencies);
+
+    elements.selfCheckContainer.innerHTML = `
+      <article class="selfcheck-header">
+        <p class="eyebrow">Freiwillige Selbsteinschätzung</p>
+        <h2 id="selfCheckTitle">Selbstcheck: Kann ich das schon?</h2>
+        <p>Hake ab, was du schon sicher kannst. Wenn du auf eine Kompetenz klickst, gelangst du direkt zu der passenden Übungsaufgabe.</p>
+        <div class="selfcheck-progress" aria-label="Gesamtfortschritt">
+          <div class="selfcheck-progress-label">Gesamtfortschritt: ${checkedTotal} von ${total} Kompetenzen abgehakt</div>
+          <div class="selfcheck-progress-track"><span style="width: ${total ? Math.round((checkedTotal / total) * 100) : 0}%"></span></div>
+        </div>
+        <div class="button-row selfcheck-actions">
+          <button class="secondary-button" type="button" id="resetSelfCheckButton">Selbstcheck zurücksetzen</button>
+          <button class="ghost-button" type="button" id="exportSelfCheckButton">Selbstcheck exportieren</button>
+        </div>
+      </article>
+      <div class="selfcheck-groups"></div>
+    `;
+
+    const groupsContainer = elements.selfCheckContainer.querySelector(".selfcheck-groups");
+    grouped.forEach(([category, items]) => {
+      groupsContainer.append(renderSelfCheckGroup(category, items));
+    });
+
+    elements.selfCheckContainer.querySelector("#resetSelfCheckButton").addEventListener("click", resetSelfCheck);
+    elements.selfCheckContainer.querySelector("#exportSelfCheckButton").addEventListener("click", exportSelfCheck);
+  }
+
+  function renderSelfCheckGroup(category, items) {
+    const checkedCount = items.filter((item) => isSelfCheckChecked(item.id)).length;
+    const details = document.createElement("details");
+    details.className = "selfcheck-group";
+    details.open = true;
+    details.innerHTML = `
+      <summary>
+        <span>${escapeHtml(category)}</span>
+        <span>${checkedCount} von ${items.length} abgehakt</span>
+      </summary>
+      <div class="selfcheck-list"></div>
+    `;
+
+    const list = details.querySelector(".selfcheck-list");
+    items.forEach((item) => {
+      const row = document.createElement("div");
+      row.className = "selfcheck-item";
+      row.classList.toggle("checked", isSelfCheckChecked(item.id));
+      row.innerHTML = `
+        <label class="selfcheck-checkbox">
+          <input type="checkbox" ${isSelfCheckChecked(item.id) ? "checked" : ""} aria-label="${escapeHtml(item.text)} abhaken">
+        </label>
+        <button class="selfcheck-link" type="button">${escapeHtml(item.text)}</button>
+      `;
+      row.querySelector("input").addEventListener("change", (event) => {
+        setSelfCheckStatus(item.id, event.target.checked);
+        renderSelfCheck();
+      });
+      row.querySelector(".selfcheck-link").addEventListener("click", () => openCompetencyTarget(item));
+      list.append(row);
+    });
+
+    return details;
+  }
+
+  async function openCompetencyTarget(competency) {
+    if (!competency.targetTaskId) {
+      renderSelfCheckError("Diese Übungsaufgabe ist noch nicht verfügbar.");
+      return;
+    }
+
+    if (!state.tasks.length) {
+      try {
+        state.tasks = normalizeTasks(await fetchJson(TASKS_URL));
+      } catch (error) {
+        renderSelfCheckError("Die Aufgaben konnten nicht geladen werden.");
+        return;
+      }
+    }
+
+    const task = state.tasks.find((item) => item.id === competency.targetTaskId);
+    if (!task) {
+      renderSelfCheckError("Diese Übungsaufgabe ist noch nicht verfügbar.");
+      return;
+    }
+
+    const subtasks = normalizeSubtasks(task);
+    const hasTargetSubtask = subtasks.some((subtask, index) => {
+      const subtaskId = subtask.id || `${task.id}_${index + 1}`;
+      return subtaskId === competency.targetSubtaskId;
+    });
+
+    await openTask(competency.targetTaskId, {
+      fromSelfCheck: true,
+      targetSubtaskId: hasTargetSubtask ? competency.targetSubtaskId : ""
+    });
+  }
+
+  function focusSubtask(subtaskId) {
+    const target = elements.taskContainer.querySelector(`[data-subtask-id="${cssEscape(subtaskId)}"]`);
+    if (!target) {
+      showInlineTaskNotice("Die passende Aufgabe wurde geöffnet.");
+      return;
+    }
+    target.scrollIntoView({ behavior: "smooth", block: "start" });
+    target.classList.add("target-highlight");
+    window.setTimeout(() => target.classList.remove("target-highlight"), 2200);
+  }
+
+  function showInlineTaskNotice(message) {
+    const notice = document.createElement("div");
+    notice.className = "notice";
+    notice.textContent = message;
+    elements.taskContainer.prepend(notice);
+    window.setTimeout(() => notice.remove(), 2600);
+  }
+
+  function resetSelfCheck() {
+    if (!window.confirm("Möchtest du wirklich alle Häkchen im Selbstcheck löschen?")) {
+      return;
+    }
+    state.selfCheckStatus = {};
+    localStorage.removeItem(SELF_CHECK_STORAGE_KEY);
+    renderSelfCheck();
+  }
+
+  function exportSelfCheck() {
+    const competencies = state.selfCheckCompetencies;
+    const categories = {};
+    groupCompetenciesByCategory(competencies).forEach(([category, items]) => {
+      categories[category] = {
+        total: items.length,
+        checked: items.filter((item) => isSelfCheckChecked(item.id)).length
+      };
+    });
+    const exportData = {
+      anonymousId: state.anonymousId,
+      date: new Date().toISOString(),
+      selfCheckStatus: competencies.map((item) => ({
+        id: item.id,
+        category: item.category,
+        text: item.text,
+        checked: isSelfCheckChecked(item.id)
+      })),
+      totalCompetencies: competencies.length,
+      checkedCompetencies: competencies.filter((item) => isSelfCheckChecked(item.id)).length,
+      categories
+    };
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `selbstcheck_molekulargenetik_${state.anonymousId}.json`;
+    document.body.append(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  function groupCompetenciesByCategory(competencies) {
+    const order = ["DNA-Aufbau", "DNA-Replikation", "DNA und RNA", "Transkription", "Translation"];
+    const map = new Map();
+    competencies.forEach((item) => {
+      const category = item.category || "Weitere Kompetenzen";
+      if (!map.has(category)) {
+        map.set(category, []);
+      }
+      map.get(category).push(item);
+    });
+    return Array.from(map.entries()).sort((a, b) => {
+      const indexA = order.indexOf(a[0]);
+      const indexB = order.indexOf(b[0]);
+      return (indexA === -1 ? 99 : indexA) - (indexB === -1 ? 99 : indexB);
+    });
+  }
+
+  function isSelfCheckChecked(id) {
+    return Boolean(state.selfCheckStatus && state.selfCheckStatus[id]);
+  }
+
+  function setSelfCheckStatus(id, checked) {
+    state.selfCheckStatus = {
+      ...state.selfCheckStatus,
+      [id]: checked
+    };
+    writeJson(SELF_CHECK_STORAGE_KEY, state.selfCheckStatus);
+  }
+
+  function normalizeSelfCheckCompetencies(data) {
+    return Array.isArray(data)
+      ? data
+          .filter((item) => item && item.id && item.text)
+          .map((item) => ({
+            id: String(item.id),
+            category: item.category || "Weitere Kompetenzen",
+            text: item.text || "",
+            targetTaskId: item.targetTaskId || "",
+            targetSubtaskId: item.targetSubtaskId || ""
+          }))
+      : [];
   }
 
   function renderTask(task) {
@@ -197,7 +439,6 @@
       <h2 id="taskTitle">${escapeHtml(task.title || "Aufgabe")}</h2>
       <div class="meta-row">
         ${task.id ? `<span class="meta-pill">Aufgabe: ${escapeHtml(task.id)}</span>` : ""}
-        ${task.difficulty ? `<span class="meta-pill">Schwierigkeit: ${escapeHtml(task.difficulty)}</span>` : ""}
       </div>
     `;
     elements.taskContainer.append(header);
@@ -332,6 +573,42 @@
 
     if (subtask.format === "definition-match") {
       return renderDefinitionMatchSubtask(task, subtask, subtaskId, index, solution);
+    }
+
+    if (subtask.format === "dna-rna-compare") {
+      return renderDnaRnaCompareSubtask(task, subtask, subtaskId, index);
+    }
+
+    if (subtask.format === "transcription-structure-match") {
+      return renderTranscriptionStructureSubtask(task, subtask, subtaskId, index);
+    }
+
+    if (subtask.format === "transcription-process-text") {
+      return renderTranscriptionProcessSubtask(task, subtask, subtaskId, index);
+    }
+
+    if (subtask.format === "mrna-sequence") {
+      return renderMrnaSequenceSubtask(task, subtask, subtaskId, index);
+    }
+
+    if (subtask.format === "transcription-error-analysis") {
+      return renderTranscriptionErrorSubtask(task, subtask, subtaskId, index);
+    }
+
+    if (subtask.format === "translation-structure-match") {
+      return renderTranslationStructureSubtask(task, subtask, subtaskId, index);
+    }
+
+    if (subtask.format === "translation-process-text") {
+      return renderTranslationProcessSubtask(task, subtask, subtaskId, index);
+    }
+
+    if (subtask.format === "amino-acid-sequence") {
+      return renderAminoAcidSequenceSubtask(task, subtask, subtaskId, index);
+    }
+
+    if (subtask.format === "translation-error-analysis") {
+      return renderTranslationErrorSubtask(task, subtask, subtaskId, index);
     }
 
     const card = document.createElement("article");
@@ -567,7 +844,7 @@
           dropZone.classList.add(lastResult.correctItems.includes(zone.id) ? "is-correct" : "is-incorrect");
         }
         dropZone.innerHTML = value
-          ? `<span class="placed-chip">${escapeHtml(value)}</span>`
+          ? `<span class="placed-label">${escapeHtml(value)}</span>`
           : `<span class="drop-placeholder">Begriff hier ablegen</span>`;
       });
     }
@@ -721,6 +998,1775 @@
     return card;
   }
 
+  function renderDnaRnaCompareSubtask(task, subtask, subtaskId, index) {
+    const card = document.createElement("article");
+    card.className = "subtask-card";
+    card.dataset.subtaskId = subtaskId;
+
+    const stored = readJson(compareKey(task.id, subtaskId), defaultCompareInputs());
+
+    card.innerHTML = `
+      <p class="operator">${escapeHtml(subtask.operator || "Vergleich")}</p>
+      <h3>${escapeHtml(subtask.title || `Teilaufgabe ${index + 1}`)}</h3>
+      <p class="task-prompt">${escapeHtml(subtask.task || "")}</p>
+
+      <section class="compare-section" aria-labelledby="${escapeHtml(subtaskId)}-a">
+        <h4 id="${escapeHtml(subtaskId)}-a">Abschnitt A: Zucker benennen</h4>
+        <p>${escapeHtml(subtask.sugarTask || "")}</p>
+        <div class="sugar-input-grid">
+          <label>Linker Zucker
+            <input class="compare-input" data-field="leftSugar" type="text" value="${escapeHtml(stored.leftSugar)}" autocomplete="off">
+          </label>
+          <label>Rechter Zucker
+            <input class="compare-input" data-field="rightSugar" type="text" value="${escapeHtml(stored.rightSugar)}" autocomplete="off">
+          </label>
+        </div>
+      </section>
+
+      <section class="compare-section" aria-labelledby="${escapeHtml(subtaskId)}-b">
+        <h4 id="${escapeHtml(subtaskId)}-b">Abschnitt B: Unterschied erläutern</h4>
+        <p>${escapeHtml(subtask.differenceTask || "")}</p>
+        <textarea class="answer-field compare-input" data-field="difference" placeholder="Erläutere hier den Unterschied an der 2'-Stelle.">${escapeHtml(stored.difference)}</textarea>
+      </section>
+
+      <section class="compare-section" aria-labelledby="${escapeHtml(subtaskId)}-c">
+        <h4 id="${escapeHtml(subtaskId)}-c">Abschnitt C: Vergleichstabelle DNA/RNA ausfüllen</h4>
+        <p>${escapeHtml(subtask.tableTask || "")}</p>
+        <div class="compare-table-wrap">
+          <table class="compare-table">
+            <thead>
+              <tr>
+                <th>Merkmal</th>
+                <th>DNA</th>
+                <th>RNA</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${renderCompareTableRows(stored.table)}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <div class="button-row">
+        <button class="primary-button compare-check-button" type="button">Antworten prüfen</button>
+        <button class="ghost-button expectation-button" type="button">Erwartungshorizont anzeigen</button>
+        <button class="ghost-button solution-button" type="button">Musterlösung anzeigen</button>
+        <button class="secondary-button compare-reset-button" type="button">Zurücksetzen</button>
+      </div>
+      <div class="feedback hidden" aria-live="polite"></div>
+      <div class="reveal-box expectation-box hidden"></div>
+      <div class="reveal-box solution-box hidden"></div>
+    `;
+
+    card.querySelectorAll(".compare-input").forEach((input) => {
+      input.addEventListener("input", () => {
+        writeJson(compareKey(task.id, subtaskId), collectCompareInputs(card));
+      });
+    });
+
+    card.querySelector(".expectation-button").addEventListener("click", () => {
+      toggleReveal(card.querySelector(".expectation-box"), "Erwartungshorizont", normalizeList(subtask.expectationHorizon));
+    });
+
+    card.querySelector(".solution-button").addEventListener("click", () => {
+      renderCompareSolution(card.querySelector(".solution-box"), subtask.sampleSolution);
+    });
+
+    card.querySelector(".compare-check-button").addEventListener("click", () => {
+      const inputs = collectCompareInputs(card);
+      writeJson(compareKey(task.id, subtaskId), inputs);
+      const result = checkDnaRnaCompare(inputs);
+      state.checks[checkKey(task.id, subtaskId)] = result;
+      writeJson(`${STORAGE_PREFIX}_checks`, state.checks);
+      renderCompareFeedback(card.querySelector(".feedback"), result);
+    });
+
+    card.querySelector(".compare-reset-button").addEventListener("click", () => {
+      localStorage.removeItem(compareKey(task.id, subtaskId));
+      delete state.checks[checkKey(task.id, subtaskId)];
+      writeJson(`${STORAGE_PREFIX}_checks`, state.checks);
+      card.querySelectorAll(".compare-input").forEach((input) => {
+        input.value = "";
+      });
+      card.querySelector(".feedback").classList.add("hidden");
+    });
+
+    return card;
+  }
+
+  function renderTranscriptionStructureSubtask(task, subtask, subtaskId, index) {
+    const card = document.createElement("article");
+    card.className = "subtask-card";
+    card.dataset.subtaskId = subtaskId;
+
+    const items = normalizeList(subtask.items);
+    const functions = normalizeList(subtask.functions);
+    let stored = readJson(transcriptionKey(task.id, subtaskId), defaultTranscriptionInputs(items));
+    let selectedFunction = "";
+    let visibleHintCount = 0;
+    let lastResult = state.checks[checkKey(task.id, subtaskId)] || null;
+
+    card.innerHTML = `
+      <p class="operator">${escapeHtml(subtask.operator || "Benennen und zuordnen")}</p>
+      <h3>${escapeHtml(subtask.title || `Teilaufgabe ${index + 1}`)}</h3>
+      <p class="task-prompt">${escapeHtml(subtask.task || "")}</p>
+      ${subtask.hintText ? `<p class="drag-note">${escapeHtml(subtask.hintText)}</p>` : ""}
+      <article class="material-card inline-material">
+        <h4>${escapeHtml((subtask.material && subtask.material.title) || "Material")}</h4>
+        <img class="material-image transcription-image" src="${escapeHtml((subtask.material && subtask.material.src) || "")}" alt="${escapeHtml((subtask.material && subtask.material.alt) || "")}">
+        <p class="credit">Bildnachweis: siehe CREDITS.md</p>
+      </article>
+      <div class="transcription-match-task">
+        <div class="transcription-table-wrap">
+          <table class="transcription-table">
+            <thead>
+              <tr>
+                <th>Nummer</th>
+                <th>Struktur benennen</th>
+                <th>Funktion zuordnen</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="function-bank" aria-label="Funktionskarten"></div>
+      </div>
+      <div class="button-row">
+        <button class="primary-button transcription-check-button" type="button">Antworten prüfen</button>
+        <button class="secondary-button hint-button" type="button">Hilfe anzeigen</button>
+        <button class="ghost-button transcription-solution-button" type="button">Musterlösung anzeigen</button>
+        <button class="secondary-button transcription-reset-button" type="button">Zurücksetzen</button>
+      </div>
+      <div class="hint-list hidden" aria-live="polite"></div>
+      <div class="feedback hidden" aria-live="polite"></div>
+      <div class="reveal-box solution-box hidden"></div>
+    `;
+
+    const image = card.querySelector(".transcription-image");
+    image.addEventListener("error", () => {
+      const fallback = document.createElement("div");
+      fallback.className = "image-fallback";
+      fallback.textContent = `Bild konnte nicht geladen werden: ${(subtask.material && subtask.material.alt) || "Transkriptionsblase"}`;
+      image.replaceWith(fallback);
+    });
+
+    const tbody = card.querySelector("tbody");
+    const bank = card.querySelector(".function-bank");
+    const feedback = card.querySelector(".feedback");
+
+    bank.addEventListener("dragover", (event) => event.preventDefault());
+    bank.addEventListener("drop", (event) => {
+      event.preventDefault();
+      const functionId = event.dataTransfer.getData("text/plain");
+      if (functionId) {
+        removeAssignedValue(stored.functions, functionId);
+        persistAndRender();
+      }
+    });
+
+    card.querySelector(".hint-button").addEventListener("click", () => {
+      const hints = normalizeList(subtask.hints);
+      visibleHintCount = Math.min(visibleHintCount + 1, hints.length);
+      renderHints(card.querySelector(".hint-list"), hints.slice(0, visibleHintCount));
+      const button = card.querySelector(".hint-button");
+      button.textContent = visibleHintCount >= hints.length ? "Alle Hilfen sichtbar" : "Weitere Hilfe anzeigen";
+      button.disabled = visibleHintCount >= hints.length;
+    });
+
+    card.querySelector(".transcription-check-button").addEventListener("click", () => {
+      stored = collectTranscriptionInputs(card, stored);
+      writeJson(transcriptionKey(task.id, subtaskId), stored);
+      lastResult = checkTranscriptionStructure(stored, items);
+      state.checks[checkKey(task.id, subtaskId)] = lastResult;
+      writeJson(`${STORAGE_PREFIX}_checks`, state.checks);
+      renderTranscriptionFeedback(feedback, lastResult);
+      render();
+    });
+
+    card.querySelector(".transcription-solution-button").addEventListener("click", () => {
+      renderTranscriptionSolution(card.querySelector(".solution-box"), items, functions);
+    });
+
+    card.querySelector(".transcription-reset-button").addEventListener("click", () => {
+      stored = defaultTranscriptionInputs(items);
+      selectedFunction = "";
+      lastResult = null;
+      localStorage.removeItem(transcriptionKey(task.id, subtaskId));
+      delete state.checks[checkKey(task.id, subtaskId)];
+      writeJson(`${STORAGE_PREFIX}_checks`, state.checks);
+      feedback.classList.add("hidden");
+      card.querySelector(".hint-list").classList.add("hidden");
+      visibleHintCount = 0;
+      const hintButton = card.querySelector(".hint-button");
+      hintButton.textContent = "Hilfe anzeigen";
+      hintButton.disabled = false;
+      render();
+    });
+
+    function persistAndRender() {
+      writeJson(transcriptionKey(task.id, subtaskId), collectTranscriptionInputs(card, stored));
+      stored = readJson(transcriptionKey(task.id, subtaskId), defaultTranscriptionInputs(items));
+      render();
+    }
+
+    function render() {
+      const assignedFunctions = new Set(Object.values(stored.functions || {}));
+      tbody.innerHTML = "";
+      items.forEach((item) => {
+        const number = String(item.number);
+        const functionId = stored.functions[number] || "";
+        const rowResult = lastResult && lastResult.rows[number];
+        const tr = document.createElement("tr");
+        if (rowResult) {
+          tr.classList.add(rowResult.structureCorrect ? "structure-correct" : "structure-incorrect");
+          tr.classList.add(rowResult.functionCorrect ? "function-correct" : "function-incorrect");
+        }
+        tr.innerHTML = `
+          <th scope="row">${escapeHtml(number)}</th>
+          <td>
+            <input class="transcription-structure-input" data-number="${escapeHtml(number)}" type="text" value="${escapeHtml((stored.structures && stored.structures[number]) || "")}" autocomplete="off">
+          </td>
+          <td>
+            <button class="function-drop" type="button" data-number="${escapeHtml(number)}">
+              ${functionId ? renderFunctionCardText(functionId, functions) : '<span class="drop-placeholder">Funktion hier ablegen</span>'}
+            </button>
+          </td>
+        `;
+        tr.querySelector(".transcription-structure-input").addEventListener("input", () => {
+          stored = collectTranscriptionInputs(card, stored);
+          writeJson(transcriptionKey(task.id, subtaskId), stored);
+        });
+        const drop = tr.querySelector(".function-drop");
+        drop.addEventListener("dragover", (event) => event.preventDefault());
+        drop.addEventListener("drop", (event) => {
+          event.preventDefault();
+          const droppedId = event.dataTransfer.getData("text/plain");
+          if (droppedId) {
+            assignValue(stored.functions, number, droppedId);
+            persistAndRender();
+          }
+        });
+        drop.addEventListener("click", () => {
+          if (selectedFunction) {
+            assignValue(stored.functions, number, selectedFunction);
+            selectedFunction = "";
+            persistAndRender();
+          } else if (stored.functions[number]) {
+            delete stored.functions[number];
+            persistAndRender();
+          }
+        });
+        tbody.append(tr);
+      });
+
+      bank.innerHTML = "<h4>Funktionskarten</h4>";
+      const list = document.createElement("div");
+      list.className = "function-card-list";
+      functions.filter((fn) => !assignedFunctions.has(fn.id)).forEach((fn) => {
+        const chip = createDraggableChip(fn.id, selectedFunction, () => {
+          selectedFunction = selectedFunction === fn.id ? "" : fn.id;
+          render();
+        });
+        chip.classList.add("function-card");
+        chip.innerHTML = `<strong>${escapeHtml(fn.id)}</strong> ${escapeHtml(fn.text)}`;
+        list.append(chip);
+      });
+      if (!list.children.length) {
+        const empty = document.createElement("p");
+        empty.className = "muted-small";
+        empty.textContent = "Alle Funktionen sind zugeordnet.";
+        list.append(empty);
+      }
+      bank.append(list);
+    }
+
+    render();
+    return card;
+  }
+
+  function renderTranscriptionProcessSubtask(task, subtask, subtaskId, index) {
+    const card = document.createElement("article");
+    card.className = "subtask-card";
+    card.dataset.subtaskId = subtaskId;
+
+    const storedAnswer = localStorage.getItem(answerKey(task.id, subtaskId)) || "";
+    let visibleHintCount = 0;
+    const hints = normalizeList(subtask.hints);
+
+    card.innerHTML = `
+      <p class="operator">${escapeHtml(subtask.operator || "Aufgabe")}</p>
+      <h3>${escapeHtml(subtask.title || `Teilaufgabe ${index + 1}`)}</h3>
+      <p class="task-prompt">${escapeHtml(subtask.task || "")}</p>
+      ${subtask.hintText ? `<p class="drag-note">${escapeHtml(subtask.hintText)}</p>` : ""}
+      <textarea class="answer-field large-answer-field" aria-label="Antwort zu ${escapeHtml(subtask.title || `Teilaufgabe ${index + 1}`)}" placeholder="Formulieren Sie hier Ihre Erläuterung in 6 bis 10 Sätzen.">${escapeHtml(storedAnswer)}</textarea>
+      <div class="button-row">
+        <button class="primary-button process-check-button" type="button">Antwort prüfen</button>
+        <button class="secondary-button hint-button" type="button">Hilfe anzeigen</button>
+        <button class="ghost-button expectation-button" type="button">Erwartungshorizont anzeigen</button>
+        <button class="ghost-button solution-button" type="button">Musterlösung anzeigen</button>
+        <button class="secondary-button process-reset-button" type="button">Zurücksetzen</button>
+      </div>
+      <div class="hint-list hidden" aria-live="polite"></div>
+      <div class="feedback hidden" aria-live="polite"></div>
+      <div class="reveal-box expectation-box hidden"></div>
+      <div class="reveal-box solution-box hidden"></div>
+    `;
+
+    const answerField = card.querySelector(".answer-field");
+    const feedback = card.querySelector(".feedback");
+    const hintButton = card.querySelector(".hint-button");
+
+    answerField.addEventListener("input", () => {
+      localStorage.setItem(answerKey(task.id, subtaskId), answerField.value);
+    });
+
+    card.querySelector(".process-check-button").addEventListener("click", () => {
+      const result = checkTranscriptionProcess(answerField.value);
+      state.checks[checkKey(task.id, subtaskId)] = result;
+      writeJson(`${STORAGE_PREFIX}_checks`, state.checks);
+      localStorage.setItem(answerKey(task.id, subtaskId), answerField.value);
+      renderTranscriptionProcessFeedback(feedback, result);
+    });
+
+    hintButton.addEventListener("click", () => {
+      visibleHintCount = Math.min(visibleHintCount + 1, hints.length);
+      renderHints(card.querySelector(".hint-list"), hints.slice(0, visibleHintCount));
+      hintButton.textContent = visibleHintCount >= hints.length ? "Alle Hilfen sichtbar" : "Weitere Hilfe anzeigen";
+      hintButton.disabled = visibleHintCount >= hints.length;
+    });
+
+    card.querySelector(".expectation-button").addEventListener("click", () => {
+      toggleReveal(card.querySelector(".expectation-box"), "Erwartungshorizont", normalizeList(subtask.expectationHorizon));
+    });
+
+    card.querySelector(".solution-button").addEventListener("click", () => {
+      toggleReveal(card.querySelector(".solution-box"), "Musterlösung", subtask.sampleSolution || "");
+    });
+
+    card.querySelector(".process-reset-button").addEventListener("click", () => {
+      answerField.value = "";
+      localStorage.removeItem(answerKey(task.id, subtaskId));
+      delete state.checks[checkKey(task.id, subtaskId)];
+      writeJson(`${STORAGE_PREFIX}_checks`, state.checks);
+      feedback.classList.add("hidden");
+      card.querySelector(".hint-list").classList.add("hidden");
+      card.querySelector(".expectation-box").classList.add("hidden");
+      card.querySelector(".solution-box").classList.add("hidden");
+      visibleHintCount = 0;
+      hintButton.textContent = "Hilfe anzeigen";
+      hintButton.disabled = false;
+    });
+
+    return card;
+  }
+
+  function renderMrnaSequenceSubtask(task, subtask, subtaskId, index) {
+    const card = document.createElement("article");
+    card.className = "subtask-card";
+    card.dataset.subtaskId = subtaskId;
+    const stored = readJson(sequenceKey(task.id, subtaskId), { sequence: "", reason: "" });
+    let visibleHintCount = 0;
+    const hints = normalizeList(subtask.hints);
+
+    card.innerHTML = `
+      <p class="operator">${escapeHtml(subtask.operator || "Aufgabe")}</p>
+      <h3>${escapeHtml(subtask.title || `Teilaufgabe ${index + 1}`)}</h3>
+      <div class="sequence-box prominent-sequence">${escapeHtml(subtask.sequenceMaterial || "")}</div>
+      <p class="task-prompt">${escapeHtml(subtask.task || "")}</p>
+      <div class="sequence-input-grid">
+        <label>mRNA-Sequenz
+          <input class="compare-input sequence-answer" type="text" value="${escapeHtml(stored.sequence)}">
+        </label>
+        <label>Begründung / Vorgehen
+          <textarea class="answer-field sequence-reason" placeholder="Erklären Sie kurz Ihr Vorgehen.">${escapeHtml(stored.reason)}</textarea>
+        </label>
+      </div>
+      <div class="button-row">
+        <button class="primary-button sequence-check-button" type="button">Antwort prüfen</button>
+        <button class="secondary-button hint-button" type="button">Hilfe anzeigen</button>
+        <button class="ghost-button expectation-button" type="button">Erwartungshorizont anzeigen</button>
+        <button class="ghost-button solution-button" type="button">Musterlösung anzeigen</button>
+        <button class="secondary-button reset-button" type="button">Zurücksetzen</button>
+      </div>
+      <div class="hint-list hidden" aria-live="polite"></div>
+      <div class="feedback hidden" aria-live="polite"></div>
+      <div class="reveal-box expectation-box hidden"></div>
+      <div class="reveal-box solution-box hidden"></div>
+    `;
+
+    const sequenceInput = card.querySelector(".sequence-answer");
+    const reasonInput = card.querySelector(".sequence-reason");
+    const save = () => writeJson(sequenceKey(task.id, subtaskId), { sequence: sequenceInput.value, reason: reasonInput.value });
+    sequenceInput.addEventListener("input", save);
+    reasonInput.addEventListener("input", save);
+
+    card.querySelector(".sequence-check-button").addEventListener("click", () => {
+      const result = checkMrnaSequence(sequenceInput.value, reasonInput.value);
+      state.checks[checkKey(task.id, subtaskId)] = result;
+      writeJson(`${STORAGE_PREFIX}_checks`, state.checks);
+      save();
+      renderSequenceFeedback(card.querySelector(".feedback"), result);
+    });
+    card.querySelector(".hint-button").addEventListener("click", () => {
+      visibleHintCount = Math.min(visibleHintCount + 1, hints.length);
+      renderHints(card.querySelector(".hint-list"), hints.slice(0, visibleHintCount));
+      const button = card.querySelector(".hint-button");
+      button.textContent = visibleHintCount >= hints.length ? "Alle Hilfen sichtbar" : "Weitere Hilfe anzeigen";
+      button.disabled = visibleHintCount >= hints.length;
+    });
+    card.querySelector(".expectation-button").addEventListener("click", () => {
+      toggleReveal(card.querySelector(".expectation-box"), "Erwartungshorizont", normalizeList(subtask.expectationHorizon));
+    });
+    card.querySelector(".solution-button").addEventListener("click", () => {
+      toggleReveal(card.querySelector(".solution-box"), "Musterlösung", subtask.sampleSolution || "");
+    });
+    card.querySelector(".reset-button").addEventListener("click", () => {
+      sequenceInput.value = "";
+      reasonInput.value = "";
+      localStorage.removeItem(sequenceKey(task.id, subtaskId));
+      delete state.checks[checkKey(task.id, subtaskId)];
+      writeJson(`${STORAGE_PREFIX}_checks`, state.checks);
+      resetReveals(card);
+      visibleHintCount = 0;
+    });
+    return card;
+  }
+
+  function renderTranscriptionErrorSubtask(task, subtask, subtaskId, index) {
+    const card = document.createElement("article");
+    card.className = "subtask-card";
+    card.dataset.subtaskId = subtaskId;
+    const storedAnswer = localStorage.getItem(answerKey(task.id, subtaskId)) || "";
+    let visibleHintCount = 0;
+    const hints = normalizeList(subtask.hints);
+
+    card.innerHTML = `
+      <p class="operator">${escapeHtml(subtask.operator || "Aufgabe")}</p>
+      <h3>${escapeHtml(subtask.title || `Teilaufgabe ${index + 1}`)}</h3>
+      <div class="student-solution-box"><strong>Schülerlösung</strong><p>${escapeHtml(subtask.studentSolution || "")}</p></div>
+      <p class="task-prompt">${escapeHtml(subtask.task || "")}</p>
+      <textarea class="answer-field large-answer-field" placeholder="Beurteilen und korrigieren Sie die Schülerlösung.">${escapeHtml(storedAnswer)}</textarea>
+      <div class="button-row">
+        <button class="primary-button error-check-button" type="button">Antwort prüfen</button>
+        <button class="secondary-button hint-button" type="button">Hilfe anzeigen</button>
+        <button class="ghost-button expectation-button" type="button">Erwartungshorizont anzeigen</button>
+        <button class="ghost-button solution-button" type="button">Musterlösung anzeigen</button>
+        <button class="secondary-button reset-button" type="button">Zurücksetzen</button>
+      </div>
+      <div class="hint-list hidden" aria-live="polite"></div>
+      <div class="feedback hidden" aria-live="polite"></div>
+      <div class="reveal-box expectation-box hidden"></div>
+      <div class="reveal-box solution-box hidden"></div>
+    `;
+
+    const answerField = card.querySelector(".answer-field");
+    answerField.addEventListener("input", () => localStorage.setItem(answerKey(task.id, subtaskId), answerField.value));
+    card.querySelector(".error-check-button").addEventListener("click", () => {
+      const result = checkTranscriptionError(answerField.value);
+      state.checks[checkKey(task.id, subtaskId)] = result;
+      writeJson(`${STORAGE_PREFIX}_checks`, state.checks);
+      localStorage.setItem(answerKey(task.id, subtaskId), answerField.value);
+      renderSimpleCriterionFeedback(card.querySelector(".feedback"), result);
+    });
+    card.querySelector(".hint-button").addEventListener("click", () => {
+      visibleHintCount = Math.min(visibleHintCount + 1, hints.length);
+      renderHints(card.querySelector(".hint-list"), hints.slice(0, visibleHintCount));
+      const button = card.querySelector(".hint-button");
+      button.textContent = visibleHintCount >= hints.length ? "Alle Hilfen sichtbar" : "Weitere Hilfe anzeigen";
+      button.disabled = visibleHintCount >= hints.length;
+    });
+    card.querySelector(".expectation-button").addEventListener("click", () => {
+      toggleReveal(card.querySelector(".expectation-box"), "Erwartungshorizont", normalizeList(subtask.expectationHorizon));
+    });
+    card.querySelector(".solution-button").addEventListener("click", () => {
+      toggleReveal(card.querySelector(".solution-box"), "Musterlösung", subtask.sampleSolution || "");
+    });
+    card.querySelector(".reset-button").addEventListener("click", () => {
+      answerField.value = "";
+      localStorage.removeItem(answerKey(task.id, subtaskId));
+      delete state.checks[checkKey(task.id, subtaskId)];
+      writeJson(`${STORAGE_PREFIX}_checks`, state.checks);
+      resetReveals(card);
+      visibleHintCount = 0;
+    });
+    return card;
+  }
+
+  function renderTranslationStructureSubtask(task, subtask, subtaskId, index) {
+    const card = document.createElement("article");
+    card.className = "subtask-card";
+    card.dataset.subtaskId = subtaskId;
+
+    const items = normalizeList(subtask.items);
+    const functions = normalizeList(subtask.functions);
+    let stored = readJson(translationKey(task.id, subtaskId), defaultTranslationInputs(items));
+    let selectedFunction = "";
+    let visibleHintCount = 0;
+    let lastResult = state.checks[checkKey(task.id, subtaskId)] || null;
+
+    card.innerHTML = `
+      <p class="operator">${escapeHtml(subtask.operator || "Benennen und zuordnen")}</p>
+      <h3>${escapeHtml(subtask.title || `Teilaufgabe ${index + 1}`)}</h3>
+      <p class="task-prompt">${escapeHtml(subtask.task || "")}</p>
+      ${subtask.hintText ? `<p class="drag-note">${escapeHtml(subtask.hintText)}</p>` : ""}
+      <article class="material-card inline-material">
+        <h4>${escapeHtml((subtask.material && subtask.material.title) || "Material")}</h4>
+        <img class="material-image transcription-image" src="${escapeHtml((subtask.material && subtask.material.src) || "")}" alt="${escapeHtml((subtask.material && subtask.material.alt) || "")}">
+        <p class="credit">Bildnachweis: siehe CREDITS.md</p>
+      </article>
+      <div class="transcription-match-task">
+        <div class="transcription-table-wrap">
+          <table class="transcription-table">
+            <thead><tr><th>Nummer</th><th>Struktur benennen</th><th>Funktion zuordnen</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="function-bank" aria-label="Funktionskarten"></div>
+      </div>
+      <section class="compare-section">
+        <h4>A-, P- und E-Stelle kurz erläutern</h4>
+        <p>Erklären Sie die Funktion der A-, P- und E-Stelle jeweils in genau einem Satz.</p>
+        <div class="ape-grid">
+          <label>A-Stelle<textarea class="ape-input" data-site="a">${escapeHtml(stored.ape.a)}</textarea></label>
+          <label>P-Stelle<textarea class="ape-input" data-site="p">${escapeHtml(stored.ape.p)}</textarea></label>
+          <label>E-Stelle<textarea class="ape-input" data-site="e">${escapeHtml(stored.ape.e)}</textarea></label>
+        </div>
+      </section>
+      <div class="button-row">
+        <button class="primary-button translation-check-button" type="button">Antworten prüfen</button>
+        <button class="secondary-button hint-button" type="button">Hilfe anzeigen</button>
+        <button class="ghost-button translation-solution-button" type="button">Musterlösung anzeigen</button>
+        <button class="secondary-button translation-reset-button" type="button">Zurücksetzen</button>
+      </div>
+      <div class="hint-list hidden" aria-live="polite"></div>
+      <div class="feedback hidden" aria-live="polite"></div>
+      <div class="reveal-box solution-box hidden"></div>
+    `;
+
+    const image = card.querySelector(".material-image");
+    image.addEventListener("error", () => {
+      const fallback = document.createElement("div");
+      fallback.className = "image-fallback";
+      fallback.textContent = `Bild konnte nicht geladen werden: ${(subtask.material && subtask.material.alt) || "Translation"}`;
+      image.replaceWith(fallback);
+    });
+
+    const tbody = card.querySelector("tbody");
+    const bank = card.querySelector(".function-bank");
+    const feedback = card.querySelector(".feedback");
+
+    bank.addEventListener("dragover", (event) => event.preventDefault());
+    bank.addEventListener("drop", (event) => {
+      event.preventDefault();
+      const functionId = event.dataTransfer.getData("text/plain");
+      if (functionId) {
+        removeAssignedValue(stored.functions, functionId);
+        persistAndRender();
+      }
+    });
+
+    card.querySelectorAll(".ape-input").forEach((input) => {
+      input.addEventListener("input", () => {
+        stored = collectTranslationInputs(card, stored);
+        writeJson(translationKey(task.id, subtaskId), stored);
+      });
+    });
+
+    card.querySelector(".hint-button").addEventListener("click", () => {
+      const hints = normalizeList(subtask.hints);
+      visibleHintCount = Math.min(visibleHintCount + 1, hints.length);
+      renderHints(card.querySelector(".hint-list"), hints.slice(0, visibleHintCount));
+      const button = card.querySelector(".hint-button");
+      button.textContent = visibleHintCount >= hints.length ? "Alle Hilfen sichtbar" : "Weitere Hilfe anzeigen";
+      button.disabled = visibleHintCount >= hints.length;
+    });
+
+    card.querySelector(".translation-check-button").addEventListener("click", () => {
+      stored = collectTranslationInputs(card, stored);
+      writeJson(translationKey(task.id, subtaskId), stored);
+      lastResult = checkTranslationStructure(stored, items);
+      state.checks[checkKey(task.id, subtaskId)] = lastResult;
+      writeJson(`${STORAGE_PREFIX}_checks`, state.checks);
+      renderTranslationFeedback(feedback, lastResult);
+      render();
+    });
+
+    card.querySelector(".translation-solution-button").addEventListener("click", () => {
+      renderTranslationSolution(card.querySelector(".solution-box"), items, functions, subtask.apeSolution || {});
+    });
+
+    card.querySelector(".translation-reset-button").addEventListener("click", () => {
+      stored = defaultTranslationInputs(items);
+      selectedFunction = "";
+      lastResult = null;
+      localStorage.removeItem(translationKey(task.id, subtaskId));
+      delete state.checks[checkKey(task.id, subtaskId)];
+      writeJson(`${STORAGE_PREFIX}_checks`, state.checks);
+      feedback.classList.add("hidden");
+      card.querySelector(".hint-list").classList.add("hidden");
+      visibleHintCount = 0;
+      const hintButton = card.querySelector(".hint-button");
+      hintButton.textContent = "Hilfe anzeigen";
+      hintButton.disabled = false;
+      render();
+    });
+
+    function persistAndRender() {
+      writeJson(translationKey(task.id, subtaskId), collectTranslationInputs(card, stored));
+      stored = readJson(translationKey(task.id, subtaskId), defaultTranslationInputs(items));
+      render();
+    }
+
+    function render() {
+      const assignedFunctions = new Set(Object.values(stored.functions || {}));
+      tbody.innerHTML = "";
+      items.forEach((item) => {
+        const number = String(item.number);
+        const functionId = stored.functions[number] || "";
+        const rowResult = lastResult && lastResult.rows[number];
+        const tr = document.createElement("tr");
+        if (rowResult) {
+          tr.classList.add(rowResult.structureCorrect ? "structure-correct" : "structure-incorrect");
+          tr.classList.add(rowResult.functionCorrect ? "function-correct" : "function-incorrect");
+        }
+        tr.innerHTML = `
+          <th scope="row">${escapeHtml(number)}</th>
+          <td><input class="translation-structure-input transcription-structure-input" data-number="${escapeHtml(number)}" type="text" value="${escapeHtml((stored.structures && stored.structures[number]) || "")}" autocomplete="off"></td>
+          <td><button class="function-drop" type="button" data-number="${escapeHtml(number)}">${functionId ? renderFunctionCardText(functionId, functions) : '<span class="drop-placeholder">Funktion hier ablegen</span>'}</button></td>
+        `;
+        tr.querySelector(".translation-structure-input").addEventListener("input", () => {
+          stored = collectTranslationInputs(card, stored);
+          writeJson(translationKey(task.id, subtaskId), stored);
+        });
+        const drop = tr.querySelector(".function-drop");
+        drop.addEventListener("dragover", (event) => event.preventDefault());
+        drop.addEventListener("drop", (event) => {
+          event.preventDefault();
+          const droppedId = event.dataTransfer.getData("text/plain");
+          if (droppedId) {
+            assignValue(stored.functions, number, droppedId);
+            persistAndRender();
+          }
+        });
+        drop.addEventListener("click", () => {
+          if (selectedFunction) {
+            assignValue(stored.functions, number, selectedFunction);
+            selectedFunction = "";
+            persistAndRender();
+          } else if (stored.functions[number]) {
+            delete stored.functions[number];
+            persistAndRender();
+          }
+        });
+        tbody.append(tr);
+      });
+
+      bank.innerHTML = "<h4>Funktionskarten</h4>";
+      const list = document.createElement("div");
+      list.className = "function-card-list";
+      functions.filter((fn) => !assignedFunctions.has(fn.id)).forEach((fn) => {
+        const chip = createDraggableChip(fn.id, selectedFunction, () => {
+          selectedFunction = selectedFunction === fn.id ? "" : fn.id;
+          render();
+        });
+        chip.classList.add("function-card");
+        chip.innerHTML = `<strong>${escapeHtml(fn.id)}</strong> ${escapeHtml(fn.text)}`;
+        list.append(chip);
+      });
+      if (!list.children.length) {
+        const empty = document.createElement("p");
+        empty.className = "muted-small";
+        empty.textContent = "Alle Funktionen sind zugeordnet.";
+        list.append(empty);
+      }
+      bank.append(list);
+    }
+
+    render();
+    return card;
+  }
+
+  function renderTranslationProcessSubtask(task, subtask, subtaskId, index) {
+    const card = document.createElement("article");
+    card.className = "subtask-card";
+    card.dataset.subtaskId = subtaskId;
+
+    const storedAnswer = localStorage.getItem(answerKey(task.id, subtaskId)) || "";
+    let visibleHintCount = 0;
+    const hints = normalizeList(subtask.hints);
+
+    card.innerHTML = `
+      <p class="operator">${escapeHtml(subtask.operator || "Aufgabe")}</p>
+      <h3>${escapeHtml(subtask.title || `Teilaufgabe ${index + 1}`)}</h3>
+      <p class="task-prompt">${escapeHtml(subtask.task || "")}</p>
+      ${subtask.hintText ? `<p class="drag-note">${escapeHtml(subtask.hintText)}</p>` : ""}
+      <textarea class="answer-field large-answer-field" aria-label="Antwort zu ${escapeHtml(subtask.title || `Teilaufgabe ${index + 1}`)}" placeholder="Formulieren Sie hier Ihre Erläuterung in 6 bis 10 Sätzen.">${escapeHtml(storedAnswer)}</textarea>
+      <div class="button-row">
+        <button class="primary-button translation-process-check-button" type="button">Antwort prüfen</button>
+        <button class="secondary-button hint-button" type="button">Hilfe anzeigen</button>
+        <button class="ghost-button expectation-button" type="button">Erwartungshorizont anzeigen</button>
+        <button class="ghost-button solution-button" type="button">Musterlösung anzeigen</button>
+        <button class="secondary-button reset-button" type="button">Zurücksetzen</button>
+      </div>
+      <div class="hint-list hidden" aria-live="polite"></div>
+      <div class="feedback hidden" aria-live="polite"></div>
+      <div class="reveal-box expectation-box hidden"></div>
+      <div class="reveal-box solution-box hidden"></div>
+    `;
+
+    const answerField = card.querySelector(".answer-field");
+    answerField.addEventListener("input", () => localStorage.setItem(answerKey(task.id, subtaskId), answerField.value));
+
+    card.querySelector(".translation-process-check-button").addEventListener("click", () => {
+      const result = checkTranslationProcess(answerField.value);
+      state.checks[checkKey(task.id, subtaskId)] = result;
+      writeJson(`${STORAGE_PREFIX}_checks`, state.checks);
+      localStorage.setItem(answerKey(task.id, subtaskId), answerField.value);
+      renderTranscriptionProcessFeedback(card.querySelector(".feedback"), result);
+    });
+    card.querySelector(".hint-button").addEventListener("click", () => {
+      visibleHintCount = Math.min(visibleHintCount + 1, hints.length);
+      renderHints(card.querySelector(".hint-list"), hints.slice(0, visibleHintCount));
+      const button = card.querySelector(".hint-button");
+      button.textContent = visibleHintCount >= hints.length ? "Alle Hilfen sichtbar" : "Weitere Hilfe anzeigen";
+      button.disabled = visibleHintCount >= hints.length;
+    });
+    card.querySelector(".expectation-button").addEventListener("click", () => {
+      toggleReveal(card.querySelector(".expectation-box"), "Erwartungshorizont", normalizeList(subtask.expectationHorizon));
+    });
+    card.querySelector(".solution-button").addEventListener("click", () => {
+      toggleReveal(card.querySelector(".solution-box"), "Musterlösung", subtask.sampleSolution || "");
+    });
+    card.querySelector(".reset-button").addEventListener("click", () => {
+      answerField.value = "";
+      localStorage.removeItem(answerKey(task.id, subtaskId));
+      delete state.checks[checkKey(task.id, subtaskId)];
+      writeJson(`${STORAGE_PREFIX}_checks`, state.checks);
+      resetReveals(card);
+      visibleHintCount = 0;
+    });
+    return card;
+  }
+
+  function renderAminoAcidSequenceSubtask(task, subtask, subtaskId, index) {
+    const card = document.createElement("article");
+    card.className = "subtask-card";
+    card.dataset.subtaskId = subtaskId;
+    const stored = readJson(aminoSequenceKey(task.id, subtaskId), defaultAminoSequenceInputs(subtask.codons));
+    let visibleHintCount = 0;
+    const hints = normalizeList(subtask.hints);
+
+    card.innerHTML = `
+      <p class="operator">${escapeHtml(subtask.operator || "Aufgabe")}</p>
+      <h3>${escapeHtml(subtask.title || `Teilaufgabe ${index + 1}`)}</h3>
+      <article class="material-card inline-material">
+        <h4>${escapeHtml((subtask.material && subtask.material.title) || "Material")}</h4>
+        <img class="material-image codesun-image" src="${escapeHtml((subtask.material && subtask.material.src) || "")}" alt="${escapeHtml((subtask.material && subtask.material.alt) || "")}">
+        <p class="credit">Bildnachweis: siehe CREDITS.md</p>
+      </article>
+      <div class="sequence-box prominent-sequence">${escapeHtml(subtask.sequenceMaterial || "")}</div>
+      <div class="amino-acid-reference"></div>
+      <p class="task-prompt">${escapeHtml(subtask.task || "")}</p>
+      ${subtask.hintText ? `<p class="drag-note">${escapeHtml(subtask.hintText)}</p>` : ""}
+      <div class="compare-table-wrap">
+        <table class="compare-table amino-input-table">
+          <thead><tr><th>Codon der mRNA</th><th>Aminosäure (3-Buchstaben-Abkürzung)</th><th>vollständiger Name</th></tr></thead>
+          <tbody>${renderAminoInputRows(subtask.codons, stored)}</tbody>
+        </table>
+      </div>
+      <div class="button-row">
+        <button class="primary-button amino-check-button" type="button">Antwort prüfen</button>
+        <button class="secondary-button hint-button" type="button">Hilfe anzeigen</button>
+        <button class="ghost-button expectation-button" type="button">Erwartungshorizont anzeigen</button>
+        <button class="ghost-button solution-button" type="button">Musterlösung anzeigen</button>
+        <button class="secondary-button reset-button" type="button">Zurücksetzen</button>
+      </div>
+      <div class="hint-list hidden" aria-live="polite"></div>
+      <div class="feedback hidden" aria-live="polite"></div>
+      <div class="reveal-box expectation-box hidden"></div>
+      <div class="reveal-box solution-box hidden"></div>
+    `;
+
+    const image = card.querySelector(".codesun-image");
+    image.addEventListener("error", () => {
+      const fallback = document.createElement("div");
+      fallback.className = "image-fallback";
+      fallback.textContent = `Bild konnte nicht geladen werden: ${(subtask.material && subtask.material.alt) || "Codesonne"}`;
+      image.replaceWith(fallback);
+    });
+    renderAminoAcidReference(card.querySelector(".amino-acid-reference"));
+
+    const save = () => writeJson(aminoSequenceKey(task.id, subtaskId), collectAminoSequenceInputs(card, subtask.codons));
+    card.querySelectorAll(".amino-input").forEach((input) => input.addEventListener("input", save));
+    card.querySelector(".amino-check-button").addEventListener("click", () => {
+      const inputs = collectAminoSequenceInputs(card, subtask.codons);
+      const result = checkAminoAcidSequence(inputs, subtask.codons);
+      state.checks[checkKey(task.id, subtaskId)] = result;
+      writeJson(`${STORAGE_PREFIX}_checks`, state.checks);
+      writeJson(aminoSequenceKey(task.id, subtaskId), inputs);
+      renderAminoSequenceFeedback(card.querySelector(".feedback"), result);
+    });
+    card.querySelector(".hint-button").addEventListener("click", () => {
+      visibleHintCount = Math.min(visibleHintCount + 1, hints.length);
+      renderHints(card.querySelector(".hint-list"), hints.slice(0, visibleHintCount));
+      const button = card.querySelector(".hint-button");
+      button.textContent = visibleHintCount >= hints.length ? "Alle Hilfen sichtbar" : "Weitere Hilfe anzeigen";
+      button.disabled = visibleHintCount >= hints.length;
+    });
+    card.querySelector(".expectation-button").addEventListener("click", () => toggleReveal(card.querySelector(".expectation-box"), "Erwartungshorizont", subtask.expectationHorizon));
+    card.querySelector(".solution-button").addEventListener("click", () => renderAminoSolution(card.querySelector(".solution-box"), subtask));
+    card.querySelector(".reset-button").addEventListener("click", () => {
+      card.querySelectorAll(".amino-input").forEach((input) => { input.value = ""; });
+      localStorage.removeItem(aminoSequenceKey(task.id, subtaskId));
+      delete state.checks[checkKey(task.id, subtaskId)];
+      writeJson(`${STORAGE_PREFIX}_checks`, state.checks);
+      resetReveals(card);
+      visibleHintCount = 0;
+    });
+    return card;
+  }
+
+  function renderTranslationErrorSubtask(task, subtask, subtaskId, index) {
+    const card = document.createElement("article");
+    card.className = "subtask-card";
+    card.dataset.subtaskId = subtaskId;
+    const storedAnswer = localStorage.getItem(answerKey(task.id, subtaskId)) || "";
+    let visibleHintCount = 0;
+    const hints = normalizeList(subtask.hints);
+    card.innerHTML = `
+      <p class="operator">${escapeHtml(subtask.operator || "Aufgabe")}</p>
+      <h3>${escapeHtml(subtask.title || `Teilaufgabe ${index + 1}`)}</h3>
+      <div class="student-solution-box"><strong>Schülerlösung</strong><p>${escapeHtml(subtask.studentSolution || "")}</p></div>
+      <p class="task-prompt">${escapeHtml(subtask.task || "")}</p>
+      <textarea class="answer-field large-answer-field">${escapeHtml(storedAnswer)}</textarea>
+      <div class="button-row">
+        <button class="primary-button translation-error-check-button" type="button">Antwort prüfen</button>
+        <button class="secondary-button hint-button" type="button">Hilfe anzeigen</button>
+        <button class="ghost-button expectation-button" type="button">Erwartungshorizont anzeigen</button>
+        <button class="ghost-button solution-button" type="button">Musterlösung anzeigen</button>
+        <button class="secondary-button reset-button" type="button">Zurücksetzen</button>
+      </div>
+      <div class="hint-list hidden" aria-live="polite"></div>
+      <div class="feedback hidden" aria-live="polite"></div>
+      <div class="reveal-box expectation-box hidden"></div>
+      <div class="reveal-box solution-box hidden"></div>
+    `;
+    const answerField = card.querySelector(".answer-field");
+    answerField.addEventListener("input", () => localStorage.setItem(answerKey(task.id, subtaskId), answerField.value));
+    card.querySelector(".translation-error-check-button").addEventListener("click", () => {
+      const result = checkTranslationError(answerField.value);
+      state.checks[checkKey(task.id, subtaskId)] = result;
+      writeJson(`${STORAGE_PREFIX}_checks`, state.checks);
+      localStorage.setItem(answerKey(task.id, subtaskId), answerField.value);
+      renderSimpleCriterionFeedback(card.querySelector(".feedback"), result);
+    });
+    card.querySelector(".hint-button").addEventListener("click", () => {
+      visibleHintCount = Math.min(visibleHintCount + 1, hints.length);
+      renderHints(card.querySelector(".hint-list"), hints.slice(0, visibleHintCount));
+      const button = card.querySelector(".hint-button");
+      button.textContent = visibleHintCount >= hints.length ? "Alle Hilfen sichtbar" : "Weitere Hilfe anzeigen";
+      button.disabled = visibleHintCount >= hints.length;
+    });
+    card.querySelector(".expectation-button").addEventListener("click", () => toggleReveal(card.querySelector(".expectation-box"), "Erwartungshorizont", subtask.expectationHorizon));
+    card.querySelector(".solution-button").addEventListener("click", () => toggleReveal(card.querySelector(".solution-box"), "Musterlösung", subtask.sampleSolution || ""));
+    card.querySelector(".reset-button").addEventListener("click", () => {
+      answerField.value = "";
+      localStorage.removeItem(answerKey(task.id, subtaskId));
+      delete state.checks[checkKey(task.id, subtaskId)];
+      writeJson(`${STORAGE_PREFIX}_checks`, state.checks);
+      resetReveals(card);
+      visibleHintCount = 0;
+    });
+    return card;
+  }
+
+  function defaultCompareInputs() {
+    return {
+      leftSugar: "",
+      rightSugar: "",
+      difference: "",
+      table: {
+        sugar: { dna: "", rna: "" },
+        bases: { dna: "", rna: "" },
+        structure: { dna: "", rna: "" },
+        function: { dna: "", rna: "" }
+      }
+    };
+  }
+
+  function defaultTranscriptionInputs(items) {
+    const structures = {};
+    const functions = {};
+    normalizeList(items).forEach((item) => {
+      structures[String(item.number)] = "";
+      functions[String(item.number)] = "";
+    });
+    return { structures, functions };
+  }
+
+  function defaultTranslationInputs(items) {
+    const base = defaultTranscriptionInputs(items);
+    return { ...base, ape: { a: "", p: "", e: "" } };
+  }
+
+  function defaultAminoSequenceInputs(codons) {
+    const rows = {};
+    normalizeList(codons).forEach((item) => {
+      rows[item.codon] = { abbr3: "", fullName: "" };
+    });
+    return { rows };
+  }
+
+  function renderAminoInputRows(codons, stored) {
+    return normalizeList(codons).map((item) => {
+      const row = (stored.rows && stored.rows[item.codon]) || { abbr3: "", fullName: "" };
+      return `<tr><th scope="row">${escapeHtml(item.codon)}</th><td><input class="compare-input amino-input" data-codon="${escapeHtml(item.codon)}" data-field="abbr3" value="${escapeHtml(row.abbr3)}"></td><td><input class="compare-input amino-input" data-codon="${escapeHtml(item.codon)}" data-field="fullName" value="${escapeHtml(row.fullName)}"></td></tr>`;
+    }).join("");
+  }
+
+  function collectAminoSequenceInputs(card, codons) {
+    const inputs = defaultAminoSequenceInputs(codons);
+    card.querySelectorAll(".amino-input").forEach((input) => {
+      inputs.rows[input.dataset.codon][input.dataset.field] = input.value;
+    });
+    return inputs;
+  }
+
+  function renderAminoAcidReference(container) {
+    fetchJson("data/aminoAcids.json").then((items) => {
+      const rows = normalizeList(items).map((item) => `<tr><td>${escapeHtml(item.abbr3)}</td><td>${escapeHtml(item.fullName)}</td></tr>`).join("");
+      container.innerHTML = `<h4>Aminosäure-Abkürzungen</h4><div class="compare-table-wrap"><table class="amino-reference-table"><thead><tr><th>3-Buchstaben-Abkürzung</th><th>vollständiger Name</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+    }).catch(() => {
+      container.innerHTML = "";
+    });
+  }
+
+  function checkAminoAcidSequence(inputs, codons) {
+    const codonFeedback = [];
+    const pitfalls = [];
+    let abbrCorrect = 0;
+    let nameCorrect = 0;
+    normalizeList(codons).forEach((item) => {
+      const row = (inputs.rows && inputs.rows[item.codon]) || {};
+      const abbrOk = item.codon === "UGA" ? isStopAnswer(row.abbr3) : normalizeText(row.abbr3).trim() === normalizeText(item.abbr3).trim();
+      const nameOk = item.codon === "UGA" ? isStopAnswer(row.fullName) : normalizeText(row.fullName).trim() === normalizeText(item.fullName).trim();
+      if (abbrOk) abbrCorrect += 1;
+      if (nameOk) nameCorrect += 1;
+      codonFeedback.push(`${item.codon}: Abkürzung ${abbrOk ? "passend" : "noch prüfen"}, vollständiger Name ${nameOk ? "passend" : "noch prüfen"}`);
+    });
+    if (abbrCorrect + nameCorrect < 8) {
+      pitfalls.push("Prüfen Sie, ob Sie die Codesonne mit den Codons der mRNA verwendet haben.");
+    }
+    return { date: new Date().toISOString(), codonFeedback, pitfalls, abbrCorrect, nameCorrect, inputs };
+  }
+
+  function isStopAnswer(value) {
+    const text = normalizeText(value).trim();
+    return ["stopp", "stop", "stoppcodon", "stopcodon", "keine", "keine aminosaure", "keine aminosäure", "-"].includes(text);
+  }
+
+  function renderAminoSequenceFeedback(container, result) {
+    container.classList.remove("hidden");
+    container.innerHTML = `
+      <p class="notice">Dieser Check ersetzt keine Bewertung. Er zeigt dir nur, welche fachlichen Aspekte du noch einmal überprüfen solltest.</p>
+      <p>Mehrere Codons wurden korrekt zugeordnet. Prüfen Sie noch einmal, wie mit dem Stoppcodon umzugehen ist.</p>
+      <div class="feedback-section"><h4>Codons und Aminosäuren</h4>${renderList(result.codonFeedback)}</div>
+      <div class="feedback-section"><h4>Mögliche fachliche Stolperstellen</h4>${renderList(result.pitfalls.length ? result.pitfalls : ["Keine typische Stolperstelle wurde automatisch erkannt."])}</div>
+    `;
+  }
+
+  function renderAminoSolution(container, subtask) {
+    container.classList.toggle("hidden");
+    if (container.classList.contains("hidden")) return;
+    const rows = normalizeList(subtask.codons).map((item) => `<tr><th scope="row">${escapeHtml(item.codon)}</th><td>${escapeHtml(item.abbr3)}</td><td>${escapeHtml(item.fullName)}</td></tr>`).join("");
+    container.innerHTML = `<h4>Musterlösung</h4><div class="compare-table-wrap"><table class="compare-table solution-table"><thead><tr><th>Codon</th><th>3-Buchstaben-Abkürzung</th><th>vollständiger Name</th></tr></thead><tbody>${rows}</tbody></table></div><p><strong>Aminosäuresequenz:</strong> Met – Ala – Phe – Pro – Asn</p><p>Methionin – Alanin – Phenylalanin – Prolin – Asparagin</p>`;
+  }
+
+  function checkTranslationError(answer) {
+    const text = normalizeTranslationText(answer);
+    const recognized = [];
+    const missing = [];
+    const pitfalls = [];
+    addCheck({ recognized, missing }, text.includes("mrna") && (text.includes("nicht dna") || text.includes("dna ist falsch") || text.includes("ribosom")), "mRNA statt DNA als Vorlage wird korrigiert.", "Prüfen Sie, welches Molekül bei der Translation am Ribosom abgelesen wird: die mRNA, nicht die DNA.");
+    addCheck({ recognized, missing }, text.includes("codon") && text.includes("anticodon") && text.includes("mrna") && text.includes("trna"), "Codon und Anticodon werden unterschieden.", "Ergänzen Sie den Unterschied zwischen Codon und Anticodon: Das Codon liegt auf der mRNA, das Anticodon auf der tRNA.");
+    addCheck({ recognized, missing }, text.includes("codesonne") && text.includes("mrna") && text.includes("codon"), "Codesonne mit mRNA-Codons wird genannt.", "Ergänzen Sie, dass die Codesonne mit den Codons der mRNA verwendet wird.");
+    addCheck({ recognized, missing }, text.includes("trna") && (text.includes("aminosaure") || text.includes("aminosäure")) && (text.includes("bringt") || text.includes("transportiert")), "Die tRNA-Funktion wird korrigiert.", "Prüfen Sie die Funktion der tRNA: Sie bringt eine passende Aminosäure zum Ribosom.");
+    addCheck({ recognized, missing }, hasStopCodon(text) && (text.includes("keine aminosaure") || text.includes("keine aminosäure") || text.includes("nicht fur eine aminosaure") || text.includes("nicht für eine aminosäure")) && text.includes("beendet"), "Stoppcodon wird korrekt erklärt.", "Ergänzen Sie die Funktion des Stoppcodons: Es codiert nicht für eine Aminosäure, sondern beendet die Translation.");
+    if (text.includes("dna") && text.includes("abgelesen") && !text.includes("nicht dna")) pitfalls.push("Achten Sie auf die Vorlage der Translation: Abgelesen wird die mRNA, nicht die DNA.");
+    if (hasStopCodon(text) && text.includes("codiert") && (text.includes("aminosaure") || text.includes("aminosäure")) && !text.includes("nicht")) pitfalls.push("Prüfen Sie die Funktion des Stoppcodons: Es codiert nicht für eine Aminosäure.");
+    return { date: new Date().toISOString(), recognized, missing, pitfalls, answerLength: answer.trim().length };
+  }
+
+  function collectTranslationInputs(card, stored) {
+    const next = {
+      structures: { ...(stored.structures || {}) },
+      functions: { ...(stored.functions || {}) },
+      ape: { ...(stored.ape || { a: "", p: "", e: "" }) }
+    };
+    card.querySelectorAll(".translation-structure-input").forEach((input) => {
+      next.structures[input.dataset.number] = input.value;
+    });
+    card.querySelectorAll(".ape-input").forEach((input) => {
+      next.ape[input.dataset.site] = input.value;
+    });
+    return next;
+  }
+
+  function checkTranslationStructure(inputs, items) {
+    const rows = {};
+    let structureCorrect = 0;
+    let functionCorrect = 0;
+    const vagueHints = [];
+    normalizeList(items).forEach((item) => {
+      const number = String(item.number);
+      const entered = (inputs.structures && inputs.structures[number]) || "";
+      const normalizedEntered = normalizeStructureTerm(entered);
+      const isVague = normalizeList(item.vague).some((vague) => normalizedEntered === normalizeStructureTerm(vague));
+      const isStructureCorrect = normalizeList(item.accepted).some((accepted) => normalizedEntered === normalizeStructureTerm(accepted));
+      const assignedFunction = (inputs.functions && inputs.functions[number]) || "";
+      const isFunctionCorrect = assignedFunction === item.functionId;
+      if (isStructureCorrect) structureCorrect += 1;
+      if (isFunctionCorrect) functionCorrect += 1;
+      if (isVague) vagueHints.push(`Nr. ${number}: Präzisieren Sie, ob die kleine oder große ribosomale Untereinheit gemeint ist.`);
+      rows[number] = { entered, assignedFunction, expectedStructure: item.structure, expectedFunction: item.functionId, structureCorrect: isStructureCorrect, functionCorrect: isFunctionCorrect, isVague };
+    });
+    return {
+      date: new Date().toISOString(),
+      structureCorrect,
+      functionCorrect,
+      total: normalizeList(items).length,
+      rows,
+      vagueHints,
+      ape: checkApeSites(inputs.ape || {})
+    };
+  }
+
+  function checkApeSites(ape) {
+    const result = {
+      recognized: [],
+      missing: [],
+      styleHints: []
+    };
+    const a = normalizeText(ape.a || "");
+    const p = normalizeText(ape.p || "");
+    const e = normalizeText(ape.e || "");
+    addCheck(result, a.includes("trna") && (a.includes("aminosaure") || a.includes("aminosäure")), "A-Stelle: passende tRNA mit Aminosäure ist erkennbar.", "Prüfen Sie die A-Stelle: Dort bindet die nächste passende tRNA mit ihrer Aminosäure.");
+    addCheck(result, p.includes("trna") && (p.includes("polypeptid") || p.includes("aminosaurekette") || p.includes("aminosäurekette") || p.includes("wachsend")), "P-Stelle: tRNA mit wachsender Polypeptidkette ist erkennbar.", "Prüfen Sie die P-Stelle: Dort befindet sich die tRNA mit der wachsenden Polypeptidkette.");
+    addCheck(result, e.includes("trna") && (e.includes("verlasst") || e.includes("verlässt") || e.includes("entladen") || e.includes("abgegeben")), "E-Stelle: entladene tRNA verlässt das Ribosom.", "Prüfen Sie die E-Stelle: Dort verlässt die entladene tRNA das Ribosom.");
+    ["a", "p", "e"].forEach((site) => {
+      if (sentenceCount(ape[site] || "") > 1) result.styleHints.push(`${site.toUpperCase()}-Stelle: Formulieren Sie die Funktion möglichst knapp in einem Satz.`);
+    });
+    return result;
+  }
+
+  function sentenceCount(value) {
+    return (String(value || "").match(/[.!?]+/g) || []).length;
+  }
+
+  function renderTranslationFeedback(container, result) {
+    container.classList.remove("hidden");
+    const structureLines = Object.keys(result.rows).map((number) => {
+      const row = result.rows[number];
+      return `Nr. ${number}: Struktur ${row.structureCorrect ? "passend" : "noch prüfen"}`;
+    });
+    const functionLines = Object.keys(result.rows).map((number) => {
+      const row = result.rows[number];
+      return `Nr. ${number}: Funktion ${row.functionCorrect ? "passend" : "noch prüfen"}`;
+    });
+    container.innerHTML = `
+      <p class="notice">Dieser Check ersetzt keine Bewertung. Er zeigt dir nur, welche fachlichen Aspekte du noch einmal überprüfen solltest.</p>
+      <p>Sie haben ${result.structureCorrect} von ${result.total} Strukturen passend benannt und ${result.functionCorrect} von ${result.total} Funktionen passend zugeordnet.</p>
+      <div class="feedback-section"><h4>Strukturen benennen</h4>${renderList([...structureLines, ...result.vagueHints])}</div>
+      <div class="feedback-section"><h4>Funktionen zuordnen</h4>${renderList(functionLines)}</div>
+      <div class="feedback-section"><h4>A-, P- und E-Stelle</h4><strong>Das ist bereits erkennbar</strong>${renderList(result.ape.recognized.length ? result.ape.recognized : ["Noch kein Aspekt wurde sicher automatisch erkannt."])}<strong>Das solltest du noch prüfen oder ergänzen</strong>${renderList(result.ape.missing.length ? result.ape.missing : ["Der Check erkennt hier keine offenen Ergänzungen."])}${result.ape.styleHints.length ? `<strong>Formulierung</strong>${renderList(result.ape.styleHints)}` : ""}</div>
+    `;
+  }
+
+  function renderTranslationSolution(container, items, functions, apeSolution) {
+    container.classList.toggle("hidden");
+    if (container.classList.contains("hidden")) return;
+    const rows = normalizeList(items).map((item) => {
+      const fn = normalizeList(functions).find((entry) => entry.id === item.functionId);
+      return `<tr><th scope="row">${escapeHtml(item.number)}</th><td>${escapeHtml(item.structure)}</td><td>${escapeHtml(fn ? fn.text : "")}</td></tr>`;
+    }).join("");
+    container.innerHTML = `
+      <h4>Musterlösung</h4>
+      <div class="transcription-table-wrap">
+        <table class="transcription-table solution-table">
+          <thead><tr><th>Nummer</th><th>Struktur</th><th>Funktion</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+      <h4>A-, P- und E-Stelle</h4>
+      <p><strong>A-Stelle:</strong> ${escapeHtml(apeSolution.a || "")}</p>
+      <p><strong>P-Stelle:</strong> ${escapeHtml(apeSolution.p || "")}</p>
+      <p><strong>E-Stelle:</strong> ${escapeHtml(apeSolution.e || "")}</p>
+    `;
+  }
+
+  function checkTranscriptionProcess(answer) {
+    const text = normalizeProcessText(answer);
+    const recognized = [];
+    const missing = [];
+    const pitfalls = [];
+
+    addCheck(
+      { recognized, missing },
+      includesAll(text, ["dna", "mrna"]) && hasAnyText(text, ["umschreib", "abschreib", "transkrib", "gebildet", "entsteht"]),
+      "Transkription als Umschreiben eines DNA-Abschnitts in mRNA ist erkennbar.",
+      "Ergänzen Sie, dass bei der Transkription ein DNA-Abschnitt in mRNA umgeschrieben wird."
+    );
+    addCheck(
+      { recognized, missing },
+      text.includes("proteinbiosynthese"),
+      "Transkription wird in den Zusammenhang der Proteinbiosynthese eingeordnet.",
+      "Prüfen Sie, ob Sie Transkription als Teilprozess der Proteinbiosynthese einordnen."
+    );
+    addCheck(
+      { recognized, missing },
+      text.includes("zellkern"),
+      "Der Zellkern als Ort bei Eukaryoten wird genannt.",
+      "Ergänzen Sie den Ort bei Eukaryoten: Die Transkription findet im Zellkern statt."
+    );
+
+    const hasRnaPolymerase = hasAnyText(text, ["rna polymerase", "polymerase"]);
+    addCheck(
+      { recognized, missing },
+      hasRnaPolymerase,
+      "RNA-Polymerase wird als beteiligtes Enzym genannt.",
+      "Ergänzen Sie das beteiligte Enzym: die RNA-Polymerase."
+    );
+    addCheck(
+      { recognized, missing },
+      hasRnaPolymerase && hasAnyText(text, ["bindet", "offnet", "oeffnet", "synthetisiert", "bildet", "verknupft", "verknuepft"]),
+      "Die Funktion der RNA-Polymerase wird beschrieben.",
+      "Beschreiben Sie genauer, dass die RNA-Polymerase an DNA bindet, lokal öffnet und die mRNA synthetisiert."
+    );
+
+    addCheck(
+      { recognized, missing },
+      hasAnyText(text, ["codogener strang", "codogenen strang", "matrizenstrang", "template"]) && text.includes("vorlage"),
+      "Der codogene Strang bzw. Matrizenstrang wird als Vorlage benannt.",
+      "Ergänzen Sie, welcher DNA-Strang als Vorlage dient: der codogene Strang bzw. Matrizenstrang."
+    );
+
+    addCheck(
+      { recognized, missing },
+      hasAnyText(text, ["rna nukleotide", "nukleotide"]) && hasAnyText(text, ["mrna entsteht", "mrna gebildet", "mrna bildet", "transkript"]),
+      "Die Bildung der mRNA aus RNA-Nukleotiden ist erkennbar.",
+      "Ergänzen Sie, dass freie RNA-Nukleotide angelagert und zu einer mRNA verknüpft werden."
+    );
+    addCheck(
+      { recognized, missing },
+      text.includes("mrna") && hasAnyText(text, ["lost sich", "loest sich", "verlasst", "verlaesst"]),
+      "Das Lösen der mRNA von der DNA am Ende wird genannt.",
+      "Ergänzen Sie, dass sich die mRNA am Ende von der DNA löst."
+    );
+
+    addCheck(
+      { recognized, missing },
+      text.includes("komplement") || text.includes("basenpaarung"),
+      "Komplementäre Bildung bzw. Basenpaarung wird genannt.",
+      "Ergänzen Sie, dass die mRNA komplementär zum codogenen Strang gebildet wird."
+    );
+    addCheck(
+      { recognized, missing },
+      hasBasePairing(text),
+      "Die Basenpaarung A-U und G-C ist erkennbar.",
+      "Prüfen Sie, ob Sie die Basenpaarung A-U und G-C genau genug genannt haben."
+    );
+    addCheck(
+      { recognized, missing },
+      text.includes("uracil") && hasAnyText(text, ["statt thymin", "anstelle thymin", "kein thymin"]),
+      "Uracil statt Thymin in RNA wird erklärt.",
+      "Ergänzen Sie, dass in RNA Uracil statt Thymin verwendet wird."
+    );
+
+    addCheck(
+      { recognized, missing },
+      hasFiveToThree(text),
+      "Die Syntheserichtung 5'→3' wird genannt.",
+      "Als fachliche Ergänzung können Sie die Syntheserichtung nennen: Die mRNA wird in 5'→3'-Richtung gebildet."
+    );
+
+    if (text.includes("dna polymerase")) {
+      pitfalls.push("Prüfen Sie das beteiligte Enzym: Bei der Transkription ist die RNA-Polymerase beteiligt, nicht die DNA-Polymerase.");
+    }
+    if (hasMrnaThyminProblem(text)) {
+      pitfalls.push("Prüfen Sie die Basen der mRNA: In RNA kommt Uracil statt Thymin vor.");
+    }
+    if (hasTranslationMixup(text)) {
+      pitfalls.push("Achten Sie darauf, Transkription und Translation zu trennen: Bei der Transkription entsteht zunächst mRNA. Die Bildung der Aminosäurekette findet erst bei der Translation statt.");
+    }
+
+    return {
+      date: new Date().toISOString(),
+      recognized,
+      missing,
+      pitfalls,
+      summary: buildTranscriptionProcessSummary(recognized.length, missing.length, pitfalls.length),
+      answerLength: answer.trim().length
+    };
+  }
+
+  function normalizeProcessText(value) {
+    return normalizeText(value)
+      .replace(/-/g, " ")
+      .replace(/[→–—]/g, " ")
+      .replace(/['’´`]/g, "'")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function includesAll(text, terms) {
+    return terms.every((term) => text.includes(term));
+  }
+
+  function hasAnyText(text, terms) {
+    return terms.some((term) => text.includes(term));
+  }
+
+  function hasBasePairing(text) {
+    const compact = text.replace(/\s+/g, "");
+    const au = compact.includes("a-u") || compact.includes("au") || text.includes("adenin uracil") || text.includes("adenin paart mit uracil");
+    const gc = compact.includes("g-c") || compact.includes("gc") || text.includes("guanin cytosin") || text.includes("guanin paart mit cytosin");
+    return au && gc;
+  }
+
+  function hasFiveToThree(text) {
+    const compact = text.replace(/\s+/g, "");
+    return compact.includes("5'3'") || compact.includes("5zu3") || compact.includes("5nach3") || compact.includes("5-3") || compact.includes("5→3") || (text.includes("5") && text.includes("3") && text.includes("richtung"));
+  }
+
+  function hasMrnaThyminProblem(text) {
+    return text.includes("mrna") && (text.includes("thymin") || /\bt\b/.test(text)) && !text.includes("statt thymin") && !text.includes("kein thymin");
+  }
+
+  function hasTranslationMixup(text) {
+    const translationTerms = ["ribosom", "trna", "aminosaure", "aminosäure", "aminosaurekette", "aminosäurekette", "protein", "translation"];
+    if (!hasAnyText(text, translationTerms)) {
+      return false;
+    }
+    const laterSignals = ["anschliessend", "anschließend", "spater", "später", "danach", "nach der transkription", "bei der translation", "fur die translation", "für die translation"];
+    return !hasAnyText(text, laterSignals);
+  }
+
+  function buildTranscriptionProcessSummary(recognizedCount, missingCount, pitfallCount) {
+    if (recognizedCount >= 7 && missingCount <= 2 && pitfallCount === 0) {
+      return "Mehrere zentrale Aspekte sind bereits erkennbar. Prüfen Sie nur noch, ob einzelne fachliche Details präzise genug formuliert sind.";
+    }
+    if (recognizedCount >= 4) {
+      return "Mehrere zentrale Aspekte sind bereits erkennbar. Prüfen Sie noch, ob Sie den codogenen Strang, die Basenpaarung und die mRNA-Bildung genau genug erklärt haben.";
+    }
+    return "Einige Ansatzpunkte sind erkennbar. Ergänzen Sie noch die zentralen Schritte der Transkription in einer klaren Reihenfolge.";
+  }
+
+  function renderTranscriptionProcessFeedback(container, result) {
+    container.classList.remove("hidden");
+    container.innerHTML = `
+      <p class="notice">Dieser Check ersetzt keine Bewertung. Er zeigt dir nur, welche fachlichen Aspekte du noch einmal überprüfen solltest.</p>
+      <p>${escapeHtml(result.summary)}</p>
+      <h4>Das ist bereits erkennbar:</h4>
+      ${renderList(result.recognized.length ? result.recognized : ["Noch kein zentraler Aspekt wurde sicher automatisch erkannt."])}
+      <h4>Das solltest du noch prüfen oder ergänzen:</h4>
+      ${renderList(result.missing.length ? result.missing : ["Der Check erkennt hier keine offenen Ergänzungen."])}
+      <h4>Mögliche fachliche Stolperstellen:</h4>
+      ${renderList(result.pitfalls.length ? result.pitfalls : ["Keine typische Stolperstelle wurde automatisch erkannt."])}
+    `;
+  }
+
+  function checkMrnaSequence(sequence, reason) {
+    const recognized = [];
+    const missing = [];
+    const pitfalls = [];
+    const seq = normalizeSequence(sequence);
+    const correct = "AUGCCUGAAUGG";
+    const baseCorrect = seq.bases === correct || hasCorrectMrnaBases(sequence);
+
+    if (baseCorrect && seq.direction !== "3to5") {
+      recognized.push("Die mRNA-Basenfolge ist korrekt.");
+      if (seq.direction === "none") {
+        missing.push("Die Basenfolge ist richtig. Zur Übersicht können Sie die mRNA in Codons/Tripletts gliedern und mit 5'→3' angeben.");
+      } else {
+        recognized.push("Die Richtung 5'→3' ist erkennbar.");
+      }
+    } else if (baseCorrect && seq.direction === "3to5") {
+      recognized.push("Die Basenfolge ist korrekt.");
+      pitfalls.push("Die Basenfolge ist richtig, aber prüfen Sie die Richtung: mRNA wird üblicherweise in 5'→3'-Richtung angegeben.");
+    } else {
+      missing.push("Prüfen Sie die komplementäre Basenpaarung zum codogenen Strang: DNA-A wird zu RNA-U, DNA-T zu RNA-A, DNA-G zu RNA-C und DNA-C zu RNA-G.");
+    }
+    if (containsThymine(sequence)) {
+      pitfalls.push("Prüfen Sie die Basen der mRNA: In RNA kommt Uracil statt Thymin vor.");
+    }
+
+    const r = normalizeProcessText(reason);
+    addCheck({ recognized, missing }, hasAnyText(r, ["codogener strang", "matrizenstrang", "vorlage"]), "Der codogene Strang wird als Vorlage benannt.", "Ergänzen Sie, dass der codogene Strang bzw. Matrizenstrang als Vorlage dient.");
+    addCheck({ recognized, missing }, r.includes("komplement") || r.includes("basenpaarung"), "Komplementäre Basenpaarung wird als Vorgehen genannt.", "Ergänzen Sie, dass die mRNA komplementär gebildet wird.");
+    addCheck({ recognized, missing }, r.includes("uracil") || r.includes("u statt t"), "Uracil statt Thymin wird erwähnt.", "Ergänzen Sie, dass RNA Uracil statt Thymin enthält.");
+    addCheck({ recognized, missing }, hasFiveToThree(r), "Die Richtung 5'→3' wird in der Begründung genannt.", "Ergänzen Sie, dass die mRNA in 5'→3'-Richtung angegeben wird.");
+
+    return { date: new Date().toISOString(), recognized, missing, pitfalls, sequence: sequence.trim(), reason: reason.trim() };
+  }
+
+  function checkTranslationProcess(answer) {
+    const text = normalizeTranslationText(answer);
+    const recognized = [];
+    const missing = [];
+    const pitfalls = [];
+
+    addCheck({ recognized, missing }, text.includes("proteinbiosynthese"), "Translation wird als Teil der Proteinbiosynthese eingeordnet.", "Ergänzen Sie, dass Translation ein Teilprozess der Proteinbiosynthese ist.");
+    addCheck({ recognized, missing }, text.includes("mrna") && hasAnyText(text, ["aminosauresequenz", "aminosäuresequenz", "ubersetzt", "übersetzt"]), "mRNA wird als Grundlage einer Aminosäuresequenz beschrieben.", "Ergänzen Sie, dass die mRNA in eine Aminosäuresequenz übersetzt wird.");
+    addCheck({ recognized, missing }, text.includes("ribosom") || text.includes("ribosomen") || text.includes("cytoplasma") || text.includes("zytoplasma"), "Ribosom bzw. Cytoplasma als Ort ist erkennbar.", "Ergänzen Sie, dass die Translation an Ribosomen stattfindet und die mRNA als Vorlage genutzt wird.");
+
+    addCheck({ recognized, missing }, text.includes("mrna") && (text.includes("vorlage") || text.includes("abgelesen") || text.includes("liest")) && text.includes("ribosom"), "mRNA wird als Vorlage am Ribosom beschrieben.", "Ergänzen Sie, dass die mRNA am Ribosom abgelesen wird.");
+    if (text.includes("dna") && text.includes("vorlage") && !text.includes("mrna")) {
+      pitfalls.push("Prüfen Sie die Vorlage der Translation: Bei der Translation wird die mRNA am Ribosom abgelesen, nicht die DNA.");
+    }
+
+    const hasBasentriplett = text.includes("basentriplett");
+    const hasTriplettOnly = !hasBasentriplett && text.includes("triplett");
+    addCheck({ recognized, missing }, hasBasentriplett && text.includes("codon"), "Basentripletts auf der mRNA werden als Codons benannt.", hasTriplettOnly ? "Präzisieren Sie möglichst, dass es sich um ein Basentriplett handelt." : "Ergänzen Sie, dass die mRNA in Basentripletts gelesen wird und diese Basentripletts Codons heißen.");
+    if (hasTriplettOnly) pitfalls.push("Präzisieren Sie möglichst, dass es sich um ein Basentriplett handelt.");
+
+    addCheck({ recognized, missing }, text.includes("startcodon") || text.includes("aug") || text.includes("methionin"), "Startcodon AUG als Beginn der Translation ist erkennbar.", "Ergänzen Sie, dass die Translation am Startcodon AUG beginnt.");
+
+    addCheck({ recognized, missing }, text.includes("trna") && (text.includes("aminosaure") || text.includes("aminosäure")) && (text.includes("anticodon") || text.includes("antikodon")) && text.includes("codon"), "tRNA, Anticodon und komplementäres Codon werden beschrieben.", "Ergänzen Sie die Rolle der tRNA: Sie bringt Aminosäuren zum Ribosom und besitzt ein Anticodon, das komplementär zum Codon der mRNA passt.");
+    if (hasCodonAnticodonMixup(text)) {
+      pitfalls.push("Prüfen Sie den Unterschied zwischen Codon und Anticodon: Das Codon liegt auf der mRNA, das Anticodon auf der tRNA.");
+    }
+
+    addCheck({ recognized, missing }, hasAnyText(text, ["aminosaurekette", "aminosäurekette", "polypeptidkette", "peptidkette"]) || (text.includes("aminosauren") && text.includes("verknupft")) || (text.includes("aminosäuren") && text.includes("verknüpft")), "Bildung einer Aminosäurekette bzw. Polypeptidkette ist erkennbar.", "Ergänzen Sie, dass die Aminosäuren zu einer Aminosäurekette bzw. Polypeptidkette verknüpft werden.");
+
+    addCheck({ recognized, missing }, hasAnyText(text, ["ribosom bewegt sich", "wandert", "entlang der mrna", "schrittweise", "weiterliest"]), "Schrittweises Weiterlesen der mRNA wird beschrieben.", "Als Ergänzung können Sie beschreiben, dass das Ribosom die mRNA schrittweise weiterliest.");
+
+    addCheck({ recognized, missing }, hasStopCodon(text) && (text.includes("beendet") || text.includes("ende") || text.includes("freigesetzt")), "Stoppcodon und Ende der Translation werden genannt.", "Ergänzen Sie, dass ein Stoppcodon die Translation beendet und die Aminosäurekette bzw. Polypeptidkette freigesetzt wird.");
+    if (hasStopCodon(text) && (text.includes("codiert") || text.includes("steht fur") || text.includes("steht für")) && (text.includes("aminosaure") || text.includes("aminosäure")) && !text.includes("keine")) {
+      pitfalls.push("Prüfen Sie die Funktion von Stoppcodons: Stoppcodons codieren nicht für eine Aminosäure, sondern beenden die Translation.");
+    }
+
+    if ((text.includes("mrna") && text.includes("dna") && hasAnyText(text, ["gebildet", "entsteht", "synthetisiert"])) || text.includes("rna polymerase") || text.includes("codogener strang") || text.includes("transkriptionsblase") || text.includes("dna strang als vorlage")) {
+      pitfalls.push(text.includes("mrna") && text.includes("dna") && hasAnyText(text, ["gebildet", "entsteht", "synthetisiert"])
+        ? "Achten Sie darauf, Transkription und Translation zu trennen: Bei der Transkription entsteht mRNA. Bei der Translation wird die mRNA am Ribosom in eine Aminosäurekette übersetzt."
+        : "Prüfen Sie, ob Sie gerade Merkmale der Transkription beschreiben. Bei der Translation stehen mRNA, Ribosom, tRNA, Codon, Anticodon und Aminosäuren im Mittelpunkt.");
+    }
+
+    return {
+      date: new Date().toISOString(),
+      recognized,
+      missing,
+      pitfalls,
+      summary: buildTranslationProcessSummary(recognized.length, missing.length, pitfalls.length),
+      answerLength: answer.trim().length
+    };
+  }
+
+  function normalizeTranslationText(value) {
+    return normalizeText(value)
+      .replace(/-/g, " ")
+      .replace(/\s+/g, " ")
+      .replace(/aminosaeure/g, "aminosaure")
+      .trim();
+  }
+
+  function hasStopCodon(text) {
+    return text.includes("stoppcodon") || text.includes("stopcodon") || text.includes("stopp codon") || text.includes("stop codon");
+  }
+
+  function hasCodonAnticodonMixup(text) {
+    return (text.includes("codon") && text.includes("trna") && !text.includes("anticodon")) ||
+      (text.includes("anticodon") && text.includes("mrna") && !text.includes("trna"));
+  }
+
+  function buildTranslationProcessSummary(recognizedCount, missingCount, pitfallCount) {
+    if (recognizedCount >= 7 && missingCount <= 2 && pitfallCount === 0) {
+      return "Mehrere zentrale Aspekte sind bereits erkennbar. Prüfen Sie nur noch, ob Start- und Stoppcodon präzise genug erklärt sind.";
+    }
+    if (recognizedCount >= 4) {
+      return "Mehrere zentrale Aspekte sind bereits erkennbar. Prüfen Sie noch, ob Sie Startcodon, Codon/Anticodon und Stoppcodon genau genug erklärt haben.";
+    }
+    return "Einige Ansatzpunkte sind erkennbar. Ergänzen Sie noch die zentralen Schritte der Translation in einer klaren Reihenfolge.";
+  }
+
+  function checkTranscriptionError(answer) {
+    const recognized = [];
+    const missing = [];
+    const pitfalls = [];
+    const text = normalizeProcessText(answer);
+    const seq = normalizeSequence(answer);
+
+    addCheck({ recognized, missing }, hasAnyText(text, ["richtung", "falsch herum", "5 zu 3"]) || hasFiveToThree(text), "Die falsche Richtung der mRNA wird erkannt.", "Prüfen Sie, ob Sie die Richtung der angegebenen mRNA korrigiert haben.");
+    addCheck({ recognized, missing }, hasCorrectMrnaBases(answer) && (seq.direction === "5to3" || hasFiveToThree(text)), "Die korrigierte mRNA-Sequenz wird angegeben.", "Geben Sie die korrigierte mRNA-Sequenz an: `5'-AUG CCU GAA UGG-3'`.");
+    addCheck({ recognized, missing }, text.includes("uracil") && (hasAnyText(text, ["statt thymin", "kein thymin", "nicht thymin"]) || text.includes("u statt t")), "Uracil statt Thymin wird korrekt erklärt.", "Ergänzen Sie die Korrektur zur Base: RNA enthält Uracil statt Thymin.");
+    addCheck({ recognized, missing }, hasAnyText(text, ["basenfolge", "sequenz"]) && hasAnyText(text, ["grundsatzlich", "grundsätzlich", "stimmt", "passt"]) && text.includes("richtung"), "Die Basenfolge wird differenziert beurteilt.", "Sie können noch ergänzen, dass die Basenfolge grundsätzlich passt, aber die Richtungsangabe falsch ist.");
+
+    if (text.includes("rna enthalt thymin") || text.includes("mrna enthalt thymin") || text.includes("thymin statt uracil")) {
+      pitfalls.push("Achten Sie auf die RNA-Basen: RNA enthält Uracil, nicht Thymin.");
+    }
+    if (normalizeSequence(answer).direction === "3to5" && hasCorrectMrnaBases(answer)) {
+      pitfalls.push("Prüfen Sie die Richtungsangabe: Die mRNA sollte in 5'→3'-Richtung angegeben werden.");
+    }
+
+    return { date: new Date().toISOString(), recognized, missing, pitfalls, answerLength: answer.trim().length };
+  }
+
+  function normalizeSequence(value) {
+    const raw = String(value || "").toUpperCase();
+    const noNames = raw.replace(/THYMIN/g, "T").replace(/URACIL/g, "U");
+    const bases = (noNames.match(/[AUGCT]/g) || []).join("").replace(/T/g, "T");
+    const compact = noNames.replace(/\s+/g, "").replace(/[’´`]/g, "'");
+    let direction = "none";
+    if (/5'?[- ]*[AUGCU\s-]+[- ]*3'?/.test(compact)) direction = "5to3";
+    if (/3'?[- ]*[AUGCU\s-]+[- ]*5'?/.test(compact)) direction = "3to5";
+    return { bases: bases.replace(/[^AUGC]/g, ""), direction };
+  }
+
+  function hasCorrectMrnaBases(value) {
+    return /A[^A-Z]*U[^A-Z]*G[^A-Z]*C[^A-Z]*C[^A-Z]*U[^A-Z]*G[^A-Z]*A[^A-Z]*A[^A-Z]*U[^A-Z]*G[^A-Z]*G/i.test(String(value || ""));
+  }
+
+  function containsThymine(value) {
+    const text = normalizeText(value);
+    return text.includes("thymin") || /\bt\b/i.test(String(value || ""));
+  }
+
+  function renderSequenceFeedback(container, result) {
+    container.classList.remove("hidden");
+    container.innerHTML = `
+      <p class="notice">Dieser Check ersetzt keine Bewertung. Er zeigt dir nur, welche fachlichen Aspekte du noch einmal überprüfen solltest.</p>
+      <h4>Das ist bereits erkennbar:</h4>
+      ${renderList(result.recognized.length ? result.recognized : ["Noch kein zentraler Aspekt wurde sicher automatisch erkannt."])}
+      <h4>Das solltest du noch prüfen oder ergänzen:</h4>
+      ${renderList(result.missing.length ? result.missing : ["Der Check erkennt hier keine offenen Ergänzungen."])}
+      ${result.pitfalls.length ? `<h4>Mögliche fachliche Stolperstellen:</h4>${renderList(result.pitfalls)}` : ""}
+    `;
+  }
+
+  function renderSimpleCriterionFeedback(container, result) {
+    container.classList.remove("hidden");
+    container.innerHTML = `
+      <p class="notice">Dieser Check ersetzt keine Bewertung. Er zeigt dir nur, welche fachlichen Aspekte du noch einmal überprüfen solltest.</p>
+      <h4>Das ist bereits erkennbar:</h4>
+      ${renderList(result.recognized.length ? result.recognized : ["Noch kein zentraler Aspekt wurde sicher automatisch erkannt."])}
+      <h4>Das solltest du noch prüfen oder ergänzen:</h4>
+      ${renderList(result.missing.length ? result.missing : ["Der Check erkennt hier keine offenen Ergänzungen."])}
+      ${result.pitfalls.length ? `<h4>Mögliche fachliche Stolperstellen:</h4>${renderList(result.pitfalls)}` : ""}
+    `;
+  }
+
+  function resetReveals(card) {
+    card.querySelectorAll(".feedback, .hint-list, .expectation-box, .solution-box").forEach((box) => box.classList.add("hidden"));
+    const hintButton = card.querySelector(".hint-button");
+    if (hintButton) {
+      hintButton.textContent = "Hilfe anzeigen";
+      hintButton.disabled = false;
+    }
+  }
+
+  function collectTranscriptionInputs(card, stored) {
+    const next = {
+      structures: { ...(stored.structures || {}) },
+      functions: { ...(stored.functions || {}) }
+    };
+    card.querySelectorAll(".transcription-structure-input").forEach((input) => {
+      next.structures[input.dataset.number] = input.value;
+    });
+    return next;
+  }
+
+  function checkTranscriptionStructure(inputs, items) {
+    const rows = {};
+    let structureCorrect = 0;
+    let functionCorrect = 0;
+
+    normalizeList(items).forEach((item) => {
+      const number = String(item.number);
+      const entered = (inputs.structures && inputs.structures[number]) || "";
+      const assignedFunction = (inputs.functions && inputs.functions[number]) || "";
+      const isStructureCorrect = normalizeList(item.accepted).some((accepted) => normalizeStructureTerm(entered) === normalizeStructureTerm(accepted));
+      const isFunctionCorrect = assignedFunction === item.functionId;
+      if (isStructureCorrect) {
+        structureCorrect += 1;
+      }
+      if (isFunctionCorrect) {
+        functionCorrect += 1;
+      }
+      rows[number] = {
+        entered,
+        assignedFunction,
+        expectedStructure: item.structure,
+        expectedFunction: item.functionId,
+        structureCorrect: isStructureCorrect,
+        functionCorrect: isFunctionCorrect
+      };
+    });
+
+    const swappedCodogenic =
+      normalizeStructureTerm((inputs.structures && inputs.structures["2"]) || "") === normalizeStructureTerm("codogener Strang") &&
+      normalizeStructureTerm((inputs.structures && inputs.structures["3"]) || "") === normalizeStructureTerm("nicht codogener Strang");
+
+    return {
+      date: new Date().toISOString(),
+      structureCorrect,
+      functionCorrect,
+      total: normalizeList(items).length,
+      rows,
+      swappedCodogenic,
+      inputs
+    };
+  }
+
+  function normalizeStructureTerm(value) {
+    return normalizeText(value)
+      .replace(/['’´`]/g, "")
+      .replace(/[^a-z0-9]+/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function renderTranscriptionFeedback(container, result) {
+    container.classList.remove("hidden");
+    const lines = Object.keys(result.rows).map((number) => {
+      const row = result.rows[number];
+      return `Nr. ${number}: Struktur ${row.structureCorrect ? "korrekt" : "noch prüfen"}, Funktion ${row.functionCorrect ? "korrekt" : "noch prüfen"}`;
+    });
+    container.innerHTML = `
+      <p class="notice">Dieser Check ersetzt keine Bewertung. Er zeigt dir nur, welche fachlichen Aspekte du noch einmal überprüfen solltest.</p>
+      <h4>Rückmeldung</h4>
+      <p>Sie haben ${result.structureCorrect} von ${result.total} Strukturen korrekt benannt und ${result.functionCorrect} von ${result.total} Funktionen korrekt zugeordnet.</p>
+      ${result.swappedCodogenic ? '<p class="warning-text">Prüfen Sie noch einmal den Unterschied zwischen codogenem und nicht-codogenem Strang: Der codogene Strang dient als Vorlage für die mRNA.</p>' : ""}
+      ${renderList(lines)}
+    `;
+  }
+
+  function renderTranscriptionSolution(container, items, functions) {
+    container.classList.toggle("hidden");
+    if (container.classList.contains("hidden")) {
+      return;
+    }
+    const rows = normalizeList(items).map((item) => {
+      const fn = normalizeList(functions).find((entry) => entry.id === item.functionId);
+      return `
+        <tr>
+          <th scope="row">${escapeHtml(item.number)}</th>
+          <td>${escapeHtml(item.structure)}</td>
+          <td>${escapeHtml(fn ? fn.text : "")}</td>
+        </tr>
+      `;
+    }).join("");
+    container.innerHTML = `
+      <h4>Musterlösung</h4>
+      <div class="transcription-table-wrap">
+        <table class="transcription-table solution-table">
+          <thead><tr><th>Nummer</th><th>Struktur</th><th>Funktion</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  function renderFunctionCardText(functionId, functions) {
+    const fn = normalizeList(functions).find((entry) => entry.id === functionId);
+    if (!fn) {
+      return `<span class="definition-card-inline"><strong>${escapeHtml(functionId)}</strong></span>`;
+    }
+    return `<span class="definition-card-inline"><strong>${escapeHtml(fn.id)}</strong> ${escapeHtml(fn.text)}</span>`;
+  }
+
+  function renderCompareTableRows(tableValues) {
+    const rows = [
+      ["sugar", "Zucker"],
+      ["bases", "Basen"],
+      ["structure", "Strangstruktur"],
+      ["function", "Funktion im Kontext der Proteinbiosynthese"]
+    ];
+    return rows.map(([key, label]) => `
+      <tr>
+        <th scope="row">${escapeHtml(label)}</th>
+        <td><input class="compare-input table-input" data-table-row="${key}" data-table-col="dna" type="text" value="${escapeHtml((tableValues[key] && tableValues[key].dna) || "")}"></td>
+        <td><input class="compare-input table-input" data-table-row="${key}" data-table-col="rna" type="text" value="${escapeHtml((tableValues[key] && tableValues[key].rna) || "")}"></td>
+      </tr>
+    `).join("");
+  }
+
+  function collectCompareInputs(card) {
+    const inputs = defaultCompareInputs();
+    card.querySelectorAll("[data-field]").forEach((field) => {
+      inputs[field.dataset.field] = field.value;
+    });
+    card.querySelectorAll("[data-table-row][data-table-col]").forEach((field) => {
+      const row = field.dataset.tableRow;
+      const col = field.dataset.tableCol;
+      inputs.table[row][col] = field.value;
+    });
+    return inputs;
+  }
+
+  function checkDnaRnaCompare(inputs) {
+    const sections = {
+      sugar: { recognized: [], missing: [] },
+      difference: { recognized: [], missing: [] },
+      table: { recognized: [], missing: [] }
+    };
+
+    const left = normalizeText(inputs.leftSugar).trim();
+    const right = normalizeText(inputs.rightSugar).trim();
+    const leftCorrect = left === "ribose";
+    const rightCorrect = right === "desoxyribose" || right === "deoxyribose";
+
+    if (leftCorrect && rightCorrect) {
+      sections.sugar.recognized.push("Ribose und Desoxyribose wurden korrekt zugeordnet.");
+    } else {
+      if (leftCorrect) {
+        sections.sugar.recognized.push("Der linke Zucker wurde als Ribose erkannt.");
+      } else {
+        sections.sugar.missing.push("Prüfen Sie den linken Zucker noch einmal. Dort ist an der 2'-Stelle eine OH-Gruppe zu erkennen.");
+      }
+      if (rightCorrect) {
+        sections.sugar.recognized.push("Der rechte Zucker wurde als Desoxyribose erkannt.");
+      } else {
+        sections.sugar.missing.push("Prüfen Sie den rechten Zucker noch einmal. Dort befindet sich an der 2'-Stelle nur ein H-Atom.");
+      }
+    }
+
+    const diff = normalizeText(inputs.difference);
+    addCheck(sections.difference, hasSecondPosition(diff), "Die 2'-Stelle wird genannt.", "Prüfen Sie, ob Sie die 2'-Stelle ausdrücklich genannt haben.");
+    addCheck(sections.difference, /\boh\b/.test(diff) || diff.includes("hydroxygruppe"), "Die OH-Gruppe der Ribose wird erwähnt.", "Ergänzen Sie, dass Ribose dort eine OH-Gruppe besitzt.");
+    addCheck(sections.difference, diff.includes("h-atom") || diff.includes("wasserstoff"), "Das H-Atom bzw. Wasserstoff bei Desoxyribose wird erwähnt.", "Ergänzen Sie, dass bei Desoxyribose dort nur ein H-Atom vorhanden ist.");
+    addCheck(sections.difference, hasMissingOxygen(diff), "Das fehlende Sauerstoffatom wird beschrieben.", "Ergänzen Sie, dass bei Desoxyribose dort ein Sauerstoffatom fehlt.");
+    addCheck(sections.difference, diff.includes("desoxyribose") || diff.includes("deoxyribose"), "Desoxyribose wird ausdrücklich genannt.", "Prüfen Sie, ob Sie Desoxyribose ausdrücklich genannt haben.");
+
+    const table = inputs.table;
+    addCheck(sections.table, isDesoxyribose(table.sugar.dna), "DNA-Zucker: Desoxyribose.", "Prüfen Sie den Zucker der DNA: DNA enthält Desoxyribose.");
+    addCheck(sections.table, isRibose(table.sugar.rna), "RNA-Zucker: Ribose.", "Prüfen Sie den Zucker der RNA: RNA enthält Ribose.");
+
+    const dnaBases = checkBases(table.bases.dna, ["a", "t", "g", "c"], ["u"]);
+    const rnaBases = checkBases(table.bases.rna, ["a", "u", "g", "c"], ["t"]);
+    addCheck(sections.table, dnaBases.ok, "DNA-Basen: Adenin, Thymin, Guanin und Cytosin.", dnaBases.wrongForbidden ? "Prüfen Sie die Basen der DNA: In DNA kommt Thymin statt Uracil vor." : "Ergänzen Sie bei DNA alle vier Basen: Adenin, Thymin, Guanin und Cytosin.");
+    addCheck(sections.table, rnaBases.ok, "RNA-Basen: Adenin, Uracil, Guanin und Cytosin.", rnaBases.wrongForbidden ? "Prüfen Sie die Basen der RNA: In RNA kommt Uracil statt Thymin vor." : "Ergänzen Sie bei RNA alle vier Basen: Adenin, Uracil, Guanin und Cytosin.");
+
+    addCheck(sections.table, hasAny(table.structure.dna, ["doppelstrang", "doppelstraengig", "doppelsträngig", "zwei strang", "zwei sträng"]), "DNA-Strangstruktur: meist Doppelstrang.", "Prüfen Sie die Strangstruktur der DNA: Sie liegt meist als Doppelstrang vor.");
+    addCheck(sections.table, hasAny(table.structure.rna, ["einzelstrang", "einzelstraengig", "einzelsträngig", "ein strang"]), "RNA-Strangstruktur: meist Einzelstrang.", "Prüfen Sie die Strangstruktur der RNA: Sie liegt meist als Einzelstrang vor.");
+
+    addCheck(sections.table, hasDnaFunction(table.function.dna), "DNA-Funktion im Kontext der Proteinbiosynthese ist fachlich passend.", "Ergänzen Sie bei DNA, dass sie Erbinformation speichert oder als Vorlage für die Transkription dient.");
+    addCheck(sections.table, hasRnaFunction(table.function.rna), "RNA-Funktion im Kontext der Proteinbiosynthese ist fachlich passend.", "Ergänzen Sie bei RNA/mRNA, dass sie Information überträgt, für die Translation nutzbar macht oder als Vorlage der Translation dient.");
+
+    return {
+      date: new Date().toISOString(),
+      sections,
+      inputs
+    };
+  }
+
+  function addCheck(section, condition, recognizedText, missingText) {
+    if (condition) {
+      section.recognized.push(recognizedText);
+    } else {
+      section.missing.push(missingText);
+    }
+  }
+
+  function hasSecondPosition(text) {
+    return text.includes("2'") || text.includes("2-stelle") || text.includes("2. stelle") || text.includes("2.stelle") || text.includes("2 stelle");
+  }
+
+  function hasMissingOxygen(text) {
+    return (text.includes("sauerstoff") && (text.includes("fehlt") || text.includes("fehlend"))) || text.includes("ohne sauerstoff");
+  }
+
+  function isDesoxyribose(value) {
+    const text = normalizeText(value).trim();
+    return text.includes("desoxyribose") || text.includes("deoxyribose");
+  }
+
+  function isRibose(value) {
+    const text = normalizeText(value).trim();
+    return text === "ribose" || /\bribose\b/.test(text);
+  }
+
+  function checkBases(value, required, forbidden) {
+    const tokens = baseTokens(value);
+    const ok = required.every((base) => tokens.has(base)) && !forbidden.some((base) => tokens.has(base));
+    return {
+      ok,
+      wrongForbidden: forbidden.some((base) => tokens.has(base))
+    };
+  }
+
+  function baseTokens(value) {
+    const normalized = normalizeText(value)
+      .replace(/cytosin/g, " c ")
+      .replace(/adenin/g, " a ")
+      .replace(/thymin/g, " t ")
+      .replace(/uracil/g, " u ")
+      .replace(/guanin/g, " g ");
+    return new Set((normalized.match(/\b[a-z]\b/g) || []).filter((token) => ["a", "t", "g", "c", "u"].includes(token)));
+  }
+
+  function hasAny(value, patterns) {
+    const text = normalizeText(value);
+    return patterns.some((pattern) => text.includes(normalizeText(pattern)));
+  }
+
+  function hasDnaFunction(value) {
+    const text = normalizeText(value);
+    return text.includes("erbinformation") || text.includes("genetische information") || text.includes("vorlage") || text.includes("transkription") || text.includes("speichert");
+  }
+
+  function hasRnaFunction(value) {
+    const text = normalizeText(value);
+    return text.includes("mrna") || text.includes("translation") || text.includes("ribosom") || text.includes("ubertragt") || text.includes("überträgt") || text.includes("nutzt") || text.includes("protein");
+  }
+
+  function renderCompareFeedback(container, result) {
+    container.classList.remove("hidden");
+    container.innerHTML = `
+      <p class="notice">Dieser Check ersetzt keine Bewertung. Er zeigt dir nur, welche fachlichen Aspekte du noch einmal überprüfen solltest.</p>
+      ${renderFeedbackSection("Abschnitt A: Zucker benennen", result.sections.sugar)}
+      ${renderFeedbackSection("Abschnitt B: Unterschied erläutern", result.sections.difference)}
+      ${renderFeedbackSection("Abschnitt C: Vergleichstabelle", result.sections.table)}
+    `;
+  }
+
+  function renderFeedbackSection(title, section) {
+    return `
+      <div class="feedback-section">
+        <h4>${escapeHtml(title)}</h4>
+        <strong>Das ist bereits erkennbar:</strong>
+        ${renderList(section.recognized.length ? section.recognized : ["Noch kein Aspekt wurde hier sicher automatisch erkannt."])}
+        <strong>Das solltest du noch prüfen oder ergänzen:</strong>
+        ${renderList(section.missing.length ? section.missing : ["Für diesen Abschnitt erkennt der Check keine offenen Hinweise."])}
+      </div>
+    `;
+  }
+
+  function renderCompareSolution(container, solution) {
+    container.classList.toggle("hidden");
+    if (container.classList.contains("hidden")) {
+      return;
+    }
+    const rows = normalizeList(solution && solution.table).map((row) => `
+      <tr>
+        <th scope="row">${escapeHtml(row.feature)}</th>
+        <td>${escapeHtml(row.dna)}</td>
+        <td>${escapeHtml(row.rna)}</td>
+      </tr>
+    `).join("");
+    container.innerHTML = `
+      <h4>Musterlösung</h4>
+      <p><strong>Linker Zucker:</strong> ${escapeHtml(solution.sugars.left)}</p>
+      <p><strong>Rechter Zucker:</strong> ${escapeHtml(solution.sugars.right)}</p>
+      <p>${escapeHtml(solution.difference)}</p>
+      <div class="compare-table-wrap">
+        <table class="compare-table solution-table">
+          <thead><tr><th>Merkmal</th><th>DNA</th><th>RNA</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    `;
+  }
+
   function checkAnswer(answer, criteria) {
     const normalizedAnswer = normalizeText(answer);
     const recognized = [];
@@ -847,50 +2893,6 @@
     container.innerHTML = `<h4>${escapeHtml(title)}</h4>${body}`;
   }
 
-  function exportResults() {
-    const task = state.currentTask || state.tasks[0];
-    if (!task) {
-      showTaskMessage("Es gibt noch keine geladene Aufgabe für den Export.");
-      return;
-    }
-
-    const subtasks = normalizeSubtasks(task).map((subtask, index) => {
-      const subtaskId = subtask.id || `${task.id || "aufgabe"}_${index + 1}`;
-      return {
-        id: subtaskId,
-        title: subtask.title || `Teilaufgabe ${index + 1}`,
-        operator: subtask.operator || "",
-        format: subtask.format || "text",
-        answer: localStorage.getItem(answerKey(task.id, subtaskId)) || "",
-        assignments: readJson(assignmentKey(task.id, subtaskId), {}),
-        checkResult: state.checks[checkKey(task.id, subtaskId)] || null,
-        selfAssessment: localStorage.getItem(assessmentKey(task.id, subtaskId)) || ""
-      };
-    });
-
-    const exportData = {
-      anonymousId: state.anonymousId,
-      date: new Date().toISOString(),
-      task: {
-        id: task.id || "",
-        title: task.title || "",
-        topic: task.topic || "",
-        difficulty: task.difficulty || ""
-      },
-      subtasks
-    };
-
-    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `molekulargenetik-export-${state.anonymousId}.json`;
-    document.body.append(link);
-    link.click();
-    link.remove();
-    URL.revokeObjectURL(url);
-  }
-
   async function fetchJson(url) {
     const response = await fetch(url, { cache: "no-store" });
     if (!response.ok) {
@@ -951,6 +2953,26 @@
 
   function assignmentKey(taskId, subtaskId) {
     return `${STORAGE_PREFIX}_assignment_${taskId}_${subtaskId}`;
+  }
+
+  function compareKey(taskId, subtaskId) {
+    return `${STORAGE_PREFIX}_compare_${taskId}_${subtaskId}`;
+  }
+
+  function transcriptionKey(taskId, subtaskId) {
+    return `${STORAGE_PREFIX}_transcription_${taskId}_${subtaskId}`;
+  }
+
+  function sequenceKey(taskId, subtaskId) {
+    return `${STORAGE_PREFIX}_sequence_${taskId}_${subtaskId}`;
+  }
+
+  function aminoSequenceKey(taskId, subtaskId) {
+    return `${STORAGE_PREFIX}_amino_sequence_${taskId}_${subtaskId}`;
+  }
+
+  function translationKey(taskId, subtaskId) {
+    return `${STORAGE_PREFIX}_translation_${taskId}_${subtaskId}`;
   }
 
   function assessmentKey(taskId, subtaskId) {
