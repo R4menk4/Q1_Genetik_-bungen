@@ -1,3 +1,4 @@
+[
 {
   "id": "dna_aufbau_01",
   "title": "Aufbau der DNA erläutern",
@@ -166,4 +167,349 @@
       ]
     }
   ]
+},
+{
+  "id": "dna_replikation_01",
+  "title": "DNA-Replikation an der Replikationsgabel",
+  "topic": "DNA-Replikation",
+  "difficulty": "mittel",
+  "materials": [
+    {
+      "type": "image",
+      "title": "Material 1: Replikationsgabel",
+      "src": "assets/images/dna_replikationsgabel.png",
+      "alt": "Schematische Darstellung einer DNA-Replikationsgabel mit Beschriftungskästchen.",
+      "creditId": "dna_replikationsgabel_01"
+    }
+  ],
+  "subtasks": [
+    {
+      "id": "dna_replikation_01a",
+      "format": "image-label-dnd",
+      "operator": "zuordnen",
+      "title": "Strukturen an der Replikationsgabel zuordnen",
+      "task": "Ordnen Sie die folgenden Fachbegriffe den passenden Strukturen in der Abbildung zu.",
+      "hintText": "Achten Sie besonders darauf, welcher Strang kontinuierlich und welcher diskontinuierlich synthetisiert wird.",
+      "image": {
+        "src": "assets/images/dna_replikationsgabel.png",
+        "alt": "Schematische Darstellung einer DNA-Replikationsgabel mit Beschriftungskästchen."
+      },
+      "terms": [
+        "DNA-Polymerase",
+        "RNA-Primer",
+        "Helicase",
+        "Okazaki-Fragment",
+        "Nukleotide",
+        "Leitstrang",
+        "Folgestrang"
+      ],
+      "dropZones": [
+        {
+          "id": "dna_polymerase_box",
+          "label": "DNA-Polymerase",
+          "targetType": "visible-box",
+          "x": 28.0,
+          "y": 21.0,
+          "width": 24.0,
+          "height": 11.5,
+          "note": "oberes linkes Kästchen"
+        },
+        {
+          "id": "okazaki_fragment_box",
+          "label": "Okazaki-Fragment",
+          "targetType": "visible-box",
+          "x": 33.5,
+          "y": 56.0,
+          "width": 15.5,
+          "height": 17.5,
+          "note": "linkes mittleres/unteres Kästchen"
+        },
+        {
+          "id": "rna_primer_box",
+          "label": "RNA-Primer",
+          "targetType": "visible-box",
+          "x": 63.0,
+          "y": 22.0,
+          "width": 10.5,
+          "height": 16.0,
+          "note": "kleines Kästchen oben mittig"
+        },
+        {
+          "id": "helicase_box",
+          "label": "Helicase",
+          "targetType": "visible-box",
+          "x": 74.0,
+          "y": 34.0,
+          "width": 19.5,
+          "height": 11.0,
+          "note": "rechtes oberes Kästchen"
+        },
+        {
+          "id": "nukleotide_box",
+          "label": "Nukleotide",
+          "targetType": "visible-box",
+          "x": 72.0,
+          "y": 82.0,
+          "width": 18.5,
+          "height": 10.5,
+          "note": "rechtes unteres Kästchen"
+        },
+        {
+          "id": "folgestrang_box",
+          "label": "Folgestrang",
+          "targetType": "added-box",
+          "x": 4.0,
+          "y": 34.0,
+          "width": 16.0,
+          "height": 9.0,
+          "note": "neu ergänztes Kästchen links unter dem oberen Strang"
+        },
+        {
+          "id": "leitstrang_box",
+          "label": "Leitstrang",
+          "targetType": "added-box",
+          "x": 4.0,
+          "y": 78.0,
+          "width": 16.0,
+          "height": 9.0,
+          "note": "neu ergänztes Kästchen links unter dem unteren Strang"
+        }
+      ],
+      "correctAssignments": {
+        "dna_polymerase_box": "DNA-Polymerase",
+        "okazaki_fragment_box": "Okazaki-Fragment",
+        "rna_primer_box": "RNA-Primer",
+        "helicase_box": "Helicase",
+        "nukleotide_box": "Nukleotide",
+        "folgestrang_box": "Folgestrang",
+        "leitstrang_box": "Leitstrang"
+      },
+      "sampleSolution": [
+        "DNA-Polymerase → oberes linkes Kästchen",
+        "Okazaki-Fragment → linkes mittleres/unteres Kästchen",
+        "RNA-Primer → oberes mittleres kleines Kästchen",
+        "Helicase → rechtes oberes Kästchen",
+        "Nukleotide → rechtes unteres Kästchen",
+        "Folgestrang → zusätzlich ergänztes Kästchen links unter dem oberen Strang",
+        "Leitstrang → zusätzlich ergänztes Kästchen links unter dem unteren Strang"
+      ]
+    },
+    {
+      "id": "dna_replikation_01b",
+      "format": "definition-match",
+      "operator": "zuordnen",
+      "title": "Fachbegriffe passenden Definitionen zuordnen",
+      "task": "Ordnen Sie jedem Fachbegriff die passende Definition zu.",
+      "terms": [
+        "Helicase",
+        "DNA-Polymerase",
+        "RNA-Primer",
+        "Nukleotide",
+        "Leitstrang",
+        "Folgestrang",
+        "Okazaki-Fragment"
+      ],
+      "definitions": [
+        {
+          "id": "A",
+          "text": "Kurzer Startabschnitt aus RNA, an den die DNA-Polymerase anknüpfen kann."
+        },
+        {
+          "id": "B",
+          "text": "Neu entstehender DNA-Strang, der kontinuierlich synthetisiert wird."
+        },
+        {
+          "id": "C",
+          "text": "Enzym, das die DNA-Doppelhelix öffnet und die beiden Einzelstränge voneinander trennt."
+        },
+        {
+          "id": "D",
+          "text": "Kurzer neu gebildeter DNA-Abschnitt am Folgestrang."
+        },
+        {
+          "id": "E",
+          "text": "Freie Bausteine, aus denen der neue DNA-Strang aufgebaut wird."
+        },
+        {
+          "id": "F",
+          "text": "Enzym, das komplementäre DNA-Nukleotide an den neu entstehenden Strang anfügt."
+        },
+        {
+          "id": "G",
+          "text": "Neu entstehender DNA-Strang, der nur abschnittsweise synthetisiert wird."
+        }
+      ],
+      "correctAssignments": {
+        "Helicase": "C",
+        "DNA-Polymerase": "F",
+        "RNA-Primer": "A",
+        "Nukleotide": "E",
+        "Leitstrang": "B",
+        "Folgestrang": "G",
+        "Okazaki-Fragment": "D"
+      },
+      "sampleSolution": [
+        "Helicase → C",
+        "DNA-Polymerase → F",
+        "RNA-Primer → A",
+        "Nukleotide → E",
+        "Leitstrang → B",
+        "Folgestrang → G",
+        "Okazaki-Fragment → D"
+      ]
+    },
+    {
+      "id": "dna_replikation_01c",
+      "operator": "erklären",
+      "title": "Replikation des Leitstrangs erklären",
+      "task": "Erklären Sie den Ablauf der Replikation am Leitstrang. Gehen Sie dabei darauf ein, warum dieser Strang kontinuierlich repliziert werden kann.",
+      "hints": [
+        "Beschreiben Sie zuerst, was die Helicase mit dem DNA-Doppelstrang macht.",
+        "Überlegen Sie, welche Aufgabe die DNA-Polymerase hat.",
+        "Achten Sie auf die Richtung: Die DNA-Polymerase synthetisiert neue DNA nur in 5'→3'-Richtung.",
+        "Beim Leitstrang passt diese Syntheserichtung zur Öffnungsrichtung der Replikationsgabel."
+      ],
+      "expectationHorizon": [
+        "Helicase öffnet den DNA-Doppelstrang.",
+        "Ein alter DNA-Einzelstrang dient als Vorlage.",
+        "DNA-Polymerase ergänzt komplementäre Nukleotide.",
+        "Basenpaarung: A-T und G-C.",
+        "DNA-Polymerase synthetisiert nur in 5'→3'-Richtung.",
+        "Beim Leitstrang passt diese Syntheserichtung zur Öffnungsrichtung der Replikationsgabel.",
+        "Deshalb entsteht der Leitstrang kontinuierlich."
+      ],
+      "sampleSolution": "Bei der DNA-Replikation wird der DNA-Doppelstrang zunächst durch die Helicase geöffnet. Am Leitstrang kann die DNA-Polymerase dem geöffneten DNA-Strang in Richtung der Replikationsgabel folgen. Sie ergänzt dabei freie Nukleotide nach dem Prinzip der komplementären Basenpaarung: Adenin paart mit Thymin und Guanin mit Cytosin. Da die DNA-Polymerase den neuen Strang nur in 5'→3'-Richtung bilden kann und diese Richtung am Leitstrang zur Bewegung der Replikationsgabel passt, kann der Leitstrang kontinuierlich, also ohne Unterbrechungen, synthetisiert werden.",
+      "checkCriteria": [
+        {
+          "label": "Helicase öffnet oder trennt den DNA-Doppelstrang",
+          "keywords": [
+            "helicase",
+            "öffnet"
+          ]
+        },
+        {
+          "label": "Alter Einzelstrang als Vorlage wird erwähnt",
+          "keywords": [
+            "vorlage"
+          ]
+        },
+        {
+          "label": "DNA-Polymerase wird erwähnt",
+          "keywords": [
+            "dna-polymerase"
+          ]
+        },
+        {
+          "label": "Komplementäre Nukleotide oder Basenpaarung wird erwähnt",
+          "keywords": [
+            "komplement"
+          ]
+        },
+        {
+          "label": "Syntheserichtung 5'→3' wird erwähnt",
+          "keywords": [
+            "5",
+            "3"
+          ]
+        },
+        {
+          "label": "Kontinuierliche Synthese wird erklärt",
+          "keywords": [
+            "kontinuierlich"
+          ]
+        },
+        {
+          "label": "Zusammenhang mit der Öffnungsrichtung der Replikationsgabel wird hergestellt",
+          "keywords": [
+            "replikationsgabel",
+            "richtung"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "dna_replikation_01d",
+      "operator": "erklären",
+      "title": "Replikation des Folgestrangs erklären",
+      "task": "Erklären Sie den Ablauf der Replikation am Folgestrang. Gehen Sie dabei darauf ein, warum dieser Strang nur diskontinuierlich repliziert werden kann.",
+      "hints": [
+        "Denken Sie daran, dass die beiden DNA-Stränge antiparallel verlaufen.",
+        "Die DNA-Polymerase kann neue DNA nur in 5'→3'-Richtung synthetisieren.",
+        "Überlegen Sie, warum diese Richtung am Folgestrang nicht zur Öffnungsrichtung der Replikationsgabel passt.",
+        "Kurze neu gebildete DNA-Abschnitte am Folgestrang heißen Okazaki-Fragmente.",
+        "RNA-Primer dienen als Startpunkte für die DNA-Polymerase."
+      ],
+      "expectationHorizon": [
+        "Der Folgestrang entsteht ebenfalls an einem alten DNA-Einzelstrang als Vorlage.",
+        "Die DNA-Stränge verlaufen antiparallel.",
+        "DNA-Polymerase kann nur in 5'→3'-Richtung synthetisieren.",
+        "Diese Richtung passt am Folgestrang nicht zur Öffnungsrichtung der Replikationsgabel.",
+        "Deshalb wird der Folgestrang abschnittsweise gebildet.",
+        "Es werden RNA-Primer als Startpunkte benötigt.",
+        "DNA-Polymerase bildet kurze Okazaki-Fragmente.",
+        "Die Okazaki-Fragmente werden später miteinander verbunden."
+      ],
+      "sampleSolution": "Auch am Folgestrang dient ein alter DNA-Einzelstrang als Vorlage. Da die beiden DNA-Stränge antiparallel verlaufen, liegt die Vorlage für den Folgestrang aber so, dass die DNA-Polymerase nicht durchgehend in Richtung der Replikationsgabel arbeiten kann. Die DNA-Polymerase kann neue DNA immer nur in 5'→3'-Richtung synthetisieren. Deshalb wird der Folgestrang nicht kontinuierlich, sondern abschnittsweise gebildet. Dafür werden immer wieder RNA-Primer gesetzt. Von diesen Startpunkten aus ergänzt die DNA-Polymerase kurze DNA-Abschnitte, die Okazaki-Fragmente genannt werden. Anschließend werden diese Fragmente zu einem zusammenhängenden DNA-Strang verbunden.",
+      "checkCriteria": [
+        {
+          "label": "Alter Einzelstrang als Vorlage wird erwähnt",
+          "keywords": [
+            "vorlage"
+          ]
+        },
+        {
+          "label": "Antiparallele Anordnung wird erwähnt",
+          "keywords": [
+            "antiparallel"
+          ]
+        },
+        {
+          "label": "DNA-Polymerase wird erwähnt",
+          "keywords": [
+            "dna-polymerase"
+          ]
+        },
+        {
+          "label": "Syntheserichtung 5'→3' wird erwähnt",
+          "keywords": [
+            "5",
+            "3"
+          ]
+        },
+        {
+          "label": "Problem der Richtung am Folgestrang wird erklärt",
+          "keywords": [
+            "richtung",
+            "folgestrang"
+          ]
+        },
+        {
+          "label": "Diskontinuierliche oder abschnittsweise Synthese wird erwähnt",
+          "keywords": [
+            "abschnitt"
+          ]
+        },
+        {
+          "label": "RNA-Primer werden erwähnt",
+          "keywords": [
+            "primer"
+          ]
+        },
+        {
+          "label": "Okazaki-Fragmente werden erwähnt",
+          "keywords": [
+            "okazaki"
+          ]
+        },
+        {
+          "label": "Verbindung der Fragmente wird erwähnt",
+          "keywords": [
+            "fragment",
+            "verbunden"
+          ]
+        }
+      ]
+    }
+  ]
 }
+]

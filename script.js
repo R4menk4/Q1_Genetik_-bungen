@@ -7,7 +7,7 @@
 
   const topics = [
     { title: "DNA-Aufbau", active: true, taskId: "dna_aufbau_01" },
-    { title: "DNA-Replikation", active: false },
+    { title: "DNA-Replikation", active: true, taskId: "dna_replikation_01" },
     { title: "Transkription", active: false },
     { title: "Translation", active: false },
     { title: "Mutationen", active: false },
@@ -326,6 +326,14 @@
     const solution = subtask.sampleSolution || subtask.solution || subtask.modelAnswer || content.solution || "";
     const criteria = normalizeCriteria(subtask.checkCriteria || subtask.criteria || content.criteria || task.checkCriteria || task.criteria);
 
+    if (subtask.format === "image-label-dnd") {
+      return renderImageLabelSubtask(task, subtask, subtaskId, index, solution);
+    }
+
+    if (subtask.format === "definition-match") {
+      return renderDefinitionMatchSubtask(task, subtask, subtaskId, index, solution);
+    }
+
     const card = document.createElement("article");
     card.className = "subtask-card";
     card.dataset.subtaskId = subtaskId;
@@ -402,6 +410,317 @@
     return card;
   }
 
+  function renderImageLabelSubtask(task, subtask, subtaskId, index, solution) {
+    const card = document.createElement("article");
+    card.className = "subtask-card";
+    card.dataset.subtaskId = subtaskId;
+
+    const terms = normalizeList(subtask.terms);
+    const zones = normalizeList(subtask.dropZones);
+    const correctAssignments = subtask.correctAssignments || {};
+    let assignments = readJson(assignmentKey(task.id, subtaskId), {});
+    let selectedTerm = "";
+    let lastResult = state.checks[checkKey(task.id, subtaskId)] || null;
+
+    card.innerHTML = `
+      <p class="operator">${escapeHtml(subtask.operator || "Zuordnung")}</p>
+      <h3>${escapeHtml(subtask.title || `Teilaufgabe ${index + 1}`)}</h3>
+      <p class="task-prompt">${escapeHtml(subtask.task || "")}</p>
+      ${subtask.hintText ? `<p class="drag-note">${escapeHtml(subtask.hintText)}</p>` : ""}
+      <label class="debug-toggle"><input type="checkbox" class="debug-checkbox"> Dropzonen anzeigen</label>
+      <div class="image-label-task">
+        <div class="term-bank" aria-label="Begriffsliste"></div>
+        <div class="image-drop-stage">
+          <img class="drop-image" src="${escapeHtml((subtask.image && subtask.image.src) || "")}" alt="${escapeHtml((subtask.image && subtask.image.alt) || subtask.title || "")}">
+          <div class="drop-zone-layer"></div>
+        </div>
+      </div>
+      <div class="button-row">
+        <button class="primary-button dnd-check-button" type="button">Lösung prüfen</button>
+        <button class="ghost-button dnd-solution-button" type="button">Lösung anzeigen</button>
+        <button class="secondary-button dnd-reset-button" type="button">Zurücksetzen</button>
+        <button class="ghost-button solution-button" type="button">Musterlösung anzeigen</button>
+      </div>
+      <div class="feedback hidden" aria-live="polite"></div>
+      <div class="reveal-box solution-box hidden"></div>
+    `;
+
+    const bank = card.querySelector(".term-bank");
+    const layer = card.querySelector(".drop-zone-layer");
+    const feedback = card.querySelector(".feedback");
+    const debugCheckbox = card.querySelector(".debug-checkbox");
+
+    card.querySelector(".drop-image").addEventListener("error", (event) => {
+      const fallback = document.createElement("div");
+      fallback.className = "image-fallback";
+      fallback.textContent = `Bild konnte nicht geladen werden: ${(subtask.image && subtask.image.alt) || subtask.title || "Replikationsgabel"}`;
+      event.currentTarget.replaceWith(fallback);
+    });
+
+    zones.forEach((zone) => {
+      const dropZone = document.createElement("button");
+      dropZone.type = "button";
+      dropZone.className = `image-drop-zone ${zone.targetType === "added-box" ? "added-label-box" : "visible-label-box"}`;
+      dropZone.dataset.zoneId = zone.id;
+      dropZone.style.left = `${zone.x}%`;
+      dropZone.style.top = `${zone.y}%`;
+      dropZone.style.width = `${zone.width}%`;
+      dropZone.style.height = `${zone.height}%`;
+      dropZone.title = zone.note || zone.label || "Dropzone";
+      dropZone.addEventListener("dragover", (event) => event.preventDefault());
+      dropZone.addEventListener("drop", (event) => {
+        event.preventDefault();
+        const term = event.dataTransfer.getData("text/plain");
+        if (term) {
+          assignValue(assignments, zone.id, term);
+          persistAndRender();
+        }
+      });
+      dropZone.addEventListener("click", () => {
+        if (selectedTerm) {
+          assignValue(assignments, zone.id, selectedTerm);
+          selectedTerm = "";
+          persistAndRender();
+        } else if (assignments[zone.id]) {
+          delete assignments[zone.id];
+          persistAndRender();
+        }
+      });
+      layer.append(dropZone);
+    });
+
+    bank.addEventListener("dragover", (event) => event.preventDefault());
+    bank.addEventListener("drop", (event) => {
+      event.preventDefault();
+      const term = event.dataTransfer.getData("text/plain");
+      if (term) {
+        removeAssignedValue(assignments, term);
+        persistAndRender();
+      }
+    });
+
+    debugCheckbox.addEventListener("change", () => {
+      card.classList.toggle("show-drop-debug", debugCheckbox.checked);
+    });
+
+    card.querySelector(".dnd-check-button").addEventListener("click", () => {
+      lastResult = evaluateAssignments(assignments, correctAssignments);
+      state.checks[checkKey(task.id, subtaskId)] = lastResult;
+      writeJson(`${STORAGE_PREFIX}_checks`, state.checks);
+      renderAssignmentFeedback(feedback, lastResult, zones.length, "Strukturen");
+      render();
+    });
+
+    card.querySelector(".dnd-solution-button").addEventListener("click", () => {
+      assignments = { ...correctAssignments };
+      lastResult = evaluateAssignments(assignments, correctAssignments);
+      state.checks[checkKey(task.id, subtaskId)] = lastResult;
+      writeJson(`${STORAGE_PREFIX}_checks`, state.checks);
+      persistAndRender();
+      renderAssignmentFeedback(feedback, lastResult, zones.length, "Strukturen");
+    });
+
+    card.querySelector(".dnd-reset-button").addEventListener("click", () => {
+      assignments = {};
+      selectedTerm = "";
+      lastResult = null;
+      localStorage.removeItem(assignmentKey(task.id, subtaskId));
+      delete state.checks[checkKey(task.id, subtaskId)];
+      writeJson(`${STORAGE_PREFIX}_checks`, state.checks);
+      feedback.classList.add("hidden");
+      render();
+    });
+
+    card.querySelector(".solution-button").addEventListener("click", () => {
+      toggleReveal(card.querySelector(".solution-box"), "Musterlösung", solution);
+    });
+
+    function persistAndRender() {
+      writeJson(assignmentKey(task.id, subtaskId), assignments);
+      render();
+    }
+
+    function render() {
+      const assignedTerms = new Set(Object.values(assignments));
+      bank.innerHTML = "<h4>Begriffe</h4>";
+      const chipWrap = document.createElement("div");
+      chipWrap.className = "chip-wrap";
+      terms.filter((term) => !assignedTerms.has(term)).forEach((term) => {
+        chipWrap.append(createDraggableChip(term, selectedTerm, () => {
+          selectedTerm = selectedTerm === term ? "" : term;
+          render();
+        }));
+      });
+      if (!chipWrap.children.length) {
+        const empty = document.createElement("p");
+        empty.className = "muted-small";
+        empty.textContent = "Alle Begriffe sind abgelegt.";
+        chipWrap.append(empty);
+      }
+      bank.append(chipWrap);
+
+      zones.forEach((zone) => {
+        const dropZone = layer.querySelector(`[data-zone-id="${cssEscape(zone.id)}"]`);
+        const value = assignments[zone.id] || "";
+        dropZone.classList.remove("is-correct", "is-incorrect");
+        if (lastResult) {
+          dropZone.classList.add(lastResult.correctItems.includes(zone.id) ? "is-correct" : "is-incorrect");
+        }
+        dropZone.innerHTML = value
+          ? `<span class="placed-chip">${escapeHtml(value)}</span>`
+          : `<span class="drop-placeholder">Begriff hier ablegen</span>`;
+      });
+    }
+
+    render();
+    return card;
+  }
+
+  function renderDefinitionMatchSubtask(task, subtask, subtaskId, index, solution) {
+    const card = document.createElement("article");
+    card.className = "subtask-card";
+    card.dataset.subtaskId = subtaskId;
+
+    const terms = normalizeList(subtask.terms);
+    const definitions = normalizeList(subtask.definitions);
+    const correctAssignments = subtask.correctAssignments || {};
+    let assignments = readJson(assignmentKey(task.id, subtaskId), {});
+    let selectedDefinition = "";
+    let lastResult = state.checks[checkKey(task.id, subtaskId)] || null;
+
+    card.innerHTML = `
+      <p class="operator">${escapeHtml(subtask.operator || "Zuordnung")}</p>
+      <h3>${escapeHtml(subtask.title || `Teilaufgabe ${index + 1}`)}</h3>
+      <p class="task-prompt">${escapeHtml(subtask.task || "")}</p>
+      <div class="definition-match-task">
+        <div class="definition-rows"></div>
+        <div class="definition-bank" aria-label="Definitionskarten"></div>
+      </div>
+      <div class="button-row">
+        <button class="primary-button match-check-button" type="button">Lösung prüfen</button>
+        <button class="ghost-button match-solution-button" type="button">Lösung anzeigen</button>
+        <button class="secondary-button match-reset-button" type="button">Zurücksetzen</button>
+        <button class="ghost-button solution-button" type="button">Musterlösung anzeigen</button>
+      </div>
+      <div class="feedback hidden" aria-live="polite"></div>
+      <div class="reveal-box solution-box hidden"></div>
+    `;
+
+    const rows = card.querySelector(".definition-rows");
+    const bank = card.querySelector(".definition-bank");
+    const feedback = card.querySelector(".feedback");
+
+    bank.addEventListener("dragover", (event) => event.preventDefault());
+    bank.addEventListener("drop", (event) => {
+      event.preventDefault();
+      const definitionId = event.dataTransfer.getData("text/plain");
+      if (definitionId) {
+        removeAssignedValue(assignments, definitionId);
+        persistAndRender();
+      }
+    });
+
+    card.querySelector(".match-check-button").addEventListener("click", () => {
+      lastResult = evaluateAssignments(assignments, correctAssignments);
+      state.checks[checkKey(task.id, subtaskId)] = lastResult;
+      writeJson(`${STORAGE_PREFIX}_checks`, state.checks);
+      renderAssignmentFeedback(feedback, lastResult, terms.length, "Definitionen");
+      render();
+    });
+
+    card.querySelector(".match-solution-button").addEventListener("click", () => {
+      assignments = { ...correctAssignments };
+      lastResult = evaluateAssignments(assignments, correctAssignments);
+      state.checks[checkKey(task.id, subtaskId)] = lastResult;
+      writeJson(`${STORAGE_PREFIX}_checks`, state.checks);
+      persistAndRender();
+      renderAssignmentFeedback(feedback, lastResult, terms.length, "Definitionen");
+    });
+
+    card.querySelector(".match-reset-button").addEventListener("click", () => {
+      assignments = {};
+      selectedDefinition = "";
+      lastResult = null;
+      localStorage.removeItem(assignmentKey(task.id, subtaskId));
+      delete state.checks[checkKey(task.id, subtaskId)];
+      writeJson(`${STORAGE_PREFIX}_checks`, state.checks);
+      feedback.classList.add("hidden");
+      render();
+    });
+
+    card.querySelector(".solution-button").addEventListener("click", () => {
+      toggleReveal(card.querySelector(".solution-box"), "Musterlösung", solution);
+    });
+
+    function persistAndRender() {
+      writeJson(assignmentKey(task.id, subtaskId), assignments);
+      render();
+    }
+
+    function render() {
+      const assignedDefinitions = new Set(Object.values(assignments));
+      rows.innerHTML = "";
+      terms.forEach((term) => {
+        const row = document.createElement("div");
+        row.className = "definition-row";
+        const currentId = assignments[term] || "";
+        if (lastResult) {
+          row.classList.add(lastResult.correctItems.includes(term) ? "is-correct" : "is-incorrect");
+        }
+        row.innerHTML = `
+          <div class="definition-term">${escapeHtml(term)}</div>
+          <button class="definition-drop" type="button" data-term="${escapeHtml(term)}">
+            ${currentId ? renderDefinitionCardText(currentId, definitions) : '<span class="drop-placeholder">Definition hier ablegen</span>'}
+          </button>
+        `;
+        const drop = row.querySelector(".definition-drop");
+        drop.addEventListener("dragover", (event) => event.preventDefault());
+        drop.addEventListener("drop", (event) => {
+          event.preventDefault();
+          const definitionId = event.dataTransfer.getData("text/plain");
+          if (definitionId) {
+            assignValue(assignments, term, definitionId);
+            persistAndRender();
+          }
+        });
+        drop.addEventListener("click", () => {
+          if (selectedDefinition) {
+            assignValue(assignments, term, selectedDefinition);
+            selectedDefinition = "";
+            persistAndRender();
+          } else if (assignments[term]) {
+            delete assignments[term];
+            persistAndRender();
+          }
+        });
+        rows.append(row);
+      });
+
+      bank.innerHTML = "<h4>Definitionen</h4>";
+      const chipWrap = document.createElement("div");
+      chipWrap.className = "definition-card-list";
+      definitions.filter((definition) => !assignedDefinitions.has(definition.id)).forEach((definition) => {
+        const cardButton = createDraggableChip(definition.id, selectedDefinition, () => {
+          selectedDefinition = selectedDefinition === definition.id ? "" : definition.id;
+          render();
+        });
+        cardButton.classList.add("definition-card");
+        cardButton.innerHTML = `<strong>${escapeHtml(definition.id)}</strong> ${escapeHtml(definition.text)}`;
+        chipWrap.append(cardButton);
+      });
+      if (!chipWrap.children.length) {
+        const empty = document.createElement("p");
+        empty.className = "muted-small";
+        empty.textContent = "Alle Definitionen sind zugeordnet.";
+        chipWrap.append(empty);
+      }
+      bank.append(chipWrap);
+    }
+
+    render();
+    return card;
+  }
+
   function checkAnswer(answer, criteria) {
     const normalizedAnswer = normalizeText(answer);
     const recognized = [];
@@ -448,6 +767,72 @@
     `;
   }
 
+  function createDraggableChip(value, selectedValue, onClick) {
+    const chip = document.createElement("button");
+    chip.type = "button";
+    chip.className = "drag-chip";
+    chip.draggable = true;
+    chip.dataset.value = value;
+    chip.textContent = value;
+    chip.classList.toggle("is-selected", value === selectedValue);
+    chip.addEventListener("dragstart", (event) => {
+      event.dataTransfer.setData("text/plain", value);
+      event.dataTransfer.effectAllowed = "move";
+    });
+    chip.addEventListener("click", onClick);
+    return chip;
+  }
+
+  function assignValue(assignments, targetId, value) {
+    removeAssignedValue(assignments, value);
+    assignments[targetId] = value;
+  }
+
+  function removeAssignedValue(assignments, value) {
+    Object.keys(assignments).forEach((key) => {
+      if (assignments[key] === value) {
+        delete assignments[key];
+      }
+    });
+  }
+
+  function evaluateAssignments(assignments, correctAssignments) {
+    const correctItems = [];
+    const incorrectItems = [];
+    Object.keys(correctAssignments).forEach((key) => {
+      if (assignments[key] === correctAssignments[key]) {
+        correctItems.push(key);
+      } else {
+        incorrectItems.push(key);
+      }
+    });
+    return {
+      date: new Date().toISOString(),
+      correct: correctItems.length,
+      total: Object.keys(correctAssignments).length,
+      correctItems,
+      incorrectItems,
+      assignments: { ...assignments }
+    };
+  }
+
+  function renderAssignmentFeedback(container, result, total, label) {
+    container.classList.remove("hidden");
+    container.innerHTML = `
+      <p class="notice">Dieser Check ersetzt keine Bewertung. Er zeigt dir nur, welche Zuordnungen du noch einmal überprüfen solltest.</p>
+      <h4>Rückmeldung</h4>
+      <p>Du hast ${result.correct} von ${total} ${escapeHtml(label)} korrekt zugeordnet.</p>
+    `;
+  }
+
+  function renderDefinitionCardText(definitionId, definitions) {
+    const definition = definitions.find((item) => item.id === definitionId);
+    if (!definition) {
+      return `<span class="placed-chip">${escapeHtml(definitionId)}</span>`;
+    }
+    return `<span class="definition-card-inline"><strong>${escapeHtml(definition.id)}</strong> ${escapeHtml(definition.text)}</span>`;
+  }
+
   function renderHints(container, hints) {
     container.classList.remove("hidden");
     container.innerHTML = `<h4>Hilfen</h4>${renderOrderedList(hints)}`;
@@ -475,7 +860,9 @@
         id: subtaskId,
         title: subtask.title || `Teilaufgabe ${index + 1}`,
         operator: subtask.operator || "",
+        format: subtask.format || "text",
         answer: localStorage.getItem(answerKey(task.id, subtaskId)) || "",
+        assignments: readJson(assignmentKey(task.id, subtaskId), {}),
         checkResult: state.checks[checkKey(task.id, subtaskId)] || null,
         selfAssessment: localStorage.getItem(assessmentKey(task.id, subtaskId)) || ""
       };
@@ -562,6 +949,10 @@
     return `${STORAGE_PREFIX}_answer_${taskId}_${subtaskId}`;
   }
 
+  function assignmentKey(taskId, subtaskId) {
+    return `${STORAGE_PREFIX}_assignment_${taskId}_${subtaskId}`;
+  }
+
   function assessmentKey(taskId, subtaskId) {
     return `${STORAGE_PREFIX}_assessment_${taskId}_${subtaskId}`;
   }
@@ -627,5 +1018,12 @@
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#039;");
+  }
+
+  function cssEscape(value) {
+    if (window.CSS && typeof window.CSS.escape === "function") {
+      return window.CSS.escape(value);
+    }
+    return String(value).replace(/"/g, '\\"');
   }
 })();

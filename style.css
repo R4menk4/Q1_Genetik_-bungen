@@ -426,6 +426,220 @@ th {
   margin-top: 0.75rem;
 }
 
+.drag-note,
+.muted-small {
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.debug-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0.35rem 0 0.9rem;
+  color: var(--muted);
+  font-weight: 650;
+}
+
+.image-label-task {
+  display: grid;
+  grid-template-columns: minmax(190px, 0.32fr) minmax(320px, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.term-bank,
+.definition-bank {
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  padding: 0.9rem;
+  background: #fbfdfc;
+}
+
+.term-bank h4,
+.definition-bank h4 {
+  margin: 0 0 0.7rem;
+}
+
+.chip-wrap,
+.definition-card-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.definition-card-list {
+  flex-direction: column;
+}
+
+.drag-chip {
+  border: 1px solid #bdd0c7;
+  border-radius: 0.5rem;
+  padding: 0.58rem 0.72rem;
+  background: #fff;
+  color: var(--text);
+  font-weight: 700;
+  text-align: left;
+  box-shadow: 0 4px 12px rgba(24, 35, 31, 0.06);
+}
+
+.drag-chip:hover,
+.drag-chip.is-selected {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.image-drop-stage {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  background: #fff;
+}
+
+.drop-image {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.drop-zone-layer {
+  position: absolute;
+  inset: 0;
+}
+
+.image-drop-zone {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  border: 2px dashed transparent;
+  border-radius: 0.45rem;
+  padding: 0.25rem;
+  background: transparent;
+  color: var(--text);
+  text-align: center;
+}
+
+.image-drop-zone:focus-visible,
+.definition-drop:focus-visible,
+.drag-chip:focus-visible {
+  outline: 3px solid rgba(31, 122, 104, 0.22);
+  outline-offset: 2px;
+}
+
+.added-label-box {
+  border-color: #d2b85a;
+  background: rgba(255, 238, 153, 0.88);
+}
+
+.show-drop-debug .visible-label-box {
+  border-color: rgba(31, 122, 104, 0.75);
+  background: rgba(31, 122, 104, 0.18);
+}
+
+.show-drop-debug .added-label-box {
+  background: rgba(255, 238, 153, 0.95);
+}
+
+.placed-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 100%;
+  min-height: 1.7rem;
+  border-radius: 0.4rem;
+  padding: 0.25rem 0.45rem;
+  background: rgba(255, 255, 255, 0.9);
+  font-size: clamp(0.68rem, 1.6vw, 0.92rem);
+  font-weight: 800;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.drop-placeholder {
+  color: #69766f;
+  font-size: clamp(0.62rem, 1.4vw, 0.82rem);
+  font-weight: 650;
+  line-height: 1.15;
+}
+
+.is-correct .placed-chip,
+.definition-row.is-correct .definition-drop {
+  border-color: #3b8a5f;
+  background: #e4f5eb;
+}
+
+.is-incorrect .placed-chip,
+.definition-row.is-incorrect .definition-drop {
+  border-color: #a85b4a;
+  background: #fff0ec;
+}
+
+.image-drop-zone.is-correct {
+  border-color: #3b8a5f;
+  background: rgba(228, 245, 235, 0.78);
+}
+
+.image-drop-zone.is-incorrect {
+  border-color: #a85b4a;
+  background: rgba(255, 240, 236, 0.78);
+}
+
+.definition-match-task {
+  display: grid;
+  grid-template-columns: minmax(320px, 1fr) minmax(260px, 0.72fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.definition-rows {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.definition-row {
+  display: grid;
+  grid-template-columns: minmax(140px, 0.36fr) minmax(220px, 1fr);
+  gap: 0.6rem;
+  align-items: stretch;
+}
+
+.definition-term,
+.definition-drop {
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  background: #fff;
+}
+
+.definition-term {
+  display: flex;
+  align-items: center;
+  font-weight: 800;
+}
+
+.definition-drop {
+  min-height: 4.4rem;
+  text-align: left;
+}
+
+.definition-card {
+  width: 100%;
+  font-weight: 550;
+  line-height: 1.45;
+}
+
+.definition-card strong,
+.definition-card-inline strong {
+  margin-right: 0.35rem;
+  color: var(--accent-dark);
+}
+
+.definition-card-inline {
+  line-height: 1.45;
+}
+
 .feedback,
 .reveal-box,
 .hint-list {
@@ -505,6 +719,12 @@ th {
 
   .topic-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .image-label-task,
+  .definition-match-task,
+  .definition-row {
+    grid-template-columns: 1fr;
   }
 }
 
