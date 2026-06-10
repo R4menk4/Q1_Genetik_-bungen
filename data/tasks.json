@@ -1,0 +1,35 @@
+{
+  "id": "dna_aufbau_01",
+  "title": "Aufbau der DNA erläutern",
+  "topic": "DNA-Aufbau",
+  "difficulty": "mittel",
+  "materials": [
+    {
+      "type": "image",
+      "title": "Material 1: Chemische Struktur der DNA",
+      "src": "assets/images/DNA-Struktur.png",
+      "alt": "Chemische Struktur eines DNA-Ausschnitts mit Basen, Desoxyribose und Phosphatgruppen.",
+      "creditId": "dna_struktur_wikimedia_01"
+    }
+  ],
+  "subtasks": [
+    {
+      "id": "dna_aufbau_01a",
+      "operator": "erläutern",
+      "title": "Aufbau eines Nukleotids und DNA-Strangs",
+      "task": "Erläutern Sie den grundlegenden Aufbau der DNA. Gehen Sie dabei auf den Aufbau eines Nukleotids, die Verknüpfung der Nukleotide zu DNA-Strängen und die Bildung des Phosphat-Zucker-Rückgrats ein."
+    },
+    {
+      "id": "dna_aufbau_01b",
+      "operator": "erläutern",
+      "title": "Basenpaarung und Wasserstoffbrückenbindungen",
+      "task": "Erläutern Sie, wie die beiden DNA-Einzelstränge miteinander verbunden sind. Gehen Sie dabei auf die komplementäre Basenpaarung und die Anzahl der Wasserstoffbrückenbindungen zwischen den Basen ein."
+    },
+    {
+      "id": "dna_aufbau_01c",
+      "operator": "erklären",
+      "title": "Bedeutung von 3' und 5'",
+      "task": "Erklären Sie die Bedeutung der Bezeichnungen 3' und 5' bei DNA-Strängen. Gehen Sie dabei auch darauf ein, was mit der antiparallelen Anordnung der beiden DNA-Stränge gemeint ist."
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+[
+  {
+    "id": "dna_struktur_wikimedia_01",
+    "projectFile": "assets/images/DNA-Struktur.png",
+    "title": "Chemische Struktur der DNA.svg",
+    "description": "Chemische Struktur der DNA mit farbigen Beschriftungen zur Kennzeichnung der Basen, Phosphate und Desoxyribose.",
+    "author": "Madeleine Price Ball / User:Madprime; deutsche Bearbeitung / derivative work: Matt",
+    "sourceName": "Wikimedia Commons",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Chemische_Struktur_der_DNA.svg?lang=de",
+    "license": "CC BY-SA 3.0 oder CC BY-SA 2.5/2.0/1.0; alternativ GFDL",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/",
+    "changes": "leicht verändert; ein Teil der Abbildung wurde entfernt"
+  },
+  {
+    "id": "atp_wikimedia_01",
+    "projectFile": "assets/images/ATP.svg",
+    "title": "Adenosintriphosphat protoniert.svg",
+    "description": "Struktur von Adenosintriphosphat (ATP), protonierte Form.",
+    "author": "NEUROtiker",
+    "sourceName": "Wikimedia Commons",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Adenosintriphosphat_protoniert.svg",
+    "license": "Public Domain / gemeinfrei",
+    "licenseUrl": "https://commons.wikimedia.org/wiki/Public_domain",
+    "changes": "keine Änderungen"
+  }
+]
