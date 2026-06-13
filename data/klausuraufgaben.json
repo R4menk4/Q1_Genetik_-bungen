@@ -1,0 +1,858 @@
+{
+"schemaVersion": "1.3",
+"title": "Klausurtraining Molekulargenetik – materialgestützte Übungsaufgaben",
+"description": "Materialgestützte Klausur-Übungsaufgaben zu DNA-Aufbau, Replikation, DNA/RNA, Transkription und Translation.",
+"usageNote": "Die Datei kann als data/klausuraufgaben.json gespeichert und im Lernprogramm als Modul „Klausurtraining: Materialaufgaben“ geladen werden.",
+"tasks": [
+{
+"id": "modul_01_dna_aufbau_dropdown",
+"title": "DNA-Aufbau: Nummerierte Struktur zuordnen",
+"categories": [
+"DNA-Aufbau"
+],
+"competencies": [
+"Aufbau eines Nukleotids kennen",
+"DNA als Doppelstrang erklären",
+"komplementäre Basenpaarung erkennen",
+"Wasserstoffbrückenbindungen benennen",
+"Zucker-Phosphat-Rückgrat erkennen"
+],
+"image": {
+"src": "assets/images/dna_struktur_nummeriert.png",
+"alt": "Nummerierte Darstellung des DNA-Aufbaus mit Basen, Zucker, Phosphatgruppen und Wasserstoffbrückenbindungen"
+},
+"material": [
+{
+"type": "imageTask",
+"title": "Material: Nummerierte DNA-Struktur",
+"content": "Die Abbildung zeigt einen Ausschnitt der DNA mit nummerierten Strukturen."
+}
+],
+"interactiveType": "dropdownLabeling",
+"dropdownOptions": [
+"Basen",
+"Zucker-Phosphat-Rückgrat",
+"Desoxyribose",
+"Wasserstoffbrückenbindungen",
+"Phosphatgruppe",
+"komplementäres Basenpaar",
+"Nukleotid"
+],
+"shuffleDropdownOptions": true,
+"labelSolutions": {
+"1": "Phosphatgruppe",
+"2": "Desoxyribose",
+"3": "Nukleotid",
+"4": "komplementäres Basenpaar",
+"5": "Wasserstoffbrückenbindungen",
+"6": "Zucker-Phosphat-Rückgrat",
+"7": "Basen"
+},
+"questions": [
+{
+"id": "1a",
+"text": "Ordne jeder Zahl in der Abbildung den passenden Fachbegriff zu.",
+"responseType": "dropdownLabeling",
+"solution": {
+"type": "labelSolutions",
+"answer": {
+"1": "Phosphatgruppe",
+"2": "Desoxyribose",
+"3": "Nukleotid",
+"4": "komplementäres Basenpaar",
+"5": "Wasserstoffbrückenbindungen",
+"6": "Zucker-Phosphat-Rückgrat",
+"7": "Basen"
+}
+}
+},
+{
+"id": "1b",
+"text": "Erkläre kurz, warum Adenin nicht mit Guanin paart.",
+"responseType": "shortText",
+"solution": {
+"type": "modelAnswer",
+"answer": "Adenin paart in der DNA mit Thymin und bildet dabei zwei Wasserstoffbrückenbindungen aus. Guanin paart mit Cytosin und bildet drei Wasserstoffbrückenbindungen aus. Adenin und Guanin passen daher nicht als Basenpaar zusammen, weil ihre Bindungsmöglichkeiten und ihre räumliche Anordnung nicht zueinander passen."
+}
+},
+{
+"id": "1c",
+"text": "Beschreibe die Funktion des Zucker-Phosphat-Rückgrats.",
+"responseType": "shortText",
+"solution": {
+"type": "modelAnswer",
+"answer": "Das Zucker-Phosphat-Rückgrat bildet die stabile äußere Struktur eines DNA-Strangs. Es verbindet die Nukleotide miteinander und hält die Basen in einer geordneten Reihenfolge."
+}
+}
+],
+"implementationHint": "Für jede Zahl von 1 bis 7 soll ein Dropdown angezeigt werden. Die Dropdown-Optionen dürfen nicht in Lösungsreihenfolge angezeigt werden."
+},
+{
+"id": "modul_02_tata_box",
+"title": "Warum kann Transkription an der TATA-Box starten?",
+"categories": [
+"DNA-Aufbau",
+"Transkription"
+],
+"competencies": [
+"Wasserstoffbrückenbindungen erklären",
+"komplementäre Basenpaarung erklären",
+"A-T- und G-C-Basenpaare vergleichen",
+"Transkriptionsstart mit Promotor/TATA-Box verknüpfen",
+"Materialinformationen auswerten"
+],
+"material": [
+{
+"type": "text",
+"title": "Material: TATA-Box und Wasserstoffbrückenbindungen",
+"content": "Bei der Transkription muss ein Abschnitt der DNA lokal geöffnet werden. Viele Promotorbereiche enthalten eine sogenannte TATA-Box. Diese enthält besonders viele Adenin- und Thymin-Basen."
+}
+],
+"questions": [
+{
+"id": "2a",
+"text": "Erkläre, welche Bindungen beim lokalen Öffnen der DNA zuerst gelöst werden.",
+"responseType": "shortText",
+"solution": {
+"type": "modelAnswer",
+"answer": "Beim Öffnen der DNA werden zunächst Wasserstoffbrückenbindungen zwischen den komplementären Basen gelöst."
+}
+},
+{
+"id": "2b",
+"text": "Begründe, warum DNA-Abschnitte mit vielen A-T-Basenpaaren leichter geöffnet werden können als GC-reiche Abschnitte.",
+"responseType": "shortText",
+"solution": {
+"type": "modelAnswer",
+"answer": "A-T-Basenpaare besitzen zwei Wasserstoffbrückenbindungen, G-C-Basenpaare drei. AT-reiche Abschnitte sind daher weniger stabil und lassen sich leichter voneinander trennen."
+}
+},
+{
+"id": "2c",
+"text": "Erkläre, warum eine TATA-Box als Startbereich der Transkription sinnvoll ist.",
+"responseType": "shortText",
+"solution": {
+"type": "modelAnswer",
+"answer": "Die TATA-Box ist AT-reich und kann deshalb leichter geöffnet werden, da zwischen den Basen nur zwei und nicht drei Wasserstoffbrücken gebrochen werden müssen. Das erleichtert den Start der Transkription, weil RNA-Polymerase und Transkriptionsfaktoren Zugang zum DNA-Abschnitt erhalten."
+}
+},
+{
+"id": "2d",
+"text": "Erkläre, warum die Basensequenz trotz Öffnung der Doppelhelix erhalten bleibt.",
+"responseType": "shortText",
+"solution": {
+"type": "modelAnswer",
+"answer": "Die Basensequenz bleibt erhalten, weil die Basen weiterhin fest mit dem Zucker-Phosphat-Rückgrat ihres jeweiligen Strangs verbunden bleiben. Gelöst werden vor allem die Wasserstoffbrückenbindungen zwischen den beiden Strängen."
+}
+}
+],
+"implementationHint": "Diese Aufgabe kann ohne zusätzliche Grafik umgesetzt werden."
+},
+{
+"id": "modul_03_replikation_reihenfolge",
+"title": "Kopierfehler vor der Zellteilung",
+"categories": [
+"DNA-Replikation"
+],
+"competencies": [
+"Grundablauf der Replikation erklären",
+"Enzyme und Strukturen der Replikationsgabel benennen",
+"semikonservative Replikation erklären",
+"Okazaki-Fragmente erklären"
+],
+"image": {
+"src": "assets/images/dna_replikation.png",
+"alt": "Nummerierte Darstellung der DNA-Replikation an einer Replikationsgabel"
+},
+"material": [
+{
+"type": "imageTask",
+"title": "Material 1: Replikationsgabel",
+"content": "Die Abbildung zeigt eine DNA-Replikation an einer Replikationsgabel."
+},
+{
+"type": "list",
+"title": "Material 2: Durcheinandergebrachte Schritte",
+"items": [
+"A: DNA-Polymerase ergänzt neue Nukleotide.",
+"B: Helicase trennt die DNA-Doppelhelix.",
+"C: DNA-Ligase verbindet DNA-Fragmente.",
+"D: RNA-Primer werden gebildet."
+]
+}
+],
+"questions": [
+{
+"id": "3a",
+"text": "Bringe die Schritte A bis D in eine sinnvolle Reihenfolge.",
+"responseType": "ordering",
+"solution": {
+"type": "order",
+"answer": [
+"B",
+"D",
+"A",
+"C"
+]
+}
+},
+{
+"id": "3b",
+"text": "Erkläre die Funktion von Helicase, Primase, DNA-Polymerase und DNA-Ligase.",
+"responseType": "shortText",
+"solution": {
+"type": "modelAnswer",
+"answer": "Helicase öffnet die DNA-Doppelhelix und trennt die Stränge. Primase bildet kurze RNA-Primer als Startpunkte. DNA-Polymerase ergänzt passende DNA-Nukleotide. DNA-Ligase verbindet DNA-Fragmente."
+}
+},
+{
+"id": "3c",
+"text": "Erkläre, warum auf einem Strang Okazaki-Fragmente entstehen.",
+"responseType": "shortText",
+"solution": {
+"type": "modelAnswer",
+"answer": "Okazaki-Fragmente entstehen, weil die DNA-Polymerase nur in 5'→3'-Richtung arbeitet und der Folgestrang wegen des antiparallelen Aufbaus der DNA stückweise synthetisiert wird."
+}
+},
+{
+"id": "3d",
+"text": "Begründe, warum die Replikation semikonservativ genannt wird.",
+"responseType": "shortText",
+"solution": {
+"type": "modelAnswer",
+"answer": "Semikonservativ bedeutet: Jede neu entstandene DNA enthält einen alten ursprünglichen Strang und einen neu gebildeten Strang."
+}
+}
+],
+"implementationHint": "Die Replikationsgrafik ist bereits nummeriert."
+},
+{
+"id": "modul_04_leitstrang_folgestrang",
+"title": "Warum gibt es einen Leitstrang und einen Folgestrang?",
+"categories": [
+"DNA-Replikation"
+],
+"competencies": [
+"Leitstrang und Folgestrang unterscheiden",
+"5'→3'-Richtung anwenden",
+"antiparallelen Aufbau erklären",
+"Okazaki-Fragmente begründen"
+],
+"image": {
+"src": "assets/images/dna_replikation.png",
+"alt": "Nummerierte Darstellung der DNA-Replikation mit Leitstrang und Folgestrang"
+},
+"material": [
+{
+"type": "imageTask",
+"title": "Material 1: Replikationsgabel",
+"content": "Die Abbildung zeigt eine DNA-Replikation an einer Replikationsgabel."
+}
+],
+"questions": [
+{
+"id": "4a",
+"text": "Benenne den Strang, der kontinuierlich gebildet werden kann.",
+"responseType": "shortText",
+"solution": {
+"type": "modelAnswer",
+"answer": "Der Leitstrang wird kontinuierlich gebildet."
+}
+},
+{
+"id": "4b",
+"text": "Erkläre, warum der andere Strang stückweise gebildet werden muss.",
+"responseType": "shortText",
+"solution": {
+"type": "modelAnswer",
+"answer": "Der Folgestrang wird stückweise gebildet, weil die DNA-Polymerase nur in 5'→3'-Richtung arbeiten kann und die beiden DNA-Stränge antiparallel verlaufen."
+}
+},
+{
+"id": "4c",
+"text": "Ordne die Begriffe Leitstrang, Folgestrang, RNA-Primer und Okazaki-Fragment den passenden Erklärungen zu.",
+"responseType": "matching",
+"solution": {
+"type": "matching",
+"answer": {
+"Leitstrang": "Wird kontinuierlich synthetisiert.",
+"Folgestrang": "Wird stückweise synthetisiert.",
+"RNA-Primer": "Startstück für die DNA-Polymerase.",
+"Okazaki-Fragment": "Kurzes DNA-Stück auf dem Folgestrang."
+}
+}
+},
+{
+"id": "4d",
+"text": "Formuliere eine kurze Erklärung für eine Mitschülerin, die denkt: „Beide Stränge müssten doch gleich kopiert werden.“",
+"responseType": "shortText",
+"solution": {
+"type": "modelAnswer",
+"answer": "Beide Stränge werden nicht gleich kopiert, weil sie entgegengesetzt ausgerichtet sind. Die DNA-Polymerase kann nur in 5'→3'-Richtung arbeiten; deshalb entsteht ein kontinuierlicher Leitstrang und ein stückweise gebildeter Folgestrang."
+}
+}
+],
+"implementationHint": "Die gleiche Replikationsgrafik wie in Modul 3 kann verwendet werden."
+},
+{
+"id": "modul_05_gen_zur_nachricht",
+"title": "Vom Gen zur Nachricht",
+"categories": [
+"Transkription"
+],
+"competencies": [
+"mRNA aus codogenem DNA-Strang ableiten",
+"Syntheserichtung beachten",
+"RNA-Polymerase erklären",
+"DNA und RNA vergleichen"
+],
+"image": {
+"src": "assets/images/transkription.png",
+"alt": "Nummerierte Darstellung der Transkription mit DNA, RNA-Polymerase und entstehender mRNA"
+},
+"material": [
+{
+"type": "imageTask",
+"title": "Material 1: Transkriptionsmodell",
+"content": "Die Abbildung zeigt eine Transkription mit geöffneter DNA und entstehender mRNA."
+},
+{
+"type": "sequence",
+"title": "Material 2: Codogener DNA-Strang",
+"content": "3' – T A C G G A C T T A C T – 5'"
+}
+],
+"questions": [
+{
+"id": "5a",
+"text": "Leite die passende mRNA-Sequenz aus dem codogenen DNA-Strang ab.",
+"responseType": "sequenceInput",
+"solution": {
+"type": "sequence",
+"answer": "5' – A U G C C U G A A U G A – 3'"
+}
+},
+{
+"id": "5b",
+"text": "Achte auf die Syntheserichtung der mRNA und gib sie an.",
+"responseType": "shortText",
+"solution": {
+"type": "modelAnswer",
+"answer": "Die mRNA wird in 5'→3'-Richtung synthetisiert."
+}
+},
+{
+"id": "5c",
+"text": "Erkläre den Unterschied zwischen mRNA und DNA hinsichtlich der möglichen Basen der Nukleotiden.",
+"responseType": "shortText",
+"solution": {
+"type": "modelAnswer",
+"answer": "RNA enthält Uracil statt Thymin. Deshalb wird bei der Transkription gegenüber Adenin der DNA in der mRNA Uracil eingebaut."
+}
+},
+{
+"id": "5d",
+"text": "Beschreibe die Rolle der RNA-Polymerase bei diesem Vorgang.",
+"responseType": "shortText",
+"solution": {
+"type": "modelAnswer",
+"answer": "Die RNA-Polymerase bindet an den DNA-Abschnitt, öffnet die DNA lokal und bildet anhand des codogenen Strangs eine komplementäre mRNA, indem sie passende Nukleotide miteinander verbindet."
+}
+}
+],
+"implementationHint": "Die Transkriptionsgrafik ist bereits nummeriert."
+},
+{
+"id": "modul_06_fehlerhafte_transkription",
+"title": "Fehlerhafte Transkription erkennen",
+"categories": [
+"Transkription"
+],
+"competencies": [
+"typische Fehler bei der Transkription erkennen",
+"mRNA-Sequenz korrigieren",
+"Uracil statt Thymin anwenden"
+],
+"material": [
+{
+"type": "sequence",
+"title": "Material: Schülerlösung zur Transkription",
+"content": "codogener DNA-Strang: 3' – A C C T A C G G T – 5'\nSchülerlösung: mRNA: 5' – T G G A T G C C A – 3'"
+}
+],
+"questions": [
+{
+"id": "6a",
+"text": "Finde den Fehler in der Schülerlösung.",
+"responseType": "shortText",
+"solution": {
+"type": "modelAnswer",
+"answer": "Die Schülerin hat Thymin in die mRNA eingebaut. In RNA kommt aber Uracil statt Thymin vor."
+}
+},
+{
+"id": "6b",
+"text": "Korrigiere die mRNA-Sequenz.",
+"responseType": "sequenceInput",
+"solution": {
+"type": "sequence",
+"answer": "5' – U G G A U G C C A – 3'"
+}
+},
+{
+"id": "6c",
+"text": "Erkläre, warum dieser Fehler typisch ist.",
+"responseType": "shortText",
+"solution": {
+"type": "modelAnswer",
+"answer": "Dieser Fehler ist typisch, weil DNA- und RNA-Basenpaarung verwechselt werden. Bei RNA wird statt Thymin Uracil verwendet."
+}
+},
+{
+"id": "6d",
+"text": "Formuliere eine Merkhilfe zur Transkription.",
+"responseType": "shortText",
+"solution": {
+"type": "modelAnswer",
+"answer": "Merkhilfe: Bei RNA gilt: U statt T."
+}
+}
+],
+"implementationHint": "Geeignet für Fehler-Markieren oder Eingabefeld."
+},
+{
+"id": "modul_07_aminosaeurekette",
+"title": "Welche Aminosäurekette entsteht?",
+"categories": [
+"Translation"
+],
+"competencies": [
+"mRNA in Codons einteilen",
+"mithilfe der Codesonne übersetzen",
+"Stoppcodon erklären",
+"Rolle von tRNA und Anticodon erklären"
+],
+"image": {
+"src": "assets/images/Codesonne.png",
+"alt": "Codesonne zur Übersetzung von mRNA-Codons in Aminosäuren"
+},
+"material": [
+{
+"type": "sequence",
+"title": "Material 1: mRNA-Sequenz",
+"content": "5' – A U G G C U U U U U A A – 3'"
+},
+{
+"type": "imageTask",
+"title": "Material 2: Codesonne",
+"content": "Nutze die Codesonne, um die mRNA-Codons in die passenden Aminosäuren zu übersetzen."
+},
+{
+"type": "codeTable",
+"title": "Material 3: 3-Buchstaben-Codes der Aminosäuren",
+"entries": {
+"Ala": "Alanin",
+"Arg": "Arginin",
+"Asn": "Asparagin",
+"Asp": "Asparaginsäure",
+"Cys": "Cystein",
+"Gln": "Glutamin",
+"Glu": "Glutaminsäure",
+"Gly": "Glycin",
+"His": "Histidin",
+"Ile": "Isoleucin",
+"Leu": "Leucin",
+"Lys": "Lysin",
+"Met": "Methionin",
+"Phe": "Phenylalanin",
+"Pro": "Prolin",
+"Ser": "Serin",
+"Thr": "Threonin",
+"Trp": "Tryptophan",
+"Tyr": "Tyrosin",
+"Val": "Valin"
+}
+}
+],
+"questions": [
+{
+"id": "7a",
+"text": "Teile die mRNA in Codons ein.",
+"responseType": "sequenceInput",
+"solution": {
+"type": "codons",
+"answer": [
+"AUG",
+"GCU",
+"UUU",
+"UAA"
+],
+"displayAnswer": "AUG | GCU | UUU | UAA"
+}
+},
+{
+"id": "7b",
+"text": "Bestimme die Aminosäuresequenz.",
+"responseType": "shortText",
+"solution": {
+"type": "aminoAcidSequence",
+"answer": [
+"Methionin",
+"Alanin",
+"Phenylalanin"
+],
+"displayAnswer": "Methionin – Alanin – Phenylalanin"
+}
+},
+{
+"id": "7c",
+"text": "Erkläre begründet, was bei einem Stoppcodon beachtet werden muss.",
+"responseType": "shortText",
+"solution": {
+"type": "modelAnswer",
+"answer": "Bei einem Stoppcodon muss beachtet werden, dass es nicht für eine Aminosäure codiert. Es markiert das Ende der Translation. Deshalb wird das Stoppcodon nicht als Aminosäure in die Aminosäurekette aufgenommen."
+}
+},
+{
+"id": "7d",
+"text": "Beschreibe die Rolle von tRNA und Anticodon.",
+"responseType": "shortText",
+"solution": {
+"type": "modelAnswer",
+"answer": "Die tRNA bringt passende Aminosäuren zum Ribosom. Ihr Anticodon paart komplementär mit dem Codon der mRNA."
+}
+}
+],
+"implementationHint": "Codons können per Klick gruppiert oder per Eingabe geprüft werden."
+},
+{
+"id": "modul_08_codon_anticodon",
+"title": "Codon oder Anticodon?",
+"categories": [
+"Translation"
+],
+"competencies": [
+"Codon und Anticodon unterscheiden",
+"Komplementarität anwenden",
+"Rolle von mRNA und tRNA erklären"
+],
+"material": [
+{
+"type": "text",
+"title": "Material: tRNA während der Translation",
+"content": "Während der Translation bindet eine tRNA mit dem Anticodon UAC an eine mRNA."
+}
+],
+"questions": [
+{
+"id": "8a",
+"text": "Gib das passende mRNA-Codon an.",
+"responseType": "shortText",
+"solution": {
+"type": "shortAnswer",
+"answer": "AUG"
+}
+},
+{
+"id": "8b",
+"text": "Erkläre den Unterschied zwischen Codon und Anticodon.",
+"responseType": "shortText",
+"solution": {
+"type": "modelAnswer",
+"answer": "Ein Codon ist ein Basentriplett auf der mRNA. Ein Anticodon ist ein dazu passendes Basentriplett auf der tRNA."
+}
+},
+{
+"id": "8c",
+"text": "Begründe, warum beide komplementär zueinander sein müssen.",
+"responseType": "shortText",
+"solution": {
+"type": "modelAnswer",
+"answer": "Nur durch komplementäre Paarung bindet die passende tRNA mit der richtigen Aminosäure an das mRNA-Codon."
+}
+},
+{
+"id": "8d",
+"text": "Bewerte die Aussage: „Das Anticodon befindet sich auf der mRNA.“",
+"responseType": "trueFalseExplain",
+"solution": {
+"type": "trueFalseExplain",
+"answer": false,
+"displayAnswer": "Die Aussage ist falsch. Das Codon befindet sich auf der mRNA, das Anticodon auf der tRNA."
+}
+}
+],
+"implementationHint": "Gut als Richtig/Falsch- und kurze Eingabeaufgabe."
+},
+{
+"id": "modul_09_ribosom_arbeitsplatz",
+"title": "Ribosom als Arbeitsplatz",
+"categories": [
+"Translation"
+],
+"competencies": [
+"A-, P- und E-Stelle erklären",
+"Ribosom als Ort der Translation beschreiben",
+"Ablauf der Translation strukturieren"
+],
+"image": {
+"src": "assets/images/translation.png",
+"alt": "Nummerierte Darstellung der Translation mit Ribosom, mRNA, tRNAs sowie A-, P- und E-Stelle"
+},
+"material": [
+{
+"type": "imageTask",
+"title": "Material: Ribosom während der Translation",
+"content": "Die Abbildung zeigt ein Ribosom während der Translation. Die A-, P- und E-Stelle sind im Bild markiert."
+}
+],
+"questions": [
+{
+"id": "9a",
+"text": "Ordne A-Stelle, P-Stelle und E-Stelle jeweils die passende Funktion zu.",
+"responseType": "matching",
+"solution": {
+"type": "matching",
+"answer": {
+"A-Stelle": "Hier kommt die neue tRNA an.",
+"P-Stelle": "Hier befindet sich die tRNA mit der wachsenden Aminosäurekette.",
+"E-Stelle": "Hier verlässt die leere tRNA das Ribosom."
+}
+}
+},
+{
+"id": "9b",
+"text": "Erläutere den Ablauf von Initiation, Elongation und Termination der Translation.",
+"responseType": "shortText",
+"solution": {
+"type": "modelAnswer",
+"answer": "Bei der Initiation bindet zunächst die kleine ribosomale Untereinheit an die mRNA. Am Startcodon bindet die passende tRNA, danach lagert sich die große ribosomale Untereinheit an. In der Elongation werden nacheinander passende tRNAs an das Ribosom gebunden, Peptidbindungen geknüpft und das Ribosom bewegt sich codonweise auf der mRNA weiter. Dabei wandern die tRNAs durch A-, P- und E-Stelle. Bei der Termination erreicht das Ribosom ein Stoppcodon. Die Translation wird beendet, die Aminosäurekette wird freigesetzt und die Ribosomenuntereinheiten trennen sich wieder."
+}
+}
+],
+"implementationHint": "Sehr gut als Zuordnungsaufgabe geeignet."
+},
+{
+"id": "modul_10_basenaustausch_protein",
+"title": "Patientenfall: Ein Basenaustausch verändert ein Protein",
+"categories": [
+"Translation"
+],
+"competencies": [
+"mRNA-Sequenzen übersetzen",
+"Aminosäuresequenzen vergleichen",
+"Auswirkungen von Basenaustausch erklären",
+"genetischen Code anwenden"
+],
+"image": {
+"src": "assets/images/Codesonne.png",
+"alt": "Codesonne zur Übersetzung von mRNA-Codons in Aminosäuren"
+},
+"material": [
+{
+"type": "sequenceComparison",
+"title": "Material 1: mRNA-Sequenzen",
+"content": "normale mRNA:     5' – A U G G A A U U U U A A – 3'\nveränderte mRNA: 5' – A U G G A U U U U U A A – 3'"
+},
+{
+"type": "imageTask",
+"title": "Material 2: Codesonne",
+"content": "Nutze die Codesonne, um die mRNA-Codons in die passenden Aminosäuren zu übersetzen."
+},
+{
+"type": "codeTable",
+"title": "Material 3: 3-Buchstaben-Codes der Aminosäuren",
+"entries": {
+"Ala": "Alanin",
+"Arg": "Arginin",
+"Asn": "Asparagin",
+"Asp": "Asparaginsäure",
+"Cys": "Cystein",
+"Gln": "Glutamin",
+"Glu": "Glutaminsäure",
+"Gly": "Glycin",
+"His": "Histidin",
+"Ile": "Isoleucin",
+"Leu": "Leucin",
+"Lys": "Lysin",
+"Met": "Methionin",
+"Phe": "Phenylalanin",
+"Pro": "Prolin",
+"Ser": "Serin",
+"Thr": "Threonin",
+"Trp": "Tryptophan",
+"Tyr": "Tyrosin",
+"Val": "Valin"
+}
+}
+],
+"questions": [
+{
+"id": "10a",
+"text": "Übersetze beide mRNA-Sequenzen in Aminosäuresequenzen.",
+"responseType": "shortText",
+"solution": {
+"type": "comparison",
+"answer": {
+"normal": "Methionin – Glutaminsäure – Phenylalanin",
+"veraendert": "Methionin – Asparaginsäure – Phenylalanin"
+}
+}
+},
+{
+"id": "10b",
+"text": "Vergleiche die beiden Aminosäuresequenzen.",
+"responseType": "shortText",
+"solution": {
+"type": "modelAnswer",
+"answer": "Die zweite Aminosäure ist verändert: Statt Glutaminsäure wird Asparaginsäure eingebaut."
+}
+},
+{
+"id": "10c",
+"text": "Erkläre, warum ein einzelner Basenaustausch Auswirkungen auf ein Protein haben kann.",
+"responseType": "shortText",
+"solution": {
+"type": "modelAnswer",
+"answer": "Ein Basenaustausch kann ein Codon verändern. Dadurch kann eine andere Aminosäure eingebaut werden, was die Struktur oder Funktion des Proteins beeinflussen kann."
+}
+},
+{
+"id": "10d",
+"text": "Beurteile vorsichtig: Muss jede Veränderung der DNA automatisch starke Folgen haben? Begründe.",
+"responseType": "shortText",
+"solution": {
+"type": "modelAnswer",
+"answer": "Nein. Nicht jede Veränderung muss starke Folgen haben, weil verschiedene Codons für dieselbe Aminosäure codieren können oder die Veränderung einen Bereich betrifft, der für die Proteinstruktur weniger wichtig ist."
+}
+}
+],
+"implementationHint": "Geeignet für Sequenzübersetzung und Vergleichsaufgabe."
+},
+{
+"id": "modul_11_schuelerloesung_korrigieren",
+"title": "Korrektur einer Schülerlösung",
+"categories": [
+"Transkription",
+"Translation"
+],
+"competencies": [
+"typische Fehler bei Transkription und Translation erkennen",
+"Fachbegriffe korrekt verwenden",
+"Proteinbiosynthese zusammenhängend erklären"
+],
+"material": [
+{
+"type": "studentSolution",
+"title": "Material: Schülererklärung",
+"content": "„Bei der Translation wird DNA in mRNA umgeschrieben. Danach bringt die mRNA Aminosäuren zum Ribosom. Die tRNA liest die DNA ab. Ein Stoppcodon steht für die letzte Aminosäure.“"
+}
+],
+"questions": [
+{
+"id": "11a",
+"text": "Markiere oder nenne alle fachlichen Fehler.",
+"responseType": "errorFinding",
+"solution": {
+"type": "errors",
+"answer": [
+"Bei der Translation wird nicht DNA in mRNA umgeschrieben; das ist die Transkription.",
+"mRNA bringt keine Aminosäuren zum Ribosom; sie enthält die genetische Information.",
+"tRNA liest nicht die DNA ab; sie bindet an Codons der mRNA.",
+"Ein Stoppcodon codiert nicht für die letzte Aminosäure; es beendet die Translation."
+]
+}
+},
+{
+"id": "11b",
+"text": "Korrigiere die Erklärung. Verwende dabei die Begriffe Transkription, Translation, mRNA, tRNA, Ribosom und Stoppcodon.",
+"responseType": "shortText",
+"solution": {
+"type": "modelAnswer",
+"answer": "Bei der Transkription wird ein DNA-Abschnitt in mRNA umgeschrieben. Die mRNA bringt die genetische Information zum Ribosom. Bei der Translation wird die Information der mRNA in eine Aminosäurekette übersetzt. Die tRNA transportiert passende Aminosäuren zum Ribosom und bindet mit ihrem Anticodon an das passende Codon der mRNA. Ein Stoppcodon beendet die Translation und codiert nicht für eine Aminosäure."
+}
+}
+],
+"implementationHint": "Geeignet für Fehler anklicken und anschließend Musterlösung anzeigen."
+},
+{
+"id": "modul_12_darstellungen_zuordnen",
+"title": "Welche Darstellung passt?",
+"categories": [
+"DNA-Replikation",
+"Transkription",
+"Translation"
+],
+"competencies": [
+"Replikation, Transkription und Translation unterscheiden",
+"Fachbegriffe passenden Vorgängen zuordnen",
+"Modelle auswerten"
+],
+"material": [
+{
+"type": "models",
+"title": "Material: Modellbeschreibungen",
+"items": [
+"Modell A: DNA wird geöffnet, RNA-Polymerase bildet mRNA.",
+"Modell B: Ribosom liest mRNA-Codons, tRNAs bringen Aminosäuren.",
+"Modell C: DNA-Polymerase ergänzt neue DNA-Nukleotide."
+]
+}
+],
+"questions": [
+{
+"id": "12a",
+"text": "Ordne die Modelle den Vorgängen Transkription, Translation und Replikation zu.",
+"responseType": "matching",
+"solution": {
+"type": "matching",
+"answer": {
+"Modell A": "Transkription",
+"Modell B": "Translation",
+"Modell C": "Replikation"
+}
+}
+},
+{
+"id": "12b",
+"text": "Nenne jeweils zwei Strukturen, die zu diesem Vorgang gehören.",
+"responseType": "shortText",
+"solution": {
+"type": "exampleTerms",
+"answer": {
+"Transkription": [
+"RNA-Polymerase",
+"mRNA",
+"codogener Strang",
+"Promotor"
+],
+"Translation": [
+"Ribosom",
+"tRNA",
+"Codon",
+"Anticodon",
+"Aminosäure"
+],
+"Replikation": [
+"DNA-Polymerase",
+"Helicase",
+"RNA-Primer",
+"Okazaki-Fragment"
+]
+}
+}
+},
+{
+"id": "12c",
+"text": "Erkläre kurz, woran du die Vorgänge erkannt hast.",
+"responseType": "shortText",
+"solution": {
+"type": "modelAnswer",
+"answer": "Modell A erkennt man an RNA-Polymerase und mRNA-Bildung. Modell B erkennt man an Ribosom, mRNA-Codons und tRNAs mit Aminosäuren. Modell C erkennt man an DNA-Polymerase und der Ergänzung neuer DNA-Nukleotide."
+}
+}
+],
+"implementationHint": "Sehr gut als Dropdown- oder Drag-and-Drop-Aufgabe geeignet."
+}
+]
+}

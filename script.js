@@ -4,11 +4,17 @@
   const TASKS_URL = "data/tasks.json";
   const CREDITS_URL = "data/imageCredits.json";
   const SELF_CHECK_URL = "data/selfCheckCompetencies.json";
+  const EXAM_TRAINING_URL = "data/klausuraufgaben.json";
   const STORAGE_PREFIX = "klausurtrainer_molekulargenetik";
   const SELF_CHECK_STORAGE_KEY = "molekulargenetik_selfcheck_status";
+  const EXAM_TRAINING_PROGRESS_KEY = "klausurtrainingProgress";
+  const EXAM_TRAINING_ANSWERS_KEY = "klausurtrainingAnswers";
+  const EXAM_TRAINING_CHECKS_KEY = "klausurtrainingChecks";
+  const EXAM_ALLOWED_CATEGORIES = ["DNA-Aufbau", "DNA-Replikation", "Transkription", "Translation"];
 
   const topics = [
     { title: "Selbstcheck", subtitle: "Kann ich das schon?", active: true, view: "selfcheck" },
+    { title: "Klausurtraining: Materialaufgaben", active: true, view: "examTraining", featured: true },
     { title: "DNA-Aufbau", active: true, taskId: "dna_aufbau_01" },
     { title: "DNA-Replikation", active: true, taskId: "dna_replikation_01" },
     { title: "Transkription", active: true, taskId: "transkription_01" },
@@ -88,6 +94,13 @@
     credits: [],
     selfCheckCompetencies: [],
     selfCheckStatus: readJson(SELF_CHECK_STORAGE_KEY, {}),
+    examTrainingTasks: [],
+    examTrainingMeta: {},
+    examTrainingProgress: readJson(EXAM_TRAINING_PROGRESS_KEY, {}),
+    examTrainingAnswers: readJson(EXAM_TRAINING_ANSWERS_KEY, {}),
+    examTrainingChecks: readJson(EXAM_TRAINING_CHECKS_KEY, {}),
+    currentExamTask: null,
+    currentExamFilters: { category: "all" },
     currentTask: null,
     openedFromSelfCheck: false,
     checks: readJson(`${STORAGE_PREFIX}_checks`, {}),
@@ -100,12 +113,16 @@
     homeView: document.getElementById("homeView"),
     taskView: document.getElementById("taskView"),
     selfCheckView: document.getElementById("selfCheckView"),
+    examTrainingView: document.getElementById("examTrainingView"),
     topicGrid: document.getElementById("topicGrid"),
     taskContainer: document.getElementById("taskContainer"),
     selfCheckContainer: document.getElementById("selfCheckContainer"),
+    examTrainingContainer: document.getElementById("examTrainingContainer"),
     backHomeButton: document.getElementById("backHomeButton"),
     backSelfCheckButton: document.getElementById("backSelfCheckButton"),
     selfCheckBackHomeButton: document.getElementById("selfCheckBackHomeButton"),
+    examTrainingBackHomeButton: document.getElementById("examTrainingBackHomeButton"),
+    examTrainingBackOverviewButton: document.getElementById("examTrainingBackOverviewButton"),
     exportButton: document.getElementById("exportButton"),
     navButtons: Array.from(document.querySelectorAll("[data-view-target]"))
   };
@@ -135,6 +152,8 @@
     elements.backHomeButton.addEventListener("click", () => showView("home"));
     elements.backSelfCheckButton.addEventListener("click", () => openSelfCheck());
     elements.selfCheckBackHomeButton.addEventListener("click", () => showView("home"));
+    elements.examTrainingBackHomeButton.addEventListener("click", () => showView("home"));
+    elements.examTrainingBackOverviewButton.addEventListener("click", () => openExamTrainingOverview());
     elements.exportButton.addEventListener("click", exportResults);
     window.addEventListener("beforeprint", prepareSelfCheckPrint);
     window.addEventListener("afterprint", restoreSelfCheckPrint);
@@ -169,16 +188,21 @@
       const card = document.createElement("button");
       card.type = "button";
       card.className = topic.view === "selfcheck" ? "topic-card topic-card-selfcheck" : "topic-card";
+      if (topic.view === "examTraining") {
+        card.classList.add("topic-card-exam");
+      }
       card.disabled = !topic.active;
       card.innerHTML = `
         <span class="topic-title">${escapeHtml(topic.title)}</span>
         ${topic.subtitle ? `<span class="topic-subtitle">${escapeHtml(topic.subtitle)}</span>` : ""}
-        <span class="topic-state">${topic.active ? (topic.view === "selfcheck" ? "Selbstcheck öffnen" : "Aufgabe öffnen") : "kommt später"}</span>
+        <span class="topic-state">${topic.active ? getTopicStateText(topic) : "kommt später"}</span>
       `;
       if (topic.active) {
         card.addEventListener("click", () => {
           if (topic.view === "selfcheck") {
             openSelfCheck();
+          } else if (topic.view === "examTraining") {
+            openExamTrainingOverview();
           } else {
             openTask(topic.taskId);
           }
@@ -186,6 +210,16 @@
       }
       elements.topicGrid.append(card);
     });
+  }
+
+  function getTopicStateText(topic) {
+    if (topic.view === "selfcheck") {
+      return "Selbstcheck öffnen";
+    }
+    if (topic.view === "examTraining") {
+      return "Klausurtraining öffnen";
+    }
+    return "Aufgabe öffnen";
   }
 
   async function openTask(preferredId, options = {}) {
@@ -222,9 +256,11 @@
   function showView(viewName) {
     const isTask = viewName === "task";
     const isSelfCheck = viewName === "selfcheck";
+    const isExamTraining = viewName === "examTraining";
     elements.homeView.classList.toggle("active", viewName === "home");
     elements.taskView.classList.toggle("active", isTask);
     elements.selfCheckView.classList.toggle("active", isSelfCheck);
+    elements.examTrainingView.classList.toggle("active", isExamTraining);
     elements.backSelfCheckButton.classList.toggle("hidden", !state.openedFromSelfCheck || !isTask);
     elements.navButtons.forEach((button) => {
       button.classList.toggle("active", button.dataset.viewTarget === viewName);
@@ -248,6 +284,659 @@
 
   function renderSelfCheckError(message) {
     elements.selfCheckContainer.innerHTML = `<div class="message-box">${escapeHtml(message)}</div>`;
+  }
+
+  async function openExamTrainingOverview() {
+    showView("examTraining");
+    elements.examTrainingBackOverviewButton.classList.add("hidden");
+    state.currentExamTask = null;
+    if (!state.examTrainingTasks.length) {
+      try {
+        await loadExamTrainingTasks();
+      } catch (error) {
+        renderExamTrainingMessage("Das Klausurtraining konnte nicht geladen werden. Prüfe bitte, ob data/klausuraufgaben.json vorhanden ist.");
+        console.error(error);
+        return;
+      }
+    }
+    renderExamTrainingOverview();
+  }
+
+  async function loadExamTrainingTasks() {
+    const data = await fetchJson(EXAM_TRAINING_URL);
+    state.examTrainingMeta = {
+      title: data && data.title ? String(data.title) : "Klausurtraining: Materialaufgaben",
+      description: data && data.description ? String(data.description) : ""
+    };
+    state.examTrainingTasks = Array.isArray(data && data.tasks) ? data.tasks.filter((task) => task && task.id) : [];
+  }
+
+  function renderExamTrainingMessage(message) {
+    elements.examTrainingContainer.innerHTML = `<div class="message-box">${escapeHtml(message)}</div>`;
+  }
+
+  function renderExamTrainingOverview() {
+    const tasks = state.examTrainingTasks;
+    const filtered = tasks.filter((task) => {
+      const categories = getExamTaskCategories(task);
+      return state.currentExamFilters.category === "all" || categories.includes(state.currentExamFilters.category);
+    });
+
+    elements.examTrainingContainer.innerHTML = `
+      <article class="exam-overview-header">
+        <p class="eyebrow">Klausurtraining</p>
+        <h2 id="examTrainingTitle">Klausurtraining: Materialaufgaben</h2>
+        <p>Bearbeite materialgestützte Aufgaben wie in einer Klausur. Offene Antworten vergleichst du anschließend mit der Musterlösung.</p>
+        <div class="exam-filter-row">
+          <label>Kategorie
+            <select id="examCategoryFilter">
+              <option value="all">Alle anzeigen</option>
+              ${EXAM_ALLOWED_CATEGORIES.map((category) => `<option value="${escapeHtml(category)}" ${state.currentExamFilters.category === category ? "selected" : ""}>${escapeHtml(category)}</option>`).join("")}
+            </select>
+          </label>
+        </div>
+      </article>
+      <div class="exam-task-grid">
+        ${filtered.length ? filtered.map((task) => renderExamTaskCard(task)).join("") : '<div class="message-box">Zu diesen Filtern wurden keine Aufgaben gefunden.</div>'}
+      </div>
+    `;
+
+    elements.examTrainingContainer.querySelector("#examCategoryFilter").addEventListener("change", (event) => {
+      state.currentExamFilters.category = event.target.value;
+      renderExamTrainingOverview();
+    });
+    elements.examTrainingContainer.querySelectorAll("[data-exam-start]").forEach((button) => {
+      button.addEventListener("click", () => openExamTrainingTask(button.dataset.examStart));
+    });
+  }
+
+  function renderExamTaskCard(task) {
+    const progress = getExamProgress(task.id);
+    const categories = getExamTaskCategories(task);
+    return `
+      <article class="exam-task-card">
+        <div>
+          <h3>${escapeHtml(task.title || "Materialaufgabe")}</h3>
+          <div class="exam-meta">
+            ${categories.length ? categories.map((category) => `<span>${escapeHtml(category)}</span>`).join("") : "<span>ohne Kategorie</span>"}
+            ${task.image && task.image.src ? "<span>mit Bildmaterial</span>" : ""}
+          </div>
+          <p class="exam-progress-pill ${progress.className}">${escapeHtml(progress.label)}</p>
+        </div>
+        <button class="primary-button" type="button" data-exam-start="${escapeHtml(task.id)}">Aufgabe starten</button>
+      </article>
+    `;
+  }
+
+  function openExamTrainingTask(taskId) {
+    const task = state.examTrainingTasks.find((item) => item.id === taskId);
+    if (!task) {
+      renderExamTrainingMessage("Diese Klausuraufgabe ist noch nicht verfügbar.");
+      return;
+    }
+    state.currentExamTask = task;
+    elements.examTrainingBackOverviewButton.classList.remove("hidden");
+    showView("examTraining");
+    renderExamTrainingTask(task);
+  }
+
+  function renderExamTrainingTask(task) {
+    const index = state.examTrainingTasks.findIndex((item) => item.id === task.id);
+    const progress = getExamProgress(task.id);
+    const answers = getExamAnswers(task.id);
+    const categories = getExamTaskCategories(task);
+    elements.examTrainingContainer.innerHTML = `
+      <article class="exam-task-view" data-exam-task-id="${escapeHtml(task.id)}">
+        <header class="exam-task-header">
+          <p class="eyebrow">Klausurtraining</p>
+          <h2>${escapeHtml(task.title || "Materialaufgabe")}</h2>
+          <div class="exam-meta">
+            ${categories.length ? categories.map((category) => `<span>${escapeHtml(category)}</span>`).join("") : "<span>ohne Kategorie</span>"}
+            <span>${escapeHtml(progress.label)}</span>
+          </div>
+          ${normalizeList(task.competencies).length ? `<div class="competency-tags">${normalizeList(task.competencies).map((item) => `<span>${escapeHtml(item)}</span>`).join("")}</div>` : ""}
+        </header>
+        ${renderExamImage(task.image)}
+        <section class="exam-material-section">
+          <h3>Material</h3>
+          ${normalizeList(task.material).length ? normalizeList(task.material).map((material) => renderExamMaterial(material)).join("") : '<p class="muted-small">Kein zusätzliches Material vorhanden.</p>'}
+        </section>
+        <section class="exam-question-section">
+          <h3>Aufgaben</h3>
+          ${normalizeList(task.questions).map((question, questionIndex) => renderExamQuestion(task, question, questionIndex, answers)).join("")}
+        </section>
+        <div class="button-row exam-action-row">
+          <button class="secondary-button" type="button" data-progress="done">Als bearbeitet markieren</button>
+          <button class="secondary-button" type="button" data-progress="secure">Das kann ich sicher</button>
+          <button class="secondary-button" type="button" data-progress="unsure">Das muss ich noch üben</button>
+        </div>
+        <div class="button-row exam-nav-row">
+          ${index > 0 ? `<button class="secondary-button" type="button" data-exam-nav="${escapeHtml(state.examTrainingTasks[index - 1].id)}">Vorherige Aufgabe</button>` : ""}
+          <button class="secondary-button" type="button" id="examOverviewButton">Zurück zur Übersicht</button>
+          ${index >= 0 && index < state.examTrainingTasks.length - 1 ? `<button class="primary-button" type="button" data-exam-nav="${escapeHtml(state.examTrainingTasks[index + 1].id)}">Nächste Aufgabe</button>` : ""}
+        </div>
+      </article>
+    `;
+
+    bindExamTrainingTaskEvents(task);
+  }
+
+  function bindExamTrainingTaskEvents(task) {
+    const container = elements.examTrainingContainer;
+    container.querySelectorAll("[data-question-id], [data-label-number], [data-match-key], [data-tf-part]").forEach((field) => {
+      field.addEventListener("input", () => storeExamAnswers(task.id));
+      field.addEventListener("change", () => storeExamAnswers(task.id));
+    });
+    container.querySelectorAll("[data-exam-question-check]").forEach((button) => {
+      button.addEventListener("click", () => {
+        storeExamAnswers(task.id);
+        const question = normalizeList(task.questions).find((item) => (item.id || "") === button.dataset.examQuestionCheck);
+        if (!question) return;
+        const result = checkExamQuestion(task, question, getExamAnswers(task.id));
+        setExamQuestionCheck(task.id, question.id, result);
+        const feedback = container.querySelector(`[data-question-feedback="${cssEscape(question.id)}"]`);
+        if (feedback) {
+          feedback.classList.remove("hidden");
+          feedback.innerHTML = renderExamQuestionFeedback(result);
+        }
+      });
+    });
+    container.querySelectorAll("[data-exam-question-solution]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const question = normalizeList(task.questions).find((item) => (item.id || "") === button.dataset.examQuestionSolution);
+        if (!question) return;
+        const solutionBox = container.querySelector(`[data-question-solution-box="${cssEscape(question.id)}"]`);
+        if (!solutionBox) return;
+        solutionBox.classList.toggle("hidden");
+        if (!solutionBox.classList.contains("hidden")) {
+          solutionBox.innerHTML = renderExamQuestionSolution(question.solution || {});
+        }
+      });
+    });
+    container.querySelector("#examOverviewButton").addEventListener("click", () => openExamTrainingOverview());
+    container.querySelectorAll("[data-exam-nav]").forEach((button) => {
+      button.addEventListener("click", () => openExamTrainingTask(button.dataset.examNav));
+    });
+    container.querySelectorAll("[data-progress]").forEach((button) => {
+      button.addEventListener("click", () => {
+        setExamProgress(task.id, button.dataset.progress);
+        renderExamTrainingTask(task);
+      });
+    });
+  }
+
+  function renderExamImage(image) {
+    if (!image || !image.src) {
+      return "";
+    }
+    return `
+      <figure class="exam-image-card">
+        <img src="${escapeHtml(image.src)}" alt="${escapeHtml(image.alt || "Bildmaterial zur Aufgabe")}" onerror="this.style.display='none'; this.parentElement.querySelector('.image-error').classList.remove('hidden');">
+        <figcaption>${escapeHtml(image.alt || "Bildmaterial")}</figcaption>
+        <p class="image-error hidden">Das Bild konnte nicht geladen werden. Nutze den Alternativtext: ${escapeHtml(image.alt || "Bildmaterial zur Aufgabe")}</p>
+      </figure>
+    `;
+  }
+
+  function renderExamMaterial(material) {
+    const title = material && material.title ? `<h4>${escapeHtml(material.title)}</h4>` : "";
+    const type = material && material.type ? material.type : "text";
+    if (type === "text" || type === "imageTask") {
+      return `<article class="exam-material-card">${title}<p>${escapeHtml(material.content || "")}</p></article>`;
+    }
+    if (type === "sequence" || type === "sequenceComparison") {
+      return `<article class="exam-material-card sequence-material">${title}<pre>${escapeHtml(material.content || "")}</pre></article>`;
+    }
+    if (type === "list" || type === "models") {
+      return `<article class="exam-material-card">${title}${renderList(material.items || [])}</article>`;
+    }
+    if (type === "codeTable") {
+      return `<article class="exam-material-card">${title}${renderCodeTable(material.entries || {})}</article>`;
+    }
+    if (type === "studentSolution") {
+      return `<article class="exam-material-card student-solution-card">${title}<p>${escapeHtml(material.content || "")}</p></article>`;
+    }
+    return `<article class="exam-material-card">${title}<pre>${escapeHtml(JSON.stringify(material, null, 2))}</pre></article>`;
+  }
+
+  function renderExamQuestion(task, question, index, answers) {
+    const questionId = question.id || `frage_${index + 1}`;
+    const responseType = question.responseType || "shortText";
+    const value = answers.questions && answers.questions[questionId] ? answers.questions[questionId] : "";
+    const check = getExamQuestionCheck(task.id, questionId);
+    return `
+      <article class="exam-question-card" data-exam-question-card="${escapeHtml(questionId)}">
+        <h4>${escapeHtml(index + 1)}. ${escapeHtml(question.text || "Aufgabe")}</h4>
+        ${renderExamResponse(task, question, questionId, responseType, value)}
+        <div class="button-row exam-question-actions">
+          <button class="primary-button" type="button" data-exam-question-check="${escapeHtml(questionId)}">Antwort prüfen</button>
+          <button class="ghost-button" type="button" data-exam-question-solution="${escapeHtml(questionId)}">Lösung anzeigen</button>
+        </div>
+        <div class="feedback ${check ? "" : "hidden"}" data-question-feedback="${escapeHtml(questionId)}">${check ? renderExamQuestionFeedback(check) : ""}</div>
+        <div class="solution-box hidden" data-question-solution-box="${escapeHtml(questionId)}"></div>
+      </article>
+    `;
+  }
+
+  function renderExamResponse(task, question, questionId, responseType, value) {
+    if (responseType === "dropdownLabeling") {
+      return renderDropdownLabeling(task, question);
+    }
+    if (responseType === "sequenceInput" || responseType === "ordering") {
+      return `<input class="exam-input" type="text" data-question-id="${escapeHtml(questionId)}" value="${escapeHtml(value)}" placeholder="${responseType === "ordering" ? "z. B. A-B-C-D" : ""}">`;
+    }
+    if (responseType === "matching") {
+      return renderExamMatching(task, question, questionId);
+    }
+    if (responseType === "trueFalseExplain") {
+      const stored = typeof value === "object" && value ? value : {};
+      return `
+        <div class="true-false-grid">
+          <select data-question-id="${escapeHtml(questionId)}" data-tf-part="choice">
+            <option value="">Bitte auswählen</option>
+            <option value="richtig" ${stored.choice === "richtig" ? "selected" : ""}>richtig</option>
+            <option value="falsch" ${stored.choice === "falsch" ? "selected" : ""}>falsch</option>
+          </select>
+          <textarea data-question-id="${escapeHtml(questionId)}" data-tf-part="explanation" rows="4" placeholder="Begründung">${escapeHtml(stored.explanation || "")}</textarea>
+        </div>
+      `;
+    }
+    const rows = responseType === "errorFinding" ? 7 : 5;
+    return `<textarea data-question-id="${escapeHtml(questionId)}" rows="${rows}" placeholder="Antwort eingeben">${escapeHtml(value)}</textarea>`;
+  }
+
+  function renderDropdownLabeling(task, question) {
+    const solutions = question.solution && question.solution.answer ? question.solution.answer : {};
+    const numbers = Object.keys(solutions).sort((a, b) => Number(a) - Number(b));
+    const options = getExamDropdownOptions(task);
+    const labels = getExamAnswers(task.id).labels || {};
+    return `
+      <div class="dropdown-labeling-grid">
+        ${numbers.map((number) => `
+          <label>Zahl ${escapeHtml(number)}
+            <select data-label-number="${escapeHtml(number)}">
+              <option value="">Bitte auswählen</option>
+              ${options.map((option) => `<option value="${escapeHtml(option)}" ${labels[number] === option ? "selected" : ""}>${escapeHtml(option)}</option>`).join("")}
+            </select>
+          </label>
+        `).join("")}
+      </div>
+    `;
+  }
+
+  function renderExamMatching(task, question, questionId) {
+    const matching = question.solution && question.solution.answer ? question.solution.answer : {};
+    const keys = Object.keys(matching);
+    const options = stableShuffle(Object.values(matching), `${task.id}_${questionId}_matching`);
+    const stored = (getExamAnswers(task.id).matching || {})[questionId] || {};
+    if (!keys.length) {
+      return `<textarea data-question-id="${escapeHtml(questionId)}" rows="5" placeholder="Zuordnung eingeben"></textarea>`;
+    }
+    return `
+      <div class="exam-matching-grid">
+        ${keys.map((key) => `
+          <label>${escapeHtml(key)}
+            <select data-question-id="${escapeHtml(questionId)}" data-match-key="${escapeHtml(key)}">
+              <option value="">Bitte zuordnen</option>
+              ${options.map((option) => `<option value="${escapeHtml(option)}" ${stored[key] === option ? "selected" : ""}>${escapeHtml(option)}</option>`).join("")}
+            </select>
+          </label>
+        `).join("")}
+      </div>
+    `;
+  }
+
+  function storeExamAnswers(taskId) {
+    const taskAnswers = { questions: {}, labels: {}, matching: {} };
+    elements.examTrainingContainer.querySelectorAll("[data-question-id]").forEach((field) => {
+      const questionId = field.dataset.questionId;
+      if (field.dataset.matchKey) {
+        taskAnswers.matching[questionId] = taskAnswers.matching[questionId] || {};
+        taskAnswers.matching[questionId][field.dataset.matchKey] = field.value;
+      } else if (field.dataset.tfPart) {
+        taskAnswers.questions[questionId] = taskAnswers.questions[questionId] || {};
+        taskAnswers.questions[questionId][field.dataset.tfPart] = field.value;
+      } else {
+        taskAnswers.questions[questionId] = field.value;
+      }
+    });
+    elements.examTrainingContainer.querySelectorAll("[data-label-number]").forEach((field) => {
+      taskAnswers.labels[field.dataset.labelNumber] = field.value;
+    });
+    state.examTrainingAnswers = { ...state.examTrainingAnswers, [taskId]: taskAnswers };
+    writeJson(EXAM_TRAINING_ANSWERS_KEY, state.examTrainingAnswers);
+  }
+
+  function getExamAnswers(taskId) {
+    return state.examTrainingAnswers[taskId] || { questions: {}, labels: {}, matching: {} };
+  }
+
+  function getExamQuestionCheck(taskId, questionId) {
+    const taskChecks = state.examTrainingChecks[taskId];
+    if (!taskChecks) {
+      return null;
+    }
+    if (taskChecks.questions) {
+      return taskChecks.questions[questionId] || null;
+    }
+    return taskChecks.questionId === questionId ? taskChecks : null;
+  }
+
+  function setExamQuestionCheck(taskId, questionId, result) {
+    const current = state.examTrainingChecks[taskId] && state.examTrainingChecks[taskId].questions
+      ? state.examTrainingChecks[taskId]
+      : { questions: {} };
+    state.examTrainingChecks = {
+      ...state.examTrainingChecks,
+      [taskId]: {
+        ...current,
+        questions: {
+          ...current.questions,
+          [questionId]: result
+        }
+      }
+    };
+    writeJson(EXAM_TRAINING_CHECKS_KEY, state.examTrainingChecks);
+  }
+
+  function checkExamQuestion(task, question, answers) {
+    const questionId = question.id || "";
+    const solution = question.solution || {};
+    const solutionType = solution.type || "";
+    const expected = solution.answer;
+    const result = {
+      date: new Date().toISOString(),
+      questionId,
+      responseType: question.responseType || "shortText",
+      solutionType,
+      summary: "Vergleiche deine Antwort mit der Musterlösung.",
+      items: [],
+      autoChecked: false
+    };
+
+    if (question.responseType === "dropdownLabeling" || solutionType === "labelSolutions") {
+      Object.entries(expected || {}).forEach(([number, correctValue]) => {
+        const entered = answers.labels && answers.labels[number] ? answers.labels[number] : "";
+        result.items.push({
+          label: `Zahl ${number}`,
+          entered,
+          expected: correctValue,
+          correct: normalizeExamText(entered) === normalizeExamText(correctValue)
+        });
+      });
+      result.autoChecked = true;
+      result.summary = summarizeClosedCheck(result.items, "Zuordnungen");
+      return result;
+    }
+
+    if (question.responseType === "matching" || solutionType === "matching") {
+      const stored = (answers.matching && answers.matching[questionId]) || {};
+      Object.entries(expected || {}).forEach(([key, correctValue]) => {
+        const entered = stored[key] || "";
+        result.items.push({ label: key, entered, expected: correctValue, correct: entered === correctValue });
+      });
+      result.autoChecked = true;
+      result.summary = summarizeClosedCheck(result.items, "Zuordnungen");
+      return result;
+    }
+
+    const entered = answers.questions && answers.questions[questionId] ? answers.questions[questionId] : "";
+    if (question.responseType === "sequenceInput" || solutionType === "sequence") {
+      result.items.push({
+        label: "Sequenz",
+        entered,
+        expected,
+        correct: normalizeSequence(entered) === normalizeSequence(expected)
+      });
+      result.autoChecked = true;
+      result.summary = result.items[0].correct ? "Die Sequenz passt zur hinterlegten Lösung." : "Prüfe die Sequenz noch einmal und vergleiche sie mit der Lösung.";
+      return result;
+    }
+
+    if (question.responseType === "ordering" || solutionType === "order") {
+      result.items.push({
+        label: "Reihenfolge",
+        entered,
+        expected: normalizeList(expected).join(" – "),
+        correct: normalizeOrderingAnswer(entered) === normalizeOrderingAnswer(expected)
+      });
+      result.autoChecked = true;
+      result.summary = result.items[0].correct ? "Die Reihenfolge passt zur hinterlegten Lösung." : "Prüfe die Reihenfolge noch einmal.";
+      return result;
+    }
+
+    if (solutionType === "shortAnswer") {
+      result.items.push({
+        label: "Kurzantwort",
+        entered,
+        expected,
+        correct: normalizeShortAnswer(entered) === normalizeShortAnswer(expected)
+      });
+      result.autoChecked = true;
+      result.summary = result.items[0].correct ? "Die Kurzantwort passt zur hinterlegten Lösung." : "Prüfe deine Kurzantwort noch einmal.";
+      return result;
+    }
+
+    if (solutionType === "codons") {
+      result.items.push({
+        label: "Codons",
+        entered,
+        expected: normalizeList(expected).join(" | "),
+        correct: normalizeOrderAnswer(entered) === normalizeOrderAnswer(expected)
+      });
+      result.autoChecked = true;
+      result.summary = result.items[0].correct ? "Die Codon-Reihenfolge passt." : "Prüfe die Codon-Reihenfolge noch einmal.";
+      return result;
+    }
+
+    if (solutionType === "trueFalseExplain") {
+      const stored = typeof entered === "object" && entered ? entered : {};
+      const expectedChoice = expected === true ? "richtig" : "falsch";
+      result.items.push({
+        label: "Richtig/Falsch",
+        entered: stored.choice || "",
+        expected: expectedChoice,
+        correct: stored.choice === expectedChoice
+      });
+      result.autoChecked = true;
+      result.summary = result.items[0].correct
+        ? "Die Richtig/Falsch-Auswahl passt. Vergleiche deine Begründung mit der Musterlösung."
+        : "Prüfe die Richtig/Falsch-Auswahl noch einmal. Vergleiche deine Begründung mit der Musterlösung.";
+      return result;
+    }
+
+    return result;
+  }
+
+  function renderExamQuestionFeedback(result) {
+    if (!result.autoChecked) {
+      return `
+        <p class="notice">Dieses Klausurtraining dient der Selbstkontrolle und ersetzt keine Bewertung.</p>
+        <p>Vergleiche deine Antwort mit der Musterlösung.</p>
+      `;
+    }
+    return `
+      <p class="notice">Dieses Klausurtraining dient der Selbstkontrolle und ersetzt keine Bewertung.</p>
+      <p>${escapeHtml(result.summary)}</p>
+      ${renderExamResultList(result.items.map((item) => item.correct
+        ? `${item.label}: richtig`
+        : `${item.label}: noch prüfen${item.expected ? `, korrekt wäre ${item.expected}` : ""}`))}
+    `;
+  }
+
+  function renderExamResultList(items) {
+    return `<ul>${items.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`;
+  }
+
+  function renderExamQuestionSolution(solution) {
+    const type = solution.type || "modelAnswer";
+    const answer = solution.answer;
+    let content = "";
+
+    if (type === "modelAnswer") {
+      content = `<p>${escapeHtml(answer || "")}</p>`;
+    } else if (type === "sequence") {
+      content = `<p class="sequence-line">${escapeHtml(answer || "")}</p>`;
+    } else if (type === "order") {
+      content = `<p class="sequence-line">${escapeHtml(solution.displayAnswer || normalizeList(answer).join(" → "))}</p>`;
+    } else if (type === "matching" || type === "labelSolutions") {
+      content = renderKeyValueTable(answer || {}, type === "labelSolutions" ? "Nummer" : "Begriff", "Lösung");
+    } else if (type === "codons") {
+      content = `<p class="sequence-line">${escapeHtml(solution.displayAnswer || normalizeList(answer).join(" | "))}</p>`;
+    } else if (type === "aminoAcidSequence") {
+      content = `<p class="sequence-line">${escapeHtml(solution.displayAnswer || normalizeList(answer).join(" – "))}</p>`;
+    } else if (type === "shortAnswer") {
+      content = `<p class="sequence-line">${escapeHtml(answer || "")}</p>`;
+    } else if (type === "trueFalseExplain") {
+      content = `<p>${escapeHtml(solution.displayAnswer || (answer === true ? "richtig" : "falsch"))}</p>`;
+    } else if (type === "comparison") {
+      content = renderKeyValueTable(answer || {}, "Vergleich", "Lösung");
+    } else if (type === "errors") {
+      content = renderList(answer || []);
+    } else if (type === "requiredTerms") {
+      content = `${solution.displayAnswer ? `<p>${escapeHtml(solution.displayAnswer)}</p>` : ""}${renderList(answer || [])}`;
+    } else if (type === "exampleTerms") {
+      content = renderNestedSolutionObject(answer || {});
+    } else {
+      content = renderSolutionValue(answer != null ? answer : solution);
+    }
+
+    return `<h4>Lösung</h4>${content}`;
+  }
+
+  function renderSolutionValue(value) {
+    if (Array.isArray(value)) {
+      return renderList(value);
+    }
+    if (value && typeof value === "object") {
+      return renderKeyValueTable(value);
+    }
+    return `<p>${escapeHtml(value || "")}</p>`;
+  }
+
+  function renderKeyValueTable(value, firstLabel = "Begriff", secondLabel = "Lösung") {
+    const rows = Object.entries(value || {}).map(([key, entry]) => `<tr><th scope="row">${escapeHtml(key)}</th><td>${Array.isArray(entry) ? escapeHtml(entry.join(", ")) : escapeHtml(entry)}</td></tr>`).join("");
+    return `<div class="table-scroll"><table class="mini-table"><thead><tr><th>${escapeHtml(firstLabel)}</th><th>${escapeHtml(secondLabel)}</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  }
+
+  function renderCodeTable(entries) {
+    if (Array.isArray(entries)) {
+      const keys = Array.from(new Set(entries.flatMap((entry) => entry && typeof entry === "object" ? Object.keys(entry) : [])));
+      if (keys.length) {
+        const labels = keys.map((key) => key === "abbr3" ? "3-Buchstaben-Code" : key === "fullName" ? "vollständiger Name" : key);
+        const rows = entries.map((entry) => `<tr>${keys.map((key) => `<td>${escapeHtml(entry && entry[key] != null ? entry[key] : "")}</td>`).join("")}</tr>`).join("");
+        return `<div class="table-scroll"><table class="mini-table"><thead><tr>${labels.map((label) => `<th>${escapeHtml(label)}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table></div>`;
+      }
+      return renderList(entries);
+    }
+    const firstKey = Object.keys(entries || {})[0] || "";
+    const firstLabel = /^[AUCGT]{3}$/i.test(firstKey) ? "Codon" : "3-Buchstaben-Code";
+    const secondLabel = /^[AUCGT]{3}$/i.test(firstKey) ? "Aminosäure" : "vollständiger Name";
+    return renderKeyValueTable(entries || {}, firstLabel, secondLabel);
+  }
+
+  function renderNestedSolutionObject(value) {
+    return Object.entries(value || {}).map(([key, entries]) => `<h5>${escapeHtml(key)}</h5>${renderList(entries)}`).join("");
+  }
+
+  function getExamDropdownOptions(task) {
+    const options = normalizeList(task.dropdownOptions);
+    if (task.shuffleDropdownOptions) {
+      return stableShuffle(options, `${task.id}_dropdown_options`);
+    }
+    return options;
+  }
+
+  function getExamTaskCategories(task) {
+    const rawCategories = Array.isArray(task.categories)
+      ? task.categories
+      : task.category
+        ? [task.category]
+        : [];
+    return rawCategories
+      .map((category) => String(category))
+      .filter((category) => EXAM_ALLOWED_CATEGORIES.includes(category));
+  }
+
+  function getExamProgress(taskId) {
+    const value = state.examTrainingProgress[taskId] || "none";
+    const labels = {
+      none: "noch nicht bearbeitet",
+      done: "bearbeitet",
+      secure: "sicher",
+      unsure: "unsicher"
+    };
+    return { value, label: labels[value] || labels.none, className: `progress-${value}` };
+  }
+
+  function setExamProgress(taskId, value) {
+    state.examTrainingProgress = { ...state.examTrainingProgress, [taskId]: value };
+    writeJson(EXAM_TRAINING_PROGRESS_KEY, state.examTrainingProgress);
+  }
+
+  function uniqueSorted(values) {
+    return Array.from(new Set(values.map((value) => String(value)))).sort((a, b) => a.localeCompare(b, "de"));
+  }
+
+  function stableShuffle(values, seed) {
+    const withScores = normalizeList(values).map((value) => ({
+      value,
+      score: seededHash(`${seed}_${value}`)
+    }));
+    return withScores.sort((a, b) => a.score - b.score).map((item) => item.value);
+  }
+
+  function seededHash(value) {
+    let hash = 2166136261;
+    const text = String(value);
+    for (let index = 0; index < text.length; index += 1) {
+      hash ^= text.charCodeAt(index);
+      hash = Math.imul(hash, 16777619);
+    }
+    return hash >>> 0;
+  }
+
+  function normalizeExamText(value) {
+    return normalizeText(value).replace(/[-–—]/g, " ").replace(/\s+/g, " ").trim();
+  }
+
+  function normalizeSequence(value) {
+    return normalizeText(value).replace(/[^acgut]/g, "");
+  }
+
+  function normalizeOrderAnswer(value) {
+    return normalizeList(value)
+      .join(" ")
+      .toUpperCase()
+      .replace(/→|->|–|—/g, " ")
+      .replace(/[^A-Z0-9]+/g, " ")
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean)
+      .join("-");
+  }
+
+  function normalizeOrderingAnswer(value) {
+    const text = normalizeList(value).join(" ").toUpperCase();
+    const tokens = text
+      .replace(/→|->|–|—/g, " ")
+      .replace(/[^A-Z0-9]+/g, " ")
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean);
+    if (tokens.length === 1 && /^[A-Z]+$/.test(tokens[0])) {
+      return tokens[0].split("").join("-");
+    }
+    return tokens.join("-");
+  }
+
+  function normalizeShortAnswer(value) {
+    return normalizeText(value).replace(/\s+/g, "");
+  }
+
+  function summarizeClosedCheck(items, label) {
+    const correct = items.filter((item) => item.correct).length;
+    return `${correct} von ${items.length} ${label} passend.`;
   }
 
   function renderSelfCheck() {
@@ -450,6 +1139,11 @@
         totalCompetencies: competencies.length,
         checkedCompetencies: competencies.filter((item) => isSelfCheckChecked(item.id)).length,
         status: state.selfCheckStatus
+      },
+      klausurtraining: {
+        progress: state.examTrainingProgress,
+        answers: state.examTrainingAnswers,
+        checks: state.examTrainingChecks
       }
     };
     const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
