@@ -275,6 +275,16 @@ h1 {
   color: #fff;
 }
 
+.topic-card-operator {
+  border-color: rgba(122, 90, 22, 0.38);
+  background: linear-gradient(180deg, #ffffff, #fff8e8);
+}
+
+.topic-card-operator .topic-state {
+  background: #7a5a16;
+  color: #fff;
+}
+
 .topic-card:disabled {
   opacity: 0.66;
   background: #f6f7f6;
@@ -515,13 +525,23 @@ h1 {
   gap: 1rem;
 }
 
+.operator-training-container {
+  display: grid;
+  gap: 1rem;
+}
+
 .exam-overview-header,
 .exam-task-card,
 .exam-task-header,
 .exam-material-card,
 .exam-question-card,
 .exam-image-card,
-.solution-box {
+.solution-box,
+.operator-overview-header,
+.operator-task-card,
+.operator-task-header,
+.operator-question-card,
+.operator-help-box {
   border: 1px solid rgba(216, 226, 220, 0.92);
   border-radius: 0.5rem;
   background: rgba(255, 255, 255, 0.92);
@@ -532,12 +552,19 @@ h1 {
 .exam-task-header,
 .exam-material-card,
 .exam-question-card,
-.solution-box {
+.solution-box,
+.operator-overview-header,
+.operator-task-header,
+.operator-question-card,
+.operator-help-box {
   padding: clamp(1rem, 2.4vw, 1.45rem);
 }
 
 .exam-overview-header p,
-.exam-task-header p {
+.exam-task-header p,
+.operator-overview-header p,
+.operator-task-header p,
+.operator-task-card p {
   max-width: 68rem;
   color: var(--muted);
   line-height: 1.6;
@@ -579,14 +606,21 @@ h1 {
   gap: 1rem;
 }
 
-.exam-task-card {
+.operator-task-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.exam-task-card,
+.operator-task-card {
   display: grid;
   align-content: space-between;
   gap: 1rem;
   padding: 1rem;
 }
 
-.exam-task-card h3 {
+.exam-task-card h3,
+.operator-task-card h3 {
   font-size: 1.08rem;
 }
 
@@ -599,7 +633,8 @@ h1 {
 
 .exam-meta span,
 .competency-tags span,
-.exam-progress-pill {
+.exam-progress-pill,
+.operator-tag {
   display: inline-flex;
   align-items: center;
   min-height: 1.8rem;
@@ -609,6 +644,11 @@ h1 {
   color: #2d4d44;
   font-size: 0.88rem;
   font-weight: 700;
+}
+
+.operator-tag {
+  background: #fff2d5;
+  color: #7a5a16;
 }
 
 .competency-tags {
@@ -640,7 +680,9 @@ h1 {
 
 .exam-task-view,
 .exam-material-section,
-.exam-question-section {
+.exam-question-section,
+.operator-task-view,
+.operator-question-section {
   display: grid;
   gap: 1rem;
 }
@@ -656,6 +698,11 @@ h1 {
   height: auto;
   margin: 0 auto;
   border-radius: 0.4rem;
+}
+
+.operator-image-card img {
+  max-height: 70vh;
+  object-fit: contain;
 }
 
 .exam-image-card figcaption,
@@ -723,13 +770,37 @@ h1 {
 }
 
 .exam-question-card textarea,
-.true-false-grid textarea {
+.true-false-grid textarea,
+.operator-question-card textarea {
   width: 100%;
   min-height: 8rem;
   border: 1px solid var(--line);
   border-radius: 0.5rem;
   padding: 0.75rem;
   resize: vertical;
+}
+
+.operator-question-heading {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.operator-question-heading h4 {
+  margin: 0;
+}
+
+.operator-help-box {
+  margin-top: 0.8rem;
+  box-shadow: none;
+  background: #fffaf0;
+  border-color: #f0d9a4;
+}
+
+.operator-help-box h4 {
+  margin: 0 0 0.55rem;
 }
 
 .exam-input {

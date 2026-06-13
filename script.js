@@ -5,11 +5,15 @@
   const CREDITS_URL = "data/imageCredits.json";
   const SELF_CHECK_URL = "data/selfCheckCompetencies.json";
   const EXAM_TRAINING_URL = "data/klausuraufgaben.json";
+  const OPERATOR_TRAINING_URL = "data/operatorentraining.json";
   const STORAGE_PREFIX = "klausurtrainer_molekulargenetik";
   const SELF_CHECK_STORAGE_KEY = "molekulargenetik_selfcheck_status";
   const EXAM_TRAINING_PROGRESS_KEY = "klausurtrainingProgress";
   const EXAM_TRAINING_ANSWERS_KEY = "klausurtrainingAnswers";
   const EXAM_TRAINING_CHECKS_KEY = "klausurtrainingChecks";
+  const OPERATOR_TRAINING_PROGRESS_KEY = "operatorentrainingProgress";
+  const OPERATOR_TRAINING_ANSWERS_KEY = "operatorentrainingAnswers";
+  const OPERATOR_TRAINING_CHECKS_KEY = "operatorentrainingChecks";
   const EXAM_ALLOWED_CATEGORIES = ["DNA-Aufbau", "DNA-Replikation", "Transkription", "Translation"];
 
   const topics = [
@@ -20,7 +24,7 @@
     { title: "Transkription", active: true, taskId: "transkription_01" },
     { title: "Translation", active: true, taskId: "translation_01" },
     { title: "Gemischte Klausuraufgaben", active: false },
-    { title: "Operatoren-Trainer", active: false }
+    { title: "Operatoren-Trainer", active: true, view: "operatorTraining" }
   ];
 
   const fallbackContent = {
@@ -101,6 +105,12 @@
     examTrainingChecks: readJson(EXAM_TRAINING_CHECKS_KEY, {}),
     currentExamTask: null,
     currentExamFilters: { category: "all" },
+    operatorTrainingTasks: [],
+    operatorTrainingMeta: {},
+    operatorTrainingProgress: readJson(OPERATOR_TRAINING_PROGRESS_KEY, {}),
+    operatorTrainingAnswers: readJson(OPERATOR_TRAINING_ANSWERS_KEY, {}),
+    operatorTrainingChecks: readJson(OPERATOR_TRAINING_CHECKS_KEY, {}),
+    currentOperatorTask: null,
     currentTask: null,
     openedFromSelfCheck: false,
     checks: readJson(`${STORAGE_PREFIX}_checks`, {}),
@@ -114,15 +124,19 @@
     taskView: document.getElementById("taskView"),
     selfCheckView: document.getElementById("selfCheckView"),
     examTrainingView: document.getElementById("examTrainingView"),
+    operatorTrainingView: document.getElementById("operatorTrainingView"),
     topicGrid: document.getElementById("topicGrid"),
     taskContainer: document.getElementById("taskContainer"),
     selfCheckContainer: document.getElementById("selfCheckContainer"),
     examTrainingContainer: document.getElementById("examTrainingContainer"),
+    operatorTrainingContainer: document.getElementById("operatorTrainingContainer"),
     backHomeButton: document.getElementById("backHomeButton"),
     backSelfCheckButton: document.getElementById("backSelfCheckButton"),
     selfCheckBackHomeButton: document.getElementById("selfCheckBackHomeButton"),
     examTrainingBackHomeButton: document.getElementById("examTrainingBackHomeButton"),
     examTrainingBackOverviewButton: document.getElementById("examTrainingBackOverviewButton"),
+    operatorTrainingBackHomeButton: document.getElementById("operatorTrainingBackHomeButton"),
+    operatorTrainingBackOverviewButton: document.getElementById("operatorTrainingBackOverviewButton"),
     exportButton: document.getElementById("exportButton"),
     navButtons: Array.from(document.querySelectorAll("[data-view-target]"))
   };
@@ -154,6 +168,8 @@
     elements.selfCheckBackHomeButton.addEventListener("click", () => showView("home"));
     elements.examTrainingBackHomeButton.addEventListener("click", () => showView("home"));
     elements.examTrainingBackOverviewButton.addEventListener("click", () => openExamTrainingOverview());
+    elements.operatorTrainingBackHomeButton.addEventListener("click", () => showView("home"));
+    elements.operatorTrainingBackOverviewButton.addEventListener("click", () => openOperatorTrainingOverview());
     elements.exportButton.addEventListener("click", exportResults);
     window.addEventListener("beforeprint", prepareSelfCheckPrint);
     window.addEventListener("afterprint", restoreSelfCheckPrint);
@@ -191,6 +207,9 @@
       if (topic.view === "examTraining") {
         card.classList.add("topic-card-exam");
       }
+      if (topic.view === "operatorTraining") {
+        card.classList.add("topic-card-operator");
+      }
       card.disabled = !topic.active;
       card.innerHTML = `
         <span class="topic-title">${escapeHtml(topic.title)}</span>
@@ -203,6 +222,8 @@
             openSelfCheck();
           } else if (topic.view === "examTraining") {
             openExamTrainingOverview();
+          } else if (topic.view === "operatorTraining") {
+            openOperatorTrainingOverview();
           } else {
             openTask(topic.taskId);
           }
@@ -218,6 +239,9 @@
     }
     if (topic.view === "examTraining") {
       return "Klausurtraining öffnen";
+    }
+    if (topic.view === "operatorTraining") {
+      return "Operatoren trainieren";
     }
     return "Aufgabe öffnen";
   }
@@ -257,10 +281,12 @@
     const isTask = viewName === "task";
     const isSelfCheck = viewName === "selfcheck";
     const isExamTraining = viewName === "examTraining";
+    const isOperatorTraining = viewName === "operatorTraining";
     elements.homeView.classList.toggle("active", viewName === "home");
     elements.taskView.classList.toggle("active", isTask);
     elements.selfCheckView.classList.toggle("active", isSelfCheck);
     elements.examTrainingView.classList.toggle("active", isExamTraining);
+    elements.operatorTrainingView.classList.toggle("active", isOperatorTraining);
     elements.backSelfCheckButton.classList.toggle("hidden", !state.openedFromSelfCheck || !isTask);
     elements.navButtons.forEach((button) => {
       button.classList.toggle("active", button.dataset.viewTarget === viewName);
@@ -313,6 +339,322 @@
 
   function renderExamTrainingMessage(message) {
     elements.examTrainingContainer.innerHTML = `<div class="message-box">${escapeHtml(message)}</div>`;
+  }
+
+  async function openOperatorTrainingOverview() {
+    showView("operatorTraining");
+    elements.operatorTrainingBackOverviewButton.classList.add("hidden");
+    state.currentOperatorTask = null;
+    if (!state.operatorTrainingTasks.length) {
+      try {
+        await loadOperatorTrainingTasks();
+      } catch (error) {
+        renderOperatorTrainingMessage("Der Operatoren-Trainer konnte nicht geladen werden. Prüfe bitte, ob data/operatorentraining.json vorhanden ist.");
+        console.error(error);
+        return;
+      }
+    }
+    renderOperatorTrainingOverview();
+  }
+
+  async function loadOperatorTrainingTasks() {
+    const data = await fetchJson(OPERATOR_TRAINING_URL);
+    state.operatorTrainingMeta = {
+      title: data && data.title ? String(data.title) : "Operatoren-Trainer",
+      description: data && data.description ? String(data.description) : ""
+    };
+    state.operatorTrainingTasks = Array.isArray(data && data.tasks) ? data.tasks.filter((task) => task && task.id) : [];
+  }
+
+  function renderOperatorTrainingMessage(message) {
+    elements.operatorTrainingContainer.innerHTML = `<div class="message-box">${escapeHtml(message)}</div>`;
+  }
+
+  function renderOperatorTrainingOverview() {
+    const tasks = state.operatorTrainingTasks;
+    elements.operatorTrainingContainer.innerHTML = `
+      <article class="operator-overview-header">
+        <p class="eyebrow">Operatoren-Trainer</p>
+        <h2 id="operatorTrainingTitle">Operatoren-Trainer</h2>
+        <p>${escapeHtml(state.operatorTrainingMeta.description || "Trainiere, Aufgabenoperatoren sauber voneinander zu unterscheiden und passend zu beantworten.")}</p>
+      </article>
+      <div class="operator-task-grid">
+        ${tasks.length ? tasks.map((task) => renderOperatorTaskCard(task)).join("") : '<div class="message-box">Es wurden keine Operatoren-Aufgaben gefunden.</div>'}
+      </div>
+    `;
+    elements.operatorTrainingContainer.querySelectorAll("[data-operator-start]").forEach((button) => {
+      button.addEventListener("click", () => openOperatorTrainingTask(button.dataset.operatorStart));
+    });
+  }
+
+  function renderOperatorTaskCard(task) {
+    const progress = getOperatorProgress(task.id);
+    return `
+      <article class="operator-task-card">
+        <div>
+          <h3>${escapeHtml(task.title || "Operatoren-Aufgabe")}</h3>
+          ${task.subtitle ? `<p class="muted-small">${escapeHtml(task.subtitle)}</p>` : ""}
+          <div class="exam-meta">
+            ${normalizeList(task.categories).map((category) => `<span>${escapeHtml(category)}</span>`).join("")}
+            ${normalizeList(task.focusOperators).map((operator) => `<span class="operator-tag">${escapeHtml(operator)}</span>`).join("")}
+          </div>
+          ${task.learningGoal ? `<p>${escapeHtml(task.learningGoal)}</p>` : ""}
+          <p class="exam-progress-pill ${progress.className}">${escapeHtml(progress.label)}</p>
+        </div>
+        <button class="primary-button" type="button" data-operator-start="${escapeHtml(task.id)}">Aufgabe starten</button>
+      </article>
+    `;
+  }
+
+  function openOperatorTrainingTask(taskId) {
+    const task = state.operatorTrainingTasks.find((item) => item.id === taskId);
+    if (!task) {
+      renderOperatorTrainingMessage("Diese Operatoren-Aufgabe ist noch nicht verfügbar.");
+      return;
+    }
+    state.currentOperatorTask = task;
+    elements.operatorTrainingBackOverviewButton.classList.remove("hidden");
+    showView("operatorTraining");
+    renderOperatorTrainingTask(task);
+  }
+
+  function renderOperatorTrainingTask(task) {
+    const progress = getOperatorProgress(task.id);
+    const answers = getOperatorAnswers(task.id);
+    elements.operatorTrainingContainer.innerHTML = `
+      <article class="operator-task-view" data-operator-task-id="${escapeHtml(task.id)}">
+        <header class="operator-task-header">
+          <p class="eyebrow">Operatoren-Trainer</p>
+          <h2>${escapeHtml(task.title || "Operatoren-Aufgabe")}</h2>
+          ${task.subtitle ? `<p class="subtitle-small">${escapeHtml(task.subtitle)}</p>` : ""}
+          <div class="exam-meta">
+            ${normalizeList(task.categories).map((category) => `<span>${escapeHtml(category)}</span>`).join("")}
+            ${normalizeList(task.focusOperators).map((operator) => `<span class="operator-tag">${escapeHtml(operator)}</span>`).join("")}
+            <span>${escapeHtml(progress.label)}</span>
+          </div>
+          ${task.learningGoal ? `<p>${escapeHtml(task.learningGoal)}</p>` : ""}
+        </header>
+        <section class="exam-material-section">
+          <h3>Material</h3>
+          ${normalizeList(task.material).length ? normalizeList(task.material).map((material) => renderOperatorMaterial(material)).join("") : '<p class="muted-small">Kein zusätzliches Material vorhanden.</p>'}
+        </section>
+        ${renderOperatorImage(task.image)}
+        <section class="operator-question-section">
+          <h3>Teilaufgaben</h3>
+          ${normalizeList(task.questions).map((question, index) => renderOperatorQuestion(task, question, index, answers)).join("")}
+        </section>
+        <div class="button-row exam-action-row">
+          <button class="secondary-button" type="button" data-operator-progress="done">Als bearbeitet markieren</button>
+          <button class="secondary-button" type="button" data-operator-progress="secure">Das kann ich sicher</button>
+          <button class="secondary-button" type="button" data-operator-progress="unsure">Das muss ich noch üben</button>
+        </div>
+        <div class="button-row exam-nav-row">
+          <button class="secondary-button" type="button" id="operatorOverviewButton">Zurück zur Übersicht</button>
+        </div>
+      </article>
+    `;
+    bindOperatorTrainingTaskEvents(task);
+  }
+
+  function renderOperatorMaterial(material) {
+    const title = material && material.title ? `<h4>${escapeHtml(material.title)}</h4>` : "";
+    if (!material) {
+      return "";
+    }
+    if (material.type === "text" || material.type === "imageTask") {
+      return `<article class="exam-material-card">${title}<p>${escapeHtml(material.content || "")}</p></article>`;
+    }
+    return `<article class="exam-material-card">${title}<pre>${escapeHtml(JSON.stringify(material, null, 2))}</pre></article>`;
+  }
+
+  function renderOperatorImage(image) {
+    if (!image || !image.src) {
+      return "";
+    }
+    return `
+      <figure class="exam-image-card operator-image-card">
+        <img src="${escapeHtml(image.src)}" alt="${escapeHtml(image.alt || "Bildmaterial zur Operatoren-Aufgabe")}" onerror="this.style.display='none'; this.parentElement.querySelector('.image-error').classList.remove('hidden');">
+        <figcaption>${escapeHtml(image.alt || "Bildmaterial")}</figcaption>
+        <p class="image-error hidden">Das Bild konnte nicht geladen werden. Nutze den Alternativtext: ${escapeHtml(image.alt || "Bildmaterial zur Operatoren-Aufgabe")}</p>
+      </figure>
+    `;
+  }
+
+  function renderOperatorQuestion(task, question, index, answers) {
+    const questionId = question.id || `frage_${index + 1}`;
+    const answer = answers[questionId] || "";
+    const check = getOperatorQuestionCheck(task.id, questionId);
+    return `
+      <article class="operator-question-card" data-operator-question-card="${escapeHtml(questionId)}">
+        <div class="operator-question-heading">
+          ${question.label ? `<h4>${escapeHtml(question.label)}</h4>` : `<h4>Teilaufgabe ${index + 1}</h4>`}
+          ${question.operator ? `<span class="operator-tag">${escapeHtml(question.operator)}</span>` : ""}
+        </div>
+        <p>${escapeHtml(question.text || "")}</p>
+        <textarea data-operator-question-id="${escapeHtml(questionId)}" rows="7" placeholder="Antwort eingeben">${escapeHtml(answer)}</textarea>
+        <div class="button-row exam-question-actions">
+          ${question.operatorHelp ? `<button class="secondary-button" type="button" data-operator-help="${escapeHtml(questionId)}">Operator-Hilfe anzeigen</button>` : ""}
+          <button class="primary-button" type="button" data-operator-check="${escapeHtml(questionId)}">Antwort prüfen</button>
+          <button class="ghost-button" type="button" data-operator-solution="${escapeHtml(questionId)}">Lösung anzeigen</button>
+        </div>
+        <div class="operator-help-box hidden" data-operator-help-box="${escapeHtml(questionId)}"></div>
+        <div class="feedback ${check ? "" : "hidden"}" data-operator-feedback="${escapeHtml(questionId)}">${check ? renderOperatorQuestionFeedback(check) : ""}</div>
+        <div class="solution-box hidden" data-operator-solution-box="${escapeHtml(questionId)}"></div>
+      </article>
+    `;
+  }
+
+  function bindOperatorTrainingTaskEvents(task) {
+    const container = elements.operatorTrainingContainer;
+    container.querySelectorAll("[data-operator-question-id]").forEach((field) => {
+      field.addEventListener("input", () => storeOperatorAnswers(task.id));
+    });
+    container.querySelectorAll("[data-operator-help]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const question = normalizeList(task.questions).find((item) => (item.id || "") === button.dataset.operatorHelp);
+        const helpBox = container.querySelector(`[data-operator-help-box="${cssEscape(button.dataset.operatorHelp)}"]`);
+        if (!question || !helpBox) return;
+        helpBox.classList.toggle("hidden");
+        if (!helpBox.classList.contains("hidden")) {
+          helpBox.innerHTML = renderOperatorHelp(question.operatorHelp);
+        }
+      });
+    });
+    container.querySelectorAll("[data-operator-check]").forEach((button) => {
+      button.addEventListener("click", () => {
+        storeOperatorAnswers(task.id);
+        const question = normalizeList(task.questions).find((item) => (item.id || "") === button.dataset.operatorCheck);
+        if (!question) return;
+        const result = checkOperatorQuestion(question);
+        setOperatorQuestionCheck(task.id, question.id, result);
+        const feedback = container.querySelector(`[data-operator-feedback="${cssEscape(question.id)}"]`);
+        if (feedback) {
+          feedback.classList.remove("hidden");
+          feedback.innerHTML = renderOperatorQuestionFeedback(result);
+        }
+      });
+    });
+    container.querySelectorAll("[data-operator-solution]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const question = normalizeList(task.questions).find((item) => (item.id || "") === button.dataset.operatorSolution);
+        const solutionBox = container.querySelector(`[data-operator-solution-box="${cssEscape(button.dataset.operatorSolution)}"]`);
+        if (!question || !solutionBox) return;
+        solutionBox.classList.toggle("hidden");
+        if (!solutionBox.classList.contains("hidden")) {
+          solutionBox.innerHTML = renderOperatorSolution(question.solution || {});
+        }
+      });
+    });
+    container.querySelector("#operatorOverviewButton").addEventListener("click", () => openOperatorTrainingOverview());
+    container.querySelectorAll("[data-operator-progress]").forEach((button) => {
+      button.addEventListener("click", () => {
+        setOperatorProgress(task.id, button.dataset.operatorProgress);
+        renderOperatorTrainingTask(task);
+      });
+    });
+  }
+
+  function renderOperatorHelp(help) {
+    if (!help) {
+      return "";
+    }
+    return `
+      <h4>${escapeHtml(help.title || "Operator-Hilfe")}</h4>
+      <p>${escapeHtml(help.content || "")}</p>
+      ${normalizeList(help.tips).length ? renderList(help.tips) : ""}
+    `;
+  }
+
+  function checkOperatorQuestion(question) {
+    return {
+      date: new Date().toISOString(),
+      questionId: question.id || "",
+      operator: question.operator || "",
+      message: "Vergleiche deine Antwort mit der Musterlösung. Achte besonders darauf, ob du den Operator eingehalten hast.",
+      operatorHint: getOperatorHint(question.operator)
+    };
+  }
+
+  function getOperatorHint(operator) {
+    const normalized = normalizeText(operator);
+    if (normalized.includes("beschreiben")) {
+      return "Hast du nur sichtbare Ergebnisse genannt und noch nicht gedeutet?";
+    }
+    if (normalized.includes("interpretieren")) {
+      return "Hast du die Beobachtungen fachlich gedeutet?";
+    }
+    if (normalized.includes("erlautern") || normalized.includes("erläutern")) {
+      return "Hast du das Ergebnis verständlich gemacht und Fachwissen passend eingebunden?";
+    }
+    if (normalized.includes("erklaren") || normalized.includes("erklären")) {
+      return "Hast du Ursache und Wirkung klar verknüpft?";
+    }
+    return "";
+  }
+
+  function renderOperatorQuestionFeedback(result) {
+    return `
+      <p class="notice">${escapeHtml(result.message)}</p>
+      ${result.operatorHint ? `<p>${escapeHtml(result.operatorHint)}</p>` : ""}
+    `;
+  }
+
+  function renderOperatorSolution(solution) {
+    return `
+      <h4>${escapeHtml(solution.title || "Lösung")}</h4>
+      <p>${escapeHtml(solution.answer || "")}</p>
+    `;
+  }
+
+  function storeOperatorAnswers(taskId) {
+    const taskAnswers = {};
+    elements.operatorTrainingContainer.querySelectorAll("[data-operator-question-id]").forEach((field) => {
+      taskAnswers[field.dataset.operatorQuestionId] = field.value;
+    });
+    state.operatorTrainingAnswers = { ...state.operatorTrainingAnswers, [taskId]: taskAnswers };
+    writeJson(OPERATOR_TRAINING_ANSWERS_KEY, state.operatorTrainingAnswers);
+  }
+
+  function getOperatorAnswers(taskId) {
+    return state.operatorTrainingAnswers[taskId] || {};
+  }
+
+  function getOperatorQuestionCheck(taskId, questionId) {
+    const taskChecks = state.operatorTrainingChecks[taskId];
+    return taskChecks && taskChecks.questions ? taskChecks.questions[questionId] || null : null;
+  }
+
+  function setOperatorQuestionCheck(taskId, questionId, result) {
+    const current = state.operatorTrainingChecks[taskId] && state.operatorTrainingChecks[taskId].questions
+      ? state.operatorTrainingChecks[taskId]
+      : { questions: {} };
+    state.operatorTrainingChecks = {
+      ...state.operatorTrainingChecks,
+      [taskId]: {
+        ...current,
+        questions: {
+          ...current.questions,
+          [questionId]: result
+        }
+      }
+    };
+    writeJson(OPERATOR_TRAINING_CHECKS_KEY, state.operatorTrainingChecks);
+  }
+
+  function getOperatorProgress(taskId) {
+    const value = state.operatorTrainingProgress[taskId] || "none";
+    const labels = {
+      none: "noch nicht bearbeitet",
+      done: "bearbeitet",
+      secure: "sicher",
+      unsure: "unsicher"
+    };
+    return { value, label: labels[value] || labels.none, className: `progress-${value}` };
+  }
+
+  function setOperatorProgress(taskId, value) {
+    state.operatorTrainingProgress = { ...state.operatorTrainingProgress, [taskId]: value };
+    writeJson(OPERATOR_TRAINING_PROGRESS_KEY, state.operatorTrainingProgress);
   }
 
   function renderExamTrainingOverview() {
@@ -1144,6 +1486,11 @@
         progress: state.examTrainingProgress,
         answers: state.examTrainingAnswers,
         checks: state.examTrainingChecks
+      },
+      operatorentraining: {
+        progress: state.operatorTrainingProgress,
+        answers: state.operatorTrainingAnswers,
+        checks: state.operatorTrainingChecks
       }
     };
     const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
