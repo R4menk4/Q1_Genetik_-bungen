@@ -1,0 +1,198 @@
+[
+  {
+    "id": "dna_nukleotid_aufbau",
+    "category": "DNA-Aufbau",
+    "text": "Ich weiß, wie ein Nukleotid aufgebaut ist.",
+    "targetTaskId": "dna_aufbau_01",
+    "targetSubtaskId": "dna_aufbau_01a"
+  },
+  {
+    "id": "dna_doppelstrang_erklaeren",
+    "category": "DNA-Aufbau",
+    "text": "Ich kann den Aufbau der DNA als Doppelstrang erklären.",
+    "targetTaskId": "dna_aufbau_01",
+    "targetSubtaskId": "dna_aufbau_01a"
+  },
+  {
+    "id": "dna_komplementaere_basenpaarung",
+    "category": "DNA-Aufbau",
+    "text": "Ich kenne die komplementäre Basenpaarung der DNA.",
+    "targetTaskId": "dna_aufbau_01",
+    "targetSubtaskId": "dna_aufbau_01b"
+  },
+  {
+    "id": "dna_wasserstoffbrueckenbindungen",
+    "category": "DNA-Aufbau",
+    "text": "Ich kann erklären, welche Rolle Wasserstoffbrückenbindungen zwischen den Basen spielen.",
+    "targetTaskId": "dna_aufbau_01",
+    "targetSubtaskId": "dna_aufbau_01b"
+  },
+  {
+    "id": "dna_richtung_3_5",
+    "category": "DNA-Aufbau",
+    "text": "Ich weiß, was mit 3'- und 5'-Richtung eines DNA-Strangs gemeint ist.",
+    "targetTaskId": "dna_aufbau_01",
+    "targetSubtaskId": "dna_aufbau_01c"
+  },
+  {
+    "id": "replikation_grundablauf",
+    "category": "DNA-Replikation",
+    "text": "Ich kann den Grundablauf der DNA-Replikation erklären.",
+    "targetTaskId": "dna_replikation_01",
+    "targetSubtaskId": "dna_replikation_01c"
+  },
+  {
+    "id": "replikation_semikonservativ",
+    "category": "DNA-Replikation",
+    "text": "Ich weiß, was semikonservative Replikation bedeutet.",
+    "targetTaskId": "dna_replikation_01",
+    "targetSubtaskId": "dna_replikation_01c"
+  },
+  {
+    "id": "replikationsgabel_strukturen",
+    "category": "DNA-Replikation",
+    "text": "Ich kann wichtige Strukturen und Enzyme an der Replikationsgabel benennen.",
+    "targetTaskId": "dna_replikation_01",
+    "targetSubtaskId": "dna_replikation_01a"
+  },
+  {
+    "id": "replikation_funktionen",
+    "category": "DNA-Replikation",
+    "text": "Ich kann die Funktionen von Helicase, DNA-Polymerase, RNA-Primer und Okazaki-Fragmenten erklären.",
+    "targetTaskId": "dna_replikation_01",
+    "targetSubtaskId": "dna_replikation_01b"
+  },
+  {
+    "id": "leitstrang_folgestrang",
+    "category": "DNA-Replikation",
+    "text": "Ich kann erklären, warum Leitstrang und Folgestrang unterschiedlich repliziert werden.",
+    "targetTaskId": "dna_replikation_01",
+    "targetSubtaskId": "dna_replikation_01d"
+  },
+  {
+    "id": "dna_rna_vergleichen",
+    "category": "DNA und RNA",
+    "text": "Ich kann DNA und RNA strukturell miteinander vergleichen.",
+    "targetTaskId": "transkription_01",
+    "targetSubtaskId": "transkription_01_teilaufgabe_3_1"
+  },
+  {
+    "id": "ribose_desoxyribose",
+    "category": "DNA und RNA",
+    "text": "Ich kenne den Unterschied zwischen Ribose und Desoxyribose.",
+    "targetTaskId": "transkription_01",
+    "targetSubtaskId": "transkription_01_teilaufgabe_3_1"
+  },
+  {
+    "id": "rna_uracil_statt_thymin",
+    "category": "DNA und RNA",
+    "text": "Ich weiß, dass RNA Uracil statt Thymin enthält.",
+    "targetTaskId": "transkription_01",
+    "targetSubtaskId": "transkription_01_teilaufgabe_3_1"
+  },
+  {
+    "id": "dna_rna_strangstruktur",
+    "category": "DNA und RNA",
+    "text": "Ich kann erklären, warum RNA meist einzelsträngig und DNA meist doppelsträngig dargestellt wird.",
+    "targetTaskId": "transkription_01",
+    "targetSubtaskId": "transkription_01_teilaufgabe_3_1"
+  },
+  {
+    "id": "transkription_ablauf",
+    "category": "Transkription",
+    "text": "Ich kann den Ablauf der Transkription in eigenen Worten erläutern.",
+    "targetTaskId": "transkription_01",
+    "targetSubtaskId": "transkription_01_teilaufgabe_3_3"
+  },
+  {
+    "id": "transkription_strukturen_funktionen",
+    "category": "Transkription",
+    "text": "Ich kann wichtige Strukturen der Transkription benennen und ihre Funktion erklären.",
+    "targetTaskId": "transkription_01",
+    "targetSubtaskId": "transkription_01_teilaufgabe_3_2"
+  },
+  {
+    "id": "rna_polymerase_rolle",
+    "category": "Transkription",
+    "text": "Ich weiß, welche Rolle die RNA-Polymerase bei der Transkription spielt.",
+    "targetTaskId": "transkription_01",
+    "targetSubtaskId": "transkription_01_teilaufgabe_3_2"
+  },
+  {
+    "id": "codogen_nicht_codogen",
+    "category": "Transkription",
+    "text": "Ich kann den codogenen und den nicht-codogenen Strang unterscheiden.",
+    "targetTaskId": "transkription_01",
+    "targetSubtaskId": "transkription_01_teilaufgabe_3_2"
+  },
+  {
+    "id": "mrna_aus_codogenem_strang",
+    "category": "Transkription",
+    "text": "Ich kann aus einem codogenen DNA-Strang die passende mRNA-Sequenz ableiten.",
+    "targetTaskId": "transkription_01",
+    "targetSubtaskId": "transkription_01_teilaufgabe_3_4"
+  },
+  {
+    "id": "transkription_fehler_erkennen",
+    "category": "Transkription",
+    "text": "Ich kann typische Fehler bei der Transkription erkennen und korrigieren.",
+    "targetTaskId": "transkription_01",
+    "targetSubtaskId": "transkription_01_teilaufgabe_3_5"
+  },
+  {
+    "id": "translation_ablauf",
+    "category": "Translation",
+    "text": "Ich kann den Ablauf der Translation in eigenen Worten erläutern.",
+    "targetTaskId": "translation_01",
+    "targetSubtaskId": "translation_01_teilaufgabe_4_2"
+  },
+  {
+    "id": "translation_strukturen_funktionen",
+    "category": "Translation",
+    "text": "Ich kann wichtige Strukturen der Translation benennen und ihre Funktion erklären.",
+    "targetTaskId": "translation_01",
+    "targetSubtaskId": "translation_01_teilaufgabe_4_1"
+  },
+  {
+    "id": "codon_anticodon",
+    "category": "Translation",
+    "text": "Ich kann Codon und Anticodon sicher unterscheiden.",
+    "targetTaskId": "translation_01",
+    "targetSubtaskId": "translation_01_teilaufgabe_4_1"
+  },
+  {
+    "id": "mrna_trna_ribosom",
+    "category": "Translation",
+    "text": "Ich weiß, welche Rolle mRNA, tRNA und Ribosom bei der Translation spielen.",
+    "targetTaskId": "translation_01",
+    "targetSubtaskId": "translation_01_teilaufgabe_4_1"
+  },
+  {
+    "id": "a_p_e_stelle",
+    "category": "Translation",
+    "text": "Ich kann die Funktion der A-, P- und E-Stelle kurz erklären.",
+    "targetTaskId": "translation_01",
+    "targetSubtaskId": "translation_01_teilaufgabe_4_1"
+  },
+  {
+    "id": "codesonne_aminosaeuresequenz",
+    "category": "Translation",
+    "text": "Ich kann mithilfe der Codesonne aus einer mRNA-Sequenz eine Aminosäuresequenz ableiten.",
+    "targetTaskId": "translation_01",
+    "targetSubtaskId": "translation_01_teilaufgabe_4_3"
+  },
+  {
+    "id": "stoppcodon",
+    "category": "Translation",
+    "text": "Ich weiß, dass ein Stoppcodon nicht für eine Aminosäure codiert.",
+    "targetTaskId": "translation_01",
+    "targetSubtaskId": "translation_01_teilaufgabe_4_3"
+  },
+  {
+    "id": "translation_fehler_erkennen",
+    "category": "Translation",
+    "text": "Ich kann typische Fehler bei der Translation erkennen und korrigieren.",
+    "targetTaskId": "translation_01",
+    "targetSubtaskId": "translation_01_teilaufgabe_4_4"
+  }
+]

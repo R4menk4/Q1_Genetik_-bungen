@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Klausurtrainer Molekulargenetik</title>
+    <link rel="stylesheet" href="style.css?v=20260613-operatoren">
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="#start" aria-label="Zur Startseite">
+        <span class="brand-mark" aria-hidden="true">DNA</span>
+        <span>Klausurtrainer</span>
+      </a>
+      <nav class="top-nav" aria-label="Hauptnavigation">
+        <button class="nav-link active" type="button" data-view-target="home">Startseite</button>
+      </nav>
+    </header>
+
+    <main>
+      <section id="homeView" class="view active" aria-labelledby="homeTitle">
+        <div class="hero">
+          <div class="hero-copy">
+            <p class="eyebrow">Biologie-Grundkurs Q1 / 12. Klasse</p>
+            <h1 id="homeTitle">Klausurtrainer Molekulargenetik</h1>
+            <p class="subtitle">Materialgestützte Transferaufgaben zu DNA, Replikation und Proteinbiosynthese</p>
+            <p class="intro">
+              Bearbeite die Aufgaben wie in einer Klausur. Nutze anschließend Kriteriencheck
+              und Musterlösung zur Selbstüberprüfung.
+            </p>
+          </div>
+          <div class="hero-panel" aria-label="Lernbereiche">
+            <span>DNA</span>
+            <span>Replikation</span>
+            <span>Proteinbiosynthese</span>
+          </div>
+        </div>
+
+        <section class="topic-section" aria-labelledby="topicsTitle">
+          <div class="section-heading">
+            <h2 id="topicsTitle">Themen</h2>
+          </div>
+          <div class="topic-grid" id="topicGrid"></div>
+        </section>
+      </section>
+
+      <section id="taskView" class="view" aria-labelledby="taskTitle">
+        <div class="task-shell">
+          <div class="task-toolbar">
+            <button class="secondary-button" type="button" id="backHomeButton">Zurück zur Startseite</button>
+            <button class="secondary-button hidden" type="button" id="backSelfCheckButton">Zurück zum Selbstcheck</button>
+            <button class="ghost-button" type="button" id="exportButton">Anonyme Ergebnisse exportieren</button>
+          </div>
+          <div id="taskContainer" class="task-container" aria-live="polite"></div>
+        </div>
+      </section>
+
+      <section id="selfCheckView" class="view" aria-labelledby="selfCheckTitle">
+        <div class="task-shell">
+          <div class="task-toolbar">
+            <button class="secondary-button" type="button" id="selfCheckBackHomeButton">Zurück zur Startseite</button>
+          </div>
+          <div id="selfCheckContainer" class="selfcheck-container" aria-live="polite"></div>
+        </div>
+      </section>
+
+      <section id="examTrainingView" class="view" aria-labelledby="examTrainingTitle">
+        <div class="task-shell">
+          <div class="task-toolbar">
+            <button class="secondary-button" type="button" id="examTrainingBackHomeButton">Zurück zur Startseite</button>
+            <button class="secondary-button hidden" type="button" id="examTrainingBackOverviewButton">Zurück zur Klausurtraining-Übersicht</button>
+          </div>
+          <div id="examTrainingContainer" class="exam-training-container" aria-live="polite"></div>
+        </div>
+      </section>
+
+      <section id="operatorTrainingView" class="view" aria-labelledby="operatorTrainingTitle">
+        <div class="task-shell">
+          <div class="task-toolbar">
+            <button class="secondary-button" type="button" id="operatorTrainingBackHomeButton">Zurück zur Startseite</button>
+            <button class="secondary-button hidden" type="button" id="operatorTrainingBackOverviewButton">Zurück zur Operatoren-Übersicht</button>
+          </div>
+          <div id="operatorTrainingContainer" class="operator-training-container" aria-live="polite"></div>
+        </div>
+      </section>
+    </main>
+
+    <template id="messageTemplate">
+      <div class="message-box"></div>
+    </template>
+
+    <script src="script.js?v=20260613-operatoren"></script>
+  </body>
+</html>
