@@ -189,6 +189,18 @@ h1 {
   line-height: 1.65;
 }
 
+.build-note {
+  display: inline-flex;
+  margin: 1rem 0 0;
+  padding: 0.35rem 0.65rem;
+  border: 1px solid #161616;
+  border-radius: 999px;
+  background: #f3f4f2;
+  color: #303633;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
 .hero-panel {
   display: grid;
   align-content: center;

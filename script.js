@@ -23,7 +23,6 @@
     { title: "DNA-Replikation", active: true, taskId: "dna_replikation_01" },
     { title: "Transkription", active: true, taskId: "transkription_01" },
     { title: "Translation", active: true, taskId: "translation_01" },
-    { title: "Gemischte Klausuraufgaben", active: false },
     { title: "Operatoren-Trainer", active: true, view: "operatorTraining" }
   ];
 
