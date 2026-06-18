@@ -6,6 +6,9 @@
   const SELF_CHECK_URL = "data/selfCheckCompetencies.json";
   const EXAM_TRAINING_URL = "data/klausuraufgaben.json";
   const OPERATOR_TRAINING_URL = "data/operatorentraining.json";
+  const COMPARISON_MODULE_URL = "data/prokaryoten_eukaryoten_vergleich.json";
+  const SPLICING_MODULE_URL = "data/praemrna_spleissen_aufgaben.json";
+  const MUTATION_MODULE_URL = "data/mutation_genprodukt_phaenotyp_lernprogramm.json";
   const STORAGE_PREFIX = "klausurtrainer_molekulargenetik";
   const SELF_CHECK_STORAGE_KEY = "molekulargenetik_selfcheck_status";
   const EXAM_TRAINING_PROGRESS_KEY = "klausurtrainingProgress";
@@ -23,6 +26,22 @@
     { title: "DNA-Replikation", active: true, taskId: "dna_replikation_01" },
     { title: "Transkription", active: true, taskId: "transkription_01" },
     { title: "Translation", active: true, taskId: "translation_01" },
+    {
+      title: "Prokaryoten und Eukaryoten",
+      subtitle: "Proteinbiosynthese im Vergleich",
+      active: true,
+      view: "comparisonModule"
+    },
+    {
+      title: "prä-mRNA und alternatives Spleißen",
+      active: true,
+      view: "splicingModule"
+    },
+    {
+      title: "Mutation – Genprodukt – Phänotyp",
+      active: true,
+      view: "mutationModule"
+    },
     { title: "Operatoren-Trainer", active: true, view: "operatorTraining" }
   ];
 
@@ -110,6 +129,9 @@
     operatorTrainingAnswers: readJson(OPERATOR_TRAINING_ANSWERS_KEY, {}),
     operatorTrainingChecks: readJson(OPERATOR_TRAINING_CHECKS_KEY, {}),
     currentOperatorTask: null,
+    comparisonModule: null,
+    splicingModule: null,
+    mutationModule: null,
     currentTask: null,
     openedFromSelfCheck: false,
     checks: readJson(`${STORAGE_PREFIX}_checks`, {}),
@@ -124,11 +146,17 @@
     selfCheckView: document.getElementById("selfCheckView"),
     examTrainingView: document.getElementById("examTrainingView"),
     operatorTrainingView: document.getElementById("operatorTrainingView"),
+    comparisonModuleView: document.getElementById("comparisonModuleView"),
+    splicingModuleView: document.getElementById("splicingModuleView"),
+    mutationModuleView: document.getElementById("mutationModuleView"),
     topicGrid: document.getElementById("topicGrid"),
     taskContainer: document.getElementById("taskContainer"),
     selfCheckContainer: document.getElementById("selfCheckContainer"),
     examTrainingContainer: document.getElementById("examTrainingContainer"),
     operatorTrainingContainer: document.getElementById("operatorTrainingContainer"),
+    comparisonModuleContainer: document.getElementById("comparisonModuleContainer"),
+    splicingModuleContainer: document.getElementById("splicingModuleContainer"),
+    mutationModuleContainer: document.getElementById("mutationModuleContainer"),
     backHomeButton: document.getElementById("backHomeButton"),
     backSelfCheckButton: document.getElementById("backSelfCheckButton"),
     selfCheckBackHomeButton: document.getElementById("selfCheckBackHomeButton"),
@@ -136,6 +164,9 @@
     examTrainingBackOverviewButton: document.getElementById("examTrainingBackOverviewButton"),
     operatorTrainingBackHomeButton: document.getElementById("operatorTrainingBackHomeButton"),
     operatorTrainingBackOverviewButton: document.getElementById("operatorTrainingBackOverviewButton"),
+    comparisonBackHomeButton: document.getElementById("comparisonBackHomeButton"),
+    splicingBackHomeButton: document.getElementById("splicingBackHomeButton"),
+    mutationBackHomeButton: document.getElementById("mutationBackHomeButton"),
     exportButton: document.getElementById("exportButton"),
     navButtons: Array.from(document.querySelectorAll("[data-view-target]"))
   };
@@ -169,6 +200,9 @@
     elements.examTrainingBackOverviewButton.addEventListener("click", () => openExamTrainingOverview());
     elements.operatorTrainingBackHomeButton.addEventListener("click", () => showView("home"));
     elements.operatorTrainingBackOverviewButton.addEventListener("click", () => openOperatorTrainingOverview());
+    elements.comparisonBackHomeButton.addEventListener("click", () => showView("home"));
+    elements.splicingBackHomeButton.addEventListener("click", () => showView("home"));
+    elements.mutationBackHomeButton.addEventListener("click", () => showView("home"));
     elements.exportButton.addEventListener("click", exportResults);
     window.addEventListener("beforeprint", prepareSelfCheckPrint);
     window.addEventListener("afterprint", restoreSelfCheckPrint);
@@ -209,6 +243,15 @@
       if (topic.view === "operatorTraining") {
         card.classList.add("topic-card-operator");
       }
+      if (topic.view === "comparisonModule") {
+        card.classList.add("topic-card-comparison");
+      }
+      if (topic.view === "splicingModule") {
+        card.classList.add("topic-card-splicing");
+      }
+      if (topic.view === "mutationModule") {
+        card.classList.add("topic-card-mutation");
+      }
       card.disabled = !topic.active;
       card.innerHTML = `
         <span class="topic-title">${escapeHtml(topic.title)}</span>
@@ -223,6 +266,12 @@
             openExamTrainingOverview();
           } else if (topic.view === "operatorTraining") {
             openOperatorTrainingOverview();
+          } else if (topic.view === "comparisonModule") {
+            openComparisonModule();
+          } else if (topic.view === "splicingModule") {
+            openSplicingModule();
+          } else if (topic.view === "mutationModule") {
+            openMutationModule();
           } else {
             openTask(topic.taskId);
           }
@@ -241,6 +290,15 @@
     }
     if (topic.view === "operatorTraining") {
       return "Operatoren trainieren";
+    }
+    if (topic.view === "comparisonModule") {
+      return "Übung öffnen";
+    }
+    if (topic.view === "splicingModule") {
+      return "Übung öffnen";
+    }
+    if (topic.view === "mutationModule") {
+      return "Übung öffnen";
     }
     return "Aufgabe öffnen";
   }
@@ -281,11 +339,17 @@
     const isSelfCheck = viewName === "selfcheck";
     const isExamTraining = viewName === "examTraining";
     const isOperatorTraining = viewName === "operatorTraining";
+    const isComparisonModule = viewName === "comparisonModule";
+    const isSplicingModule = viewName === "splicingModule";
+    const isMutationModule = viewName === "mutationModule";
     elements.homeView.classList.toggle("active", viewName === "home");
     elements.taskView.classList.toggle("active", isTask);
     elements.selfCheckView.classList.toggle("active", isSelfCheck);
     elements.examTrainingView.classList.toggle("active", isExamTraining);
     elements.operatorTrainingView.classList.toggle("active", isOperatorTraining);
+    elements.comparisonModuleView.classList.toggle("active", isComparisonModule);
+    elements.splicingModuleView.classList.toggle("active", isSplicingModule);
+    elements.mutationModuleView.classList.toggle("active", isMutationModule);
     elements.backSelfCheckButton.classList.toggle("hidden", !state.openedFromSelfCheck || !isTask);
     elements.navButtons.forEach((button) => {
       button.classList.toggle("active", button.dataset.viewTarget === viewName);
@@ -654,6 +718,1295 @@
   function setOperatorProgress(taskId, value) {
     state.operatorTrainingProgress = { ...state.operatorTrainingProgress, [taskId]: value };
     writeJson(OPERATOR_TRAINING_PROGRESS_KEY, state.operatorTrainingProgress);
+  }
+
+  async function openComparisonModule() {
+    showView("comparisonModule");
+    if (!state.comparisonModule) {
+      try {
+        state.comparisonModule = await fetchJson(COMPARISON_MODULE_URL);
+      } catch (error) {
+        renderComparisonMessage("Der Vergleich Prokaryoten/Eukaryoten konnte nicht geladen werden. Prüfe bitte, ob data/prokaryoten_eukaryoten_vergleich.json vorhanden ist.");
+        console.error(error);
+        return;
+      }
+    }
+    renderComparisonModule(state.comparisonModule);
+  }
+
+  function renderComparisonMessage(message) {
+    elements.comparisonModuleContainer.innerHTML = `<div class="message-box">${escapeHtml(message)}</div>`;
+  }
+
+  function renderComparisonModule(moduleData) {
+    const activities = normalizeList(moduleData.activities);
+    elements.comparisonModuleContainer.innerHTML = `
+      <article class="comparison-header">
+        <p class="eyebrow">${escapeHtml(moduleData.topic || "Proteinbiosynthese / Genexpression")}</p>
+        <h2 id="comparisonModuleTitle">${escapeHtml(moduleData.title || "Prokaryoten und Eukaryoten im Vergleich")}</h2>
+        ${moduleData.subtitle ? `<p class="subtitle-small">${escapeHtml(moduleData.subtitle)}</p>` : ""}
+        <div class="exam-meta">
+          <span>Proteinbiosynthese</span>
+          <span>Genexpression</span>
+          ${moduleData.targetGroup ? `<span>${escapeHtml(moduleData.targetGroup)}</span>` : ""}
+          ${moduleData.estimatedTimeMinutes ? `<span>ca. ${escapeHtml(moduleData.estimatedTimeMinutes)} Minuten</span>` : ""}
+        </div>
+        ${normalizeList(moduleData.learningGoals).length ? `<div class="comparison-goals"><h3>Lernziele</h3>${renderList(moduleData.learningGoals)}</div>` : ""}
+      </article>
+      ${renderComparisonIntro(moduleData.introText)}
+      <section class="comparison-activities">
+        ${activities.map((activity, index) => renderComparisonActivity(activity, index)).join("")}
+      </section>
+    `;
+    bindComparisonEvents(moduleData);
+  }
+
+  function renderComparisonIntro(intro) {
+    if (!intro) {
+      return "";
+    }
+    return `
+      <article class="comparison-info-card">
+        ${intro.heading ? `<h3>${escapeHtml(intro.heading)}</h3>` : ""}
+        <p>${escapeHtml(intro.body || intro)}</p>
+      </article>
+    `;
+  }
+
+  function renderComparisonActivity(activity, index) {
+    const activityId = activity.id || `vergleich_${index + 1}`;
+    return `
+      <article class="comparison-activity-card" data-comparison-activity="${escapeHtml(activityId)}">
+        <header class="comparison-activity-header">
+          <div>
+            <p class="eyebrow">${activity.type === "extended_response" ? "Transferaufgabe" : `Aufgabe ${index + 1}`}</p>
+            <h3>${escapeHtml(activity.title || `Aufgabe ${index + 1}`)}</h3>
+          </div>
+          ${activity.afb ? `<span class="operator-tag">AFB ${escapeHtml(activity.afb)}</span>` : ""}
+        </header>
+        ${activity.instruction ? `<p>${escapeHtml(activity.instruction)}</p>` : ""}
+        ${renderComparisonActivityBody(activity, activityId)}
+        <div class="button-row exam-question-actions">
+          <button class="primary-button" type="button" data-comparison-check="${escapeHtml(activityId)}">Antwort prüfen</button>
+          <button class="ghost-button" type="button" data-comparison-solution="${escapeHtml(activityId)}">Lösung anzeigen</button>
+        </div>
+        <div class="feedback hidden" data-comparison-feedback="${escapeHtml(activityId)}"></div>
+        <div class="solution-box hidden" data-comparison-solution-box="${escapeHtml(activityId)}"></div>
+      </article>
+    `;
+  }
+
+  function renderComparisonActivityBody(activity, activityId) {
+    if (activity.type === "matching") {
+      const items = normalizeList(activity.items);
+      const definitions = randomShuffle(items.map((item) => item.definition || ""));
+      return `
+        <div class="table-scroll">
+          <table class="mini-table comparison-input-table">
+            <thead><tr><th>Fachbegriff</th><th>Definition zuordnen</th></tr></thead>
+            <tbody>
+              ${items.map((item, index) => `
+                <tr>
+                  <td>${escapeHtml(item.term || `Begriff ${index + 1}`)}</td>
+                  <td>
+                    <select data-comparison-input="${escapeHtml(activityId)}" data-comparison-key="${escapeHtml(item.term || index)}">
+                      <option value="">Definition auswählen</option>
+                      ${definitions.map((definition) => `<option value="${escapeHtml(definition)}">${escapeHtml(definition)}</option>`).join("")}
+                    </select>
+                  </td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    if (activity.type === "image_labeling") {
+      const solutions = getComparisonImageLabelSolutions(activity);
+      const options = randomShuffle(Object.values(solutions));
+      return `
+        ${renderComparisonImage(getComparisonImage(activity))}
+        <div class="table-scroll">
+          <table class="mini-table comparison-input-table">
+            <thead><tr><th>Nummer</th><th>Begriff</th></tr></thead>
+            <tbody>
+              ${Object.keys(solutions).map((number) => `
+                <tr>
+                  <td>${escapeHtml(number)}</td>
+                  <td>${renderComparisonSelect(activityId, `label_${number}`, options)}</td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    if (activity.type === "drag_drop_table") {
+      const rows = normalizeList(activity.rows);
+      const options = randomShuffle(normalizeList(activity.dragItems));
+      return `
+        <div class="chip-list comparison-chip-bank" data-comparison-chip-bank="${escapeHtml(activityId)}">
+          ${options.map((item, chipIndex) => `<button class="drag-chip comparison-chip" type="button" draggable="true" data-comparison-chip="${escapeHtml(activityId)}" data-chip-id="${escapeHtml(`${activityId}_${chipIndex}`)}" data-chip-value="${escapeHtml(item)}">${escapeHtml(item)}</button>`).join("")}
+        </div>
+        <div class="table-scroll">
+          <table class="mini-table comparison-input-table">
+            <thead><tr><th>Merkmal</th><th>Prokaryoten</th><th>Eukaryoten</th></tr></thead>
+            <tbody>
+              ${rows.map((row, index) => `
+                <tr>
+                  <td>${escapeHtml(row.feature || `Merkmal ${index + 1}`)}</td>
+                  <td>${renderComparisonDrop(activityId, `${index}_prokaryotes`)}</td>
+                  <td>${renderComparisonDrop(activityId, `${index}_eukaryotes`)}</td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    if (activity.type === "sequencing") {
+      return normalizeList(activity.sequences).map((sequence) => `
+        <div class="comparison-sequence-box">
+          <h4>${escapeHtml(sequence.title || "Ablauf")}</h4>
+          <p class="muted-small">Ziehe die Sätze in die richtige Reihenfolge.</p>
+          <ol class="comparison-sort-list" data-comparison-sort="${escapeHtml(activityId)}" data-comparison-key="${escapeHtml(sequence.id || sequence.title)}">
+            ${randomShuffle(normalizeList(sequence.steps)).map((step) => `
+              <li class="comparison-sort-item" draggable="true" data-sort-value="${escapeHtml(step)}">
+                <span class="sort-handle" aria-hidden="true">↕</span>
+                <span>${escapeHtml(step)}</span>
+              </li>
+            `).join("")}
+          </ol>
+        </div>
+      `).join("");
+    }
+
+    if (activity.type === "true_false_correction") {
+      return `
+        <div class="comparison-statement-list">
+          ${normalizeList(activity.statements).map((statement, index) => `
+            <div class="comparison-statement">
+              <p>${escapeHtml(statement.text || "")}</p>
+              <div class="true-false-grid">
+                <select data-comparison-input="${escapeHtml(activityId)}" data-comparison-key="${index}_choice">
+                  <option value="">Auswählen</option>
+                  <option value="true">richtig</option>
+                  <option value="false">falsch</option>
+                </select>
+                <input type="text" data-comparison-input="${escapeHtml(activityId)}" data-comparison-key="${index}_correction" placeholder="Korrektur bei falscher Aussage">
+              </div>
+            </div>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    if (activity.type === "short_answer") {
+      return `
+        <label class="field-label">Begründung
+          <textarea rows="5" data-comparison-input="${escapeHtml(activityId)}" data-comparison-key="answer" placeholder="Antwort in 2-3 Sätzen"></textarea>
+        </label>
+      `;
+    }
+
+    if (activity.type === "extended_response") {
+      return `
+        <article class="exam-material-card">
+          <h4>Material</h4>
+          <p>${escapeHtml(activity.material || "")}</p>
+        </article>
+        <label class="field-label">Transferantwort
+          <textarea rows="9" data-comparison-input="${escapeHtml(activityId)}" data-comparison-key="answer" placeholder="Formuliere hier deine ausführliche Antwort."></textarea>
+        </label>
+      `;
+    }
+
+    return `
+      <label class="field-label">Antwort
+        <textarea rows="6" data-comparison-input="${escapeHtml(activityId)}" data-comparison-key="answer"></textarea>
+      </label>
+    `;
+  }
+
+  function renderComparisonSelect(activityId, key, options) {
+    return `
+      <select data-comparison-input="${escapeHtml(activityId)}" data-comparison-key="${escapeHtml(key)}">
+        <option value="">Auswählen</option>
+        ${options.map((option) => `<option value="${escapeHtml(option)}">${escapeHtml(option)}</option>`).join("")}
+      </select>
+    `;
+  }
+
+  function renderComparisonDrop(activityId, key) {
+    return `
+      <div class="comparison-drop-zone" role="button" tabindex="0" data-comparison-drop="${escapeHtml(activityId)}" data-comparison-key="${escapeHtml(key)}" data-comparison-value="">
+        Aussage hier ablegen
+      </div>
+    `;
+  }
+
+  function renderComparisonImage(image) {
+    const src = image && image.src ? image.src : "assets/images/prokaryoten_eukaryoten_vergleich.png";
+    const alt = image && image.alt ? image.alt : "Vergleichsgrafik Prokaryoten und Eukaryoten";
+    return `
+      <figure class="exam-image-card comparison-image-card">
+        <img src="${escapeHtml(src)}" alt="${escapeHtml(alt)}" onerror="this.style.display='none'; this.parentElement.querySelector('.image-error').classList.remove('hidden');">
+        <figcaption>${escapeHtml(alt)}</figcaption>
+        <p class="image-error hidden">Die Vergleichsgrafik ist noch nicht vorhanden. Bearbeite die Aufgabe mit den Begriffen und dem Begleittext.</p>
+      </figure>
+    `;
+  }
+
+  function getComparisonImage(activity) {
+    return activity.image;
+  }
+
+  function getComparisonImageLabelSolutions(activity) {
+    if (activity && activity.labelSolutions && typeof activity.labelSolutions === "object") {
+      return activity.labelSolutions;
+    }
+    if (activity && activity.id === "aufgabe_2_bildbeschriftung") {
+      return {
+        1: "DNA",
+        2: "RNA-Polymerase",
+        3: "Transkription",
+        4: "Zellkern",
+        5: "mRNA",
+        6: "Translation",
+        7: "Ribosom",
+        8: "Zellplasma"
+      };
+    }
+    const labels = normalizeList(activity && activity.labels);
+    return labels.reduce((result, label, index) => {
+      result[index + 1] = label.text || label.id || String(label);
+      return result;
+    }, {});
+  }
+
+  function bindComparisonEvents(moduleData) {
+    const activities = normalizeList(moduleData.activities);
+    bindComparisonDragAndDrop();
+    bindComparisonSortLists();
+    elements.comparisonModuleContainer.querySelectorAll("[data-comparison-check]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const activity = activities.find((item) => (item.id || "") === button.dataset.comparisonCheck);
+        const feedback = elements.comparisonModuleContainer.querySelector(`[data-comparison-feedback="${cssEscape(button.dataset.comparisonCheck)}"]`);
+        if (!activity || !feedback) return;
+        if (activity.type === "sequencing") {
+          markComparisonSequencing(activity);
+          feedback.classList.add("hidden");
+          feedback.innerHTML = "";
+          return;
+        }
+        feedback.classList.remove("hidden");
+        feedback.innerHTML = renderComparisonFeedback(activity, collectComparisonInputs(activity.id));
+      });
+    });
+    elements.comparisonModuleContainer.querySelectorAll("[data-comparison-solution]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const activity = activities.find((item) => (item.id || "") === button.dataset.comparisonSolution);
+        const solutionBox = elements.comparisonModuleContainer.querySelector(`[data-comparison-solution-box="${cssEscape(button.dataset.comparisonSolution)}"]`);
+        if (!activity || !solutionBox) return;
+        solutionBox.classList.toggle("hidden");
+        if (!solutionBox.classList.contains("hidden")) {
+          solutionBox.innerHTML = renderComparisonSolution(activity);
+        }
+      });
+    });
+  }
+
+  function collectComparisonInputs(activityId) {
+    const values = {};
+    elements.comparisonModuleContainer.querySelectorAll(`[data-comparison-input="${cssEscape(activityId)}"]`).forEach((field) => {
+      values[field.dataset.comparisonKey] = field.value;
+    });
+    elements.comparisonModuleContainer.querySelectorAll(`[data-comparison-drop="${cssEscape(activityId)}"]`).forEach((field) => {
+      values[field.dataset.comparisonKey] = field.dataset.comparisonValue || "";
+    });
+    elements.comparisonModuleContainer.querySelectorAll(`[data-comparison-sort="${cssEscape(activityId)}"]`).forEach((list) => {
+      values[list.dataset.comparisonKey] = Array.from(list.querySelectorAll("[data-sort-value]")).map((item) => item.dataset.sortValue || "");
+    });
+    return values;
+  }
+
+  function bindComparisonDragAndDrop() {
+    let selectedChip = null;
+    elements.comparisonModuleContainer.querySelectorAll("[data-comparison-chip]").forEach((chip) => {
+      chip.addEventListener("click", () => {
+        if (selectedChip) {
+          selectedChip.classList.remove("is-selected");
+        }
+        selectedChip = chip;
+        chip.classList.add("is-selected");
+      });
+      chip.addEventListener("dragstart", (event) => {
+        event.dataTransfer.setData("text/plain", chip.dataset.chipId);
+      });
+    });
+    elements.comparisonModuleContainer.querySelectorAll("[data-comparison-drop]").forEach((drop) => {
+      drop.addEventListener("dragover", (event) => event.preventDefault());
+      drop.addEventListener("drop", (event) => {
+        event.preventDefault();
+        placeComparisonChip(event.dataTransfer.getData("text/plain"), drop);
+      });
+      drop.addEventListener("click", () => {
+        if (selectedChip) {
+          placeComparisonChip(selectedChip.dataset.chipId, drop);
+          selectedChip.classList.remove("is-selected");
+          selectedChip = null;
+        }
+      });
+      drop.addEventListener("keydown", (event) => {
+        if ((event.key === "Enter" || event.key === " ") && selectedChip) {
+          event.preventDefault();
+          placeComparisonChip(selectedChip.dataset.chipId, drop);
+          selectedChip.classList.remove("is-selected");
+          selectedChip = null;
+        }
+      });
+    });
+  }
+
+  function placeComparisonChip(chipId, drop) {
+    const chip = elements.comparisonModuleContainer.querySelector(`[data-chip-id="${cssEscape(chipId)}"]`);
+    if (!chip || !drop) return;
+    const previousChipId = drop.dataset.chipId;
+    if (previousChipId && previousChipId !== chipId) {
+      const previousChip = elements.comparisonModuleContainer.querySelector(`[data-chip-id="${cssEscape(previousChipId)}"]`);
+      const bank = elements.comparisonModuleContainer.querySelector(`[data-comparison-chip-bank="${cssEscape(drop.dataset.comparisonDrop)}"]`);
+      if (previousChip && bank) {
+        previousChip.classList.remove("is-placed");
+        bank.append(previousChip);
+      }
+    }
+    const oldDrop = elements.comparisonModuleContainer.querySelector(`[data-chip-id-holder="${cssEscape(chipId)}"]`);
+    if (oldDrop && oldDrop !== drop) {
+      oldDrop.dataset.comparisonValue = "";
+      oldDrop.dataset.chipId = "";
+      oldDrop.removeAttribute("data-chip-id-holder");
+      oldDrop.textContent = "Aussage hier ablegen";
+    }
+    drop.textContent = "";
+    drop.dataset.comparisonValue = chip.dataset.chipValue || chip.textContent;
+    drop.dataset.chipId = chipId;
+    drop.dataset.chipIdHolder = chipId;
+    chip.classList.add("is-placed");
+    drop.append(chip);
+  }
+
+  function bindComparisonSortLists() {
+    elements.comparisonModuleContainer.querySelectorAll(".comparison-sort-list").forEach((list) => {
+      list.querySelectorAll(".comparison-sort-item").forEach((item) => {
+        item.addEventListener("dragstart", () => {
+          item.classList.add("is-dragging");
+        });
+        item.addEventListener("dragend", () => {
+          item.classList.remove("is-dragging");
+        });
+      });
+      list.addEventListener("dragover", (event) => {
+        event.preventDefault();
+        const dragging = list.querySelector(".is-dragging");
+        const afterElement = getSortAfterElement(list, event.clientY);
+        if (!dragging) return;
+        if (!afterElement) {
+          list.append(dragging);
+        } else {
+          list.insertBefore(dragging, afterElement);
+        }
+      });
+    });
+  }
+
+  function getSortAfterElement(container, y) {
+    return Array.from(container.querySelectorAll(".comparison-sort-item:not(.is-dragging)")).reduce((closest, child) => {
+      const box = child.getBoundingClientRect();
+      const offset = y - box.top - box.height / 2;
+      if (offset < 0 && offset > closest.offset) {
+        return { offset, element: child };
+      }
+      return closest;
+    }, { offset: Number.NEGATIVE_INFINITY, element: null }).element;
+  }
+
+  function markComparisonSequencing(activity) {
+    normalizeList(activity.sequences).forEach((sequence) => {
+      const key = sequence.id || sequence.title;
+      const list = elements.comparisonModuleContainer.querySelector(
+        `[data-comparison-sort="${cssEscape(activity.id)}"][data-comparison-key="${cssEscape(key)}"]`
+      );
+      if (!list) return;
+      const expected = normalizeList(sequence.steps);
+      Array.from(list.querySelectorAll(".comparison-sort-item")).forEach((item, index) => {
+        item.classList.remove("is-correct", "is-incorrect");
+        item.classList.add(item.dataset.sortValue === expected[index] ? "is-correct" : "is-incorrect");
+      });
+    });
+  }
+
+  function renderComparisonFeedback(activity, values) {
+    if (activity.type === "matching") {
+      const items = normalizeList(activity.items);
+      const correct = items.filter((item) => values[item.term] === item.definition).length;
+      return `<p>${correct} von ${items.length} Fachbegriffen sind passend zugeordnet.</p>${renderComparisonCheckList(items.map((item) => ({
+        label: item.term,
+        correct: values[item.term] === item.definition,
+        hint: item.definition
+      })))} `;
+    }
+
+    if (activity.type === "drag_drop_table") {
+      const rows = normalizeList(activity.rows);
+      const checks = [];
+      rows.forEach((row, index) => {
+        checks.push({ label: `${row.feature}: Prokaryoten`, correct: values[`${index}_prokaryotes`] === row.prokaryotes, hint: row.prokaryotes });
+        checks.push({ label: `${row.feature}: Eukaryoten`, correct: values[`${index}_eukaryotes`] === row.eukaryotes, hint: row.eukaryotes });
+      });
+      const correct = checks.filter((item) => item.correct).length;
+      return `<p>${correct} von ${checks.length} Tabellenfeldern sind passend ausgefüllt.</p>${renderComparisonCheckList(checks)}`;
+    }
+
+    if (activity.type === "true_false_correction") {
+      const statements = normalizeList(activity.statements);
+      const checks = statements.map((statement, index) => ({
+        label: `Aussage ${index + 1}`,
+        correct: values[`${index}_choice`] === String(Boolean(statement.isCorrect)),
+        hint: statement.isCorrect ? "richtig" : `falsch: ${statement.correction}`
+      }));
+      return `<p>${checks.filter((item) => item.correct).length} von ${checks.length} Aussagen sind korrekt eingeordnet.</p>${renderComparisonCheckList(checks)}`;
+    }
+
+    if (activity.type === "sequencing") {
+      const checks = normalizeList(activity.sequences).map((sequence) => {
+        const entered = normalizeList(values[sequence.id || sequence.title]);
+        const expected = normalizeList(sequence.steps);
+        const correct = entered.length === expected.length && entered.every((step, index) => step === expected[index]);
+        return {
+          label: sequence.title || "Ablauf",
+          correct,
+          hint: expected.join(" → ")
+        };
+      });
+      return `<p>${checks.filter((item) => item.correct).length} von ${checks.length} Abläufen sind in der richtigen Reihenfolge.</p>${renderComparisonCheckList(checks)}`;
+    }
+
+    if (activity.type === "short_answer") {
+      const answer = normalizeText(values.answer || "");
+      const found = normalizeList(activity.keywords).filter((keyword) => answer.includes(normalizeText(keyword)));
+      return `
+        <p>Dieser Check ersetzt keine Bewertung. Vergleiche deine Antwort anschließend mit der Musterlösung.</p>
+        <p>Erkennbare Stichworte: ${found.length ? escapeHtml(found.join(", ")) : "noch keine zentralen Stichworte gefunden"}</p>
+      `;
+    }
+
+    if (activity.type === "sequencing") {
+      return `<p>Vergleiche deine Reihenfolge mit der Lösung. Wichtig ist, dass bei Prokaryoten Kopplung möglich ist und bei Eukaryoten die mRNA erst den Zellkern verlässt.</p>`;
+    }
+
+    if (activity.type === "image_labeling") {
+      const solutions = getComparisonImageLabelSolutions(activity);
+      const checks = Object.keys(solutions).map((number) => ({
+        label: `Nr. ${number}`,
+        correct: values[`label_${number}`] === solutions[number],
+        hint: solutions[number]
+      }));
+      return `<p>${checks.filter((item) => item.correct).length} von ${checks.length} Nummern sind passend beschriftet.</p>${renderComparisonCheckList(checks)}`;
+    }
+
+    if (activity.type === "extended_response") {
+      return `
+        <p>Vergleiche deine Transferantwort mit dem Erwartungshorizont.</p>
+        ${normalizeList(activity.assessmentCriteria).length ? `<h4>Wichtige Prüfpunkte</h4>${renderList(activity.assessmentCriteria)}` : ""}
+      `;
+    }
+
+    return `<p>Vergleiche deine Antwort mit der Lösung.</p>`;
+  }
+
+  function renderComparisonCheckList(items) {
+    return `<ul>${items.map((item) => `<li>${item.correct ? "✓" : "□"} ${escapeHtml(item.label)}${item.correct ? "" : ` - prüfen: ${escapeHtml(item.hint || "")}`}</li>`).join("")}</ul>`;
+  }
+
+  function renderComparisonSolution(activity) {
+    if (activity.type === "matching") {
+      return `
+        <h4>Lösung</h4>
+        <div class="table-scroll"><table class="mini-table"><thead><tr><th>Fachbegriff</th><th>Definition</th></tr></thead><tbody>
+          ${normalizeList(activity.items).map((item) => `<tr><td>${escapeHtml(item.term)}</td><td>${escapeHtml(item.definition)}</td></tr>`).join("")}
+        </tbody></table></div>
+      `;
+    }
+    if (activity.type === "image_labeling") {
+      const solutions = getComparisonImageLabelSolutions(activity);
+      return `
+        <h4>Lösung</h4>
+        <div class="table-scroll"><table class="mini-table"><thead><tr><th>Nummer</th><th>Begriff</th></tr></thead><tbody>
+          ${Object.keys(solutions).map((number) => `<tr><td>${escapeHtml(number)}</td><td>${escapeHtml(solutions[number])}</td></tr>`).join("")}
+        </tbody></table></div>
+      `;
+    }
+    if (activity.type === "drag_drop_table") {
+      return `
+        <h4>Lösung</h4>
+        <div class="table-scroll"><table class="mini-table"><thead><tr><th>Merkmal</th><th>Prokaryoten</th><th>Eukaryoten</th></tr></thead><tbody>
+          ${normalizeList(activity.rows).map((row) => `<tr><td>${escapeHtml(row.feature)}</td><td>${escapeHtml(row.prokaryotes)}</td><td>${escapeHtml(row.eukaryotes)}</td></tr>`).join("")}
+        </tbody></table></div>
+      `;
+    }
+    if (activity.type === "sequencing") {
+      return `
+        <h4>Lösung</h4>
+        ${normalizeList(activity.sequences).map((sequence) => `
+          <h5>${escapeHtml(sequence.title)}</h5>
+          <ol>${normalizeList(sequence.steps).map((step) => `<li>${escapeHtml(step)}</li>`).join("")}</ol>
+        `).join("")}
+      `;
+    }
+    if (activity.type === "true_false_correction") {
+      return `
+        <h4>Lösung</h4>
+        <ul>${normalizeList(activity.statements).map((statement) => `<li><strong>${statement.isCorrect ? "richtig" : "falsch"}:</strong> ${escapeHtml(statement.text)}${statement.correction ? ` Korrektur: ${escapeHtml(statement.correction)}` : ""}</li>`).join("")}</ul>
+      `;
+    }
+    if (activity.type === "short_answer") {
+      return `<h4>Musterlösung</h4><p>${escapeHtml(activity.expectedAnswer || "")}</p>`;
+    }
+    if (activity.type === "extended_response") {
+      return `
+        <h4>Erwartungshorizont</h4>
+        <p>${escapeHtml(activity.expectedAnswer || "")}</p>
+        ${normalizeList(activity.assessmentCriteria).length ? `<h5>Kriterien</h5>${renderList(activity.assessmentCriteria)}` : ""}
+      `;
+    }
+    return `<h4>Lösung</h4><pre>${escapeHtml(JSON.stringify(activity, null, 2))}</pre>`;
+  }
+
+  function randomShuffle(items) {
+    const list = normalizeList(items).slice();
+    for (let index = list.length - 1; index > 0; index -= 1) {
+      const swapIndex = Math.floor(Math.random() * (index + 1));
+      [list[index], list[swapIndex]] = [list[swapIndex], list[index]];
+    }
+    return list;
+  }
+
+  async function openSplicingModule() {
+    showView("splicingModule");
+    if (!state.splicingModule) {
+      try {
+        state.splicingModule = await fetchJson(SPLICING_MODULE_URL);
+      } catch (error) {
+        elements.splicingModuleContainer.innerHTML = `<div class="message-box">Das Modul zur prä-mRNA konnte nicht geladen werden. Prüfe bitte, ob data/praemrna_spleissen_aufgaben.json vorhanden ist.</div>`;
+        console.error(error);
+        return;
+      }
+    }
+    renderSplicingModule(state.splicingModule);
+  }
+
+  function renderSplicingModule(moduleData) {
+    const tasks = normalizeList(moduleData.tasks);
+    elements.splicingModuleContainer.innerHTML = `
+      <article class="comparison-header">
+        <p class="eyebrow">${escapeHtml(moduleData.category || "Proteinbiosynthese")}</p>
+        <h2 id="splicingModuleTitle">${escapeHtml(moduleData.title || "prä-mRNA und alternatives Spleißen")}</h2>
+        ${moduleData.subtitle ? `<p class="subtitle-small">${escapeHtml(moduleData.subtitle)}</p>` : ""}
+        <div class="exam-meta">
+          ${moduleData.level ? `<span>${escapeHtml(moduleData.level)}</span>` : ""}
+          <span>Genexpression</span>
+        </div>
+        ${moduleData.description ? `<p>${escapeHtml(moduleData.description)}</p>` : ""}
+        ${normalizeList(moduleData.learning_goals).length ? `<div class="comparison-goals"><h3>Lernziele</h3>${renderList(moduleData.learning_goals)}</div>` : ""}
+      </article>
+      ${moduleData.intro_text ? `<article class="comparison-info-card"><p>${escapeHtml(moduleData.intro_text)}</p></article>` : ""}
+      <section class="comparison-activities">
+        ${tasks.map((task, index) => renderSplicingTask(task, index)).join("")}
+      </section>
+    `;
+    bindSplicingEvents(moduleData);
+  }
+
+  function renderSplicingTask(task, index) {
+    const taskId = task.id || `spleissen_${index + 1}`;
+    return `
+      <article class="comparison-activity-card" data-splicing-task="${escapeHtml(taskId)}">
+        <header class="comparison-activity-header">
+          <div>
+            <p class="eyebrow">${task.type === "free_text" ? "Abschlussaufgabe" : `Aufgabe ${index + 1}`}</p>
+            <h3>${escapeHtml(task.title || `Aufgabe ${index + 1}`)}</h3>
+          </div>
+          ${task.afB || task.afb ? `<span class="operator-tag">AFB ${escapeHtml(task.afB || task.afb)}</span>` : ""}
+        </header>
+        ${task.instruction ? `<p>${escapeHtml(task.instruction)}</p>` : ""}
+        ${renderSplicingTaskBody(task, taskId)}
+        <div class="button-row exam-question-actions">
+          <button class="primary-button" type="button" data-splicing-check="${escapeHtml(taskId)}">${task.type === "free_text" ? "Antwort absenden" : "Antwort prüfen"}</button>
+          <button class="ghost-button" type="button" data-splicing-solution="${escapeHtml(taskId)}">Lösung anzeigen</button>
+        </div>
+        <div class="feedback hidden" data-splicing-feedback="${escapeHtml(taskId)}"></div>
+        <div class="solution-box hidden" data-splicing-solution-box="${escapeHtml(taskId)}"></div>
+      </article>
+    `;
+  }
+
+  function renderSplicingTaskBody(task, taskId) {
+    if (task.type === "matching") {
+      const terms = normalizeList(task.terms);
+      const options = randomShuffle(terms.map((item) => item.definition || ""));
+      return `
+        <div class="table-scroll">
+          <table class="mini-table comparison-input-table">
+            <thead><tr><th>Fachbegriff</th><th>Definition</th></tr></thead>
+            <tbody>${terms.map((item) => `
+              <tr>
+                <td>${escapeHtml(item.term)}</td>
+                <td>${renderSplicingSelect(taskId, item.id, options)}</td>
+              </tr>
+            `).join("")}</tbody>
+          </table>
+        </div>
+      `;
+    }
+    if (task.type === "classification") {
+      const categories = normalizeList(task.categories);
+      return `
+        ${task.material ? `<article class="exam-material-card"><h4>${escapeHtml(task.material.label || "Material")}</h4><p>${escapeHtml(task.material.info || "")}</p><div class="chip-list">${normalizeList(task.material.sequence).map((item) => `<span class="drag-chip static-chip">${escapeHtml(item.label || item.id)}</span>`).join("")}</div></article>` : ""}
+        <div class="table-scroll">
+          <table class="mini-table comparison-input-table">
+            <thead><tr><th>Abschnitt</th><th>Zuordnung</th></tr></thead>
+            <tbody>${normalizeList(task.items).map((item) => `
+              <tr>
+                <td>${escapeHtml(item.label)}</td>
+                <td>${renderSplicingSelect(taskId, item.id, randomShuffle(categories.map((category) => category.label)))}</td>
+              </tr>
+            `).join("")}</tbody>
+          </table>
+        </div>
+      `;
+    }
+    if (task.type === "ordering") {
+      return `
+        <ol class="comparison-sort-list splicing-sort-list" data-splicing-sort="${escapeHtml(taskId)}">
+          ${randomShuffle(normalizeList(task.items)).map((item) => `
+            <li class="comparison-sort-item" draggable="true" data-sort-value="${escapeHtml(item.id)}">
+              <span class="sort-handle" aria-hidden="true">↕</span>
+              <span>${escapeHtml(item.text)}</span>
+            </li>
+          `).join("")}
+        </ol>
+      `;
+    }
+    if (task.type === "drag_and_drop_sequence") {
+      return `
+        ${task.material ? `<article class="exam-material-card"><h4>${escapeHtml(task.material.label || "prä-mRNA")}</h4><div class="chip-list">${normalizeList(task.material.sequence).map((item) => `<span class="drag-chip static-chip">${escapeHtml(item)}</span>`).join("")}</div></article>` : ""}
+        <div class="chip-list comparison-chip-bank" data-splicing-chip-bank="${escapeHtml(taskId)}">
+          ${randomShuffle(normalizeList(task.dragItems)).map((item) => `<button class="drag-chip comparison-chip" type="button" draggable="true" data-splicing-chip="${escapeHtml(taskId)}" data-chip-id="${escapeHtml(item.id)}" data-chip-value="${escapeHtml(item.id)}">${escapeHtml(item.label)}</button>`).join("")}
+        </div>
+        <div class="splicing-drop-row" aria-label="${escapeHtml((task.dropZone && task.dropZone.label) || "reife mRNA")}">
+          ${Array.from({ length: Number((task.dropZone && task.dropZone.slots) || 3) }).map((_, slotIndex) => `
+            <div class="comparison-drop-zone splicing-sequence-drop" role="button" tabindex="0" data-splicing-drop="${escapeHtml(taskId)}" data-splicing-slot="${slotIndex}" data-splicing-value="">Ablagefeld ${slotIndex + 1}</div>
+          `).join("")}
+        </div>
+      `;
+    }
+    if (task.type === "true_false") {
+      return `
+        <div class="comparison-statement-list">
+          ${normalizeList(task.statements).map((statement) => `
+            <div class="comparison-statement">
+              <p>${escapeHtml(statement.text)}</p>
+              <select data-splicing-input="${escapeHtml(taskId)}" data-splicing-key="${escapeHtml(statement.id)}">
+                <option value="">Auswählen</option>
+                <option value="true">richtig</option>
+                <option value="false">falsch</option>
+              </select>
+            </div>
+          `).join("")}
+        </div>
+      `;
+    }
+    if (task.type === "free_text") {
+      return `
+        ${task.context_text ? `<article class="exam-material-card"><h4>Material</h4><p>${escapeHtml(task.context_text)}</p></article>` : ""}
+        ${normalizeList(task.tasks).length ? renderList(task.tasks) : ""}
+        <label class="field-label">Antwort
+          <textarea rows="9" data-splicing-input="${escapeHtml(taskId)}" data-splicing-key="answer" placeholder="Formuliere hier deine Antwort."></textarea>
+        </label>
+      `;
+    }
+    return `<textarea rows="6" data-splicing-input="${escapeHtml(taskId)}" data-splicing-key="answer"></textarea>`;
+  }
+
+  function renderSplicingSelect(taskId, key, options) {
+    return `
+      <select data-splicing-input="${escapeHtml(taskId)}" data-splicing-key="${escapeHtml(key)}">
+        <option value="">Auswählen</option>
+        ${normalizeList(options).map((option) => `<option value="${escapeHtml(option)}">${escapeHtml(option)}</option>`).join("")}
+      </select>
+    `;
+  }
+
+  function bindSplicingEvents(moduleData) {
+    const tasks = normalizeList(moduleData.tasks);
+    bindSplicingSortLists();
+    bindSplicingSequenceDrops();
+    elements.splicingModuleContainer.querySelectorAll("[data-splicing-check]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const task = tasks.find((item) => (item.id || "") === button.dataset.splicingCheck);
+        const feedback = elements.splicingModuleContainer.querySelector(`[data-splicing-feedback="${cssEscape(button.dataset.splicingCheck)}"]`);
+        if (!task || !feedback) return;
+        if (task.type === "ordering") {
+          markSplicingOrdering(task);
+          feedback.classList.add("hidden");
+          return;
+        }
+        if (task.type === "drag_and_drop_sequence") {
+          markSplicingSequence(task);
+          feedback.classList.add("hidden");
+          return;
+        }
+        feedback.classList.remove("hidden");
+        feedback.innerHTML = renderSplicingFeedback(task, collectSplicingInputs(task.id));
+      });
+    });
+    elements.splicingModuleContainer.querySelectorAll("[data-splicing-solution]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const task = tasks.find((item) => (item.id || "") === button.dataset.splicingSolution);
+        const box = elements.splicingModuleContainer.querySelector(`[data-splicing-solution-box="${cssEscape(button.dataset.splicingSolution)}"]`);
+        if (!task || !box) return;
+        box.classList.toggle("hidden");
+        if (!box.classList.contains("hidden")) {
+          box.innerHTML = renderSplicingSolution(task);
+        }
+      });
+    });
+  }
+
+  function collectSplicingInputs(taskId) {
+    const values = {};
+    elements.splicingModuleContainer.querySelectorAll(`[data-splicing-input="${cssEscape(taskId)}"]`).forEach((field) => {
+      values[field.dataset.splicingKey] = field.value;
+    });
+    return values;
+  }
+
+  function bindSplicingSortLists() {
+    elements.splicingModuleContainer.querySelectorAll(".splicing-sort-list").forEach((list) => {
+      list.querySelectorAll(".comparison-sort-item").forEach((item) => {
+        item.addEventListener("dragstart", () => item.classList.add("is-dragging"));
+        item.addEventListener("dragend", () => item.classList.remove("is-dragging"));
+      });
+      list.addEventListener("dragover", (event) => {
+        event.preventDefault();
+        const dragging = list.querySelector(".is-dragging");
+        const afterElement = getSortAfterElement(list, event.clientY);
+        if (!dragging) return;
+        if (!afterElement) list.append(dragging);
+        else list.insertBefore(dragging, afterElement);
+      });
+    });
+  }
+
+  function bindSplicingSequenceDrops() {
+    let selectedChip = null;
+    elements.splicingModuleContainer.querySelectorAll("[data-splicing-chip]").forEach((chip) => {
+      chip.addEventListener("click", () => {
+        if (selectedChip) selectedChip.classList.remove("is-selected");
+        selectedChip = chip;
+        chip.classList.add("is-selected");
+      });
+      chip.addEventListener("dragstart", (event) => event.dataTransfer.setData("text/plain", chip.dataset.chipId));
+    });
+    elements.splicingModuleContainer.querySelectorAll("[data-splicing-drop]").forEach((drop) => {
+      drop.addEventListener("dragover", (event) => event.preventDefault());
+      drop.addEventListener("drop", (event) => {
+        event.preventDefault();
+        placeSplicingChip(event.dataTransfer.getData("text/plain"), drop);
+      });
+      drop.addEventListener("click", () => {
+        if (!selectedChip) return;
+        placeSplicingChip(selectedChip.dataset.chipId, drop);
+        selectedChip.classList.remove("is-selected");
+        selectedChip = null;
+      });
+    });
+  }
+
+  function placeSplicingChip(chipId, drop) {
+    const chip = elements.splicingModuleContainer.querySelector(`[data-chip-id="${cssEscape(chipId)}"]`);
+    if (!chip || !drop) return;
+    const previousChipId = drop.dataset.chipId;
+    if (previousChipId && previousChipId !== chipId) {
+      const previousChip = elements.splicingModuleContainer.querySelector(`[data-chip-id="${cssEscape(previousChipId)}"]`);
+      const bank = elements.splicingModuleContainer.querySelector(`[data-splicing-chip-bank="${cssEscape(drop.dataset.splicingDrop)}"]`);
+      if (previousChip && bank) {
+        previousChip.classList.remove("is-placed");
+        bank.append(previousChip);
+      }
+    }
+    const oldDrop = elements.splicingModuleContainer.querySelector(`[data-chip-id-holder="${cssEscape(chipId)}"]`);
+    if (oldDrop && oldDrop !== drop) {
+      oldDrop.dataset.splicingValue = "";
+      oldDrop.dataset.chipId = "";
+      oldDrop.removeAttribute("data-chip-id-holder");
+      oldDrop.textContent = `Ablagefeld ${Number(oldDrop.dataset.splicingSlot || 0) + 1}`;
+    }
+    drop.textContent = "";
+    drop.dataset.splicingValue = chip.dataset.chipValue || chipId;
+    drop.dataset.chipId = chipId;
+    drop.dataset.chipIdHolder = chipId;
+    chip.classList.add("is-placed");
+    drop.append(chip);
+  }
+
+  function markSplicingOrdering(task) {
+    const expected = normalizeList(task.items).sort((a, b) => Number(a.order) - Number(b.order)).map((item) => item.id);
+    const list = elements.splicingModuleContainer.querySelector(`[data-splicing-sort="${cssEscape(task.id)}"]`);
+    if (!list) return;
+    Array.from(list.querySelectorAll("[data-sort-value]")).forEach((item, index) => {
+      item.classList.remove("is-correct", "is-incorrect");
+      item.classList.add(item.dataset.sortValue === expected[index] ? "is-correct" : "is-incorrect");
+    });
+  }
+
+  function markSplicingSequence(task) {
+    const expected = normalizeList(task.solution);
+    elements.splicingModuleContainer.querySelectorAll(`[data-splicing-drop="${cssEscape(task.id)}"]`).forEach((drop, index) => {
+      drop.classList.remove("is-correct", "is-incorrect");
+      drop.classList.add(drop.dataset.splicingValue === expected[index] ? "is-correct" : "is-incorrect");
+    });
+  }
+
+  function renderSplicingFeedback(task, values) {
+    if (task.type === "matching") {
+      const checks = normalizeList(task.terms).map((item) => ({
+        label: item.term,
+        correct: values[item.id] === item.definition,
+        hint: item.definition
+      }));
+      return `<p>${checks.filter((item) => item.correct).length} von ${checks.length} Fachbegriffen sind passend zugeordnet.</p>${renderComparisonCheckList(checks)}`;
+    }
+    if (task.type === "classification") {
+      const categoryMap = new Map(normalizeList(task.categories).map((category) => [category.id, category.label]));
+      const checks = normalizeList(task.items).map((item) => ({
+        label: item.label,
+        correct: values[item.id] === categoryMap.get(item.correctCategory),
+        hint: categoryMap.get(item.correctCategory)
+      }));
+      return `<p>${checks.filter((item) => item.correct).length} von ${checks.length} Abschnitten sind passend zugeordnet.</p>${renderComparisonCheckList(checks)}`;
+    }
+    if (task.type === "true_false") {
+      const checks = normalizeList(task.statements).map((statement) => ({
+        label: statement.text,
+        correct: values[statement.id] === String(Boolean(statement.correct)),
+        hint: statement.correct ? "richtig" : `falsch: ${statement.correction || ""}`
+      }));
+      return `<p>${checks.filter((item) => item.correct).length} von ${checks.length} Aussagen sind richtig eingeordnet.</p>${renderComparisonCheckList(checks)}`;
+    }
+    if (task.type === "free_text") {
+      return `<p>Vergleiche deine Antwort mit der Musterlösung.</p>`;
+    }
+    return `<p>Vergleiche deine Antwort mit der Lösung.</p>`;
+  }
+
+  function renderSplicingSolution(task) {
+    if (task.type === "matching") {
+      return `<h4>Lösung</h4><div class="table-scroll"><table class="mini-table"><thead><tr><th>Fachbegriff</th><th>Definition</th></tr></thead><tbody>${normalizeList(task.terms).map((item) => `<tr><td>${escapeHtml(item.term)}</td><td>${escapeHtml(item.definition)}</td></tr>`).join("")}</tbody></table></div>`;
+    }
+    if (task.type === "classification") {
+      const categoryMap = new Map(normalizeList(task.categories).map((category) => [category.id, category.label]));
+      return `<h4>Lösung</h4><ul>${normalizeList(task.items).map((item) => `<li>${escapeHtml(item.label)}: ${escapeHtml(categoryMap.get(item.correctCategory) || item.correctCategory)}</li>`).join("")}</ul>`;
+    }
+    if (task.type === "ordering") {
+      return `<h4>Lösung</h4><ol>${normalizeList(task.items).sort((a, b) => Number(a.order) - Number(b.order)).map((item) => `<li>${escapeHtml(item.text)}</li>`).join("")}</ol>`;
+    }
+    if (task.type === "drag_and_drop_sequence") {
+      const labelMap = new Map(normalizeList(task.dragItems).map((item) => [item.id, item.label]));
+      return `<h4>Lösung</h4><p>${normalizeList(task.solution).map((id) => escapeHtml(labelMap.get(id) || id)).join(" - ")}</p><p>Introns gehören nicht in die reife mRNA.</p>`;
+    }
+    if (task.type === "true_false") {
+      return `<h4>Lösung</h4><ul>${normalizeList(task.statements).map((statement) => `<li><strong>${statement.correct ? "richtig" : "falsch"}:</strong> ${escapeHtml(statement.text)}${statement.correction ? ` Korrektur: ${escapeHtml(statement.correction)}` : ""}</li>`).join("")}</ul>`;
+    }
+    if (task.type === "free_text") {
+      return `<h4>Musterlösung</h4><p>${escapeHtml(task.sample_solution || "")}</p>`;
+    }
+    return `<h4>Lösung</h4><pre>${escapeHtml(JSON.stringify(task, null, 2))}</pre>`;
+  }
+
+  async function openMutationModule() {
+    showView("mutationModule");
+    if (!state.mutationModule) {
+      try {
+        state.mutationModule = await fetchJson(MUTATION_MODULE_URL);
+      } catch (error) {
+        elements.mutationModuleContainer.innerHTML = `<div class="message-box">Das Modul Mutation – Genprodukt – Phänotyp konnte nicht geladen werden. Prüfe bitte, ob data/mutation_genprodukt_phaenotyp_lernprogramm.json vorhanden ist.</div>`;
+        console.error(error);
+        return;
+      }
+    }
+    renderMutationModule(state.mutationModule);
+  }
+
+  function renderMutationModule(moduleData) {
+    elements.mutationModuleContainer.innerHTML = `
+      <article class="comparison-header">
+        <p class="eyebrow">${escapeHtml(moduleData.targetGroup || "Biologie GK Q1")}</p>
+        <h2 id="mutationModuleTitle">${escapeHtml(moduleData.title || "Mutation – Genprodukt – Phänotyp")}</h2>
+        ${moduleData.subtitle ? `<p class="subtitle-small">${escapeHtml(moduleData.subtitle)}</p>` : ""}
+        ${moduleData.estimatedTimeMinutes ? `<div class="exam-meta"><span>ca. ${escapeHtml(moduleData.estimatedTimeMinutes)} Minuten</span></div>` : ""}
+      </article>
+      ${renderMutationIntro(moduleData.intro)}
+      <section class="comparison-activities">
+        ${normalizeList(moduleData.tasks).filter((task) => task.type !== "extendedTask").map((task, index) => renderMutationTask(moduleData, task, index)).join("")}
+      </section>
+    `;
+    bindMutationEvents(moduleData);
+  }
+
+  function renderMutationIntro(intro) {
+    if (!intro) return "";
+    return `
+      <article class="comparison-info-card">
+        ${intro.title ? `<h3>${escapeHtml(intro.title)}</h3>` : ""}
+        ${normalizeList(intro.body).map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`).join("")}
+      </article>
+    `;
+  }
+
+  function renderMutationTask(moduleData, task, index) {
+    const taskId = task.id || `mutation_${index + 1}`;
+    return `
+      <article class="comparison-activity-card" data-mutation-task="${escapeHtml(taskId)}">
+        <header class="comparison-activity-header">
+          <div>
+            <p class="eyebrow">${task.level || task.afB ? escapeHtml(task.level || task.afB) : `Aufgabe ${index + 1}`}</p>
+            <h3>${escapeHtml(task.title || `Aufgabe ${index + 1}`)}</h3>
+          </div>
+        </header>
+        ${task.instruction ? `<p>${escapeHtml(task.instruction)}</p>` : ""}
+        ${renderMutationTaskBody(moduleData, task, taskId)}
+        <div class="button-row exam-question-actions ${task.type === "memoryCloze" ? "mutation-cloze-actions hidden" : ""}" data-mutation-actions="${escapeHtml(taskId)}">
+          <button class="primary-button" type="button" data-mutation-check="${escapeHtml(taskId)}">${task.type === "extendedTask" ? "Antwort absenden" : "Prüfen"}</button>
+          <button class="ghost-button" type="button" data-mutation-solution="${escapeHtml(taskId)}">Lösung anzeigen</button>
+        </div>
+        <div class="feedback hidden" data-mutation-feedback="${escapeHtml(taskId)}"></div>
+        <div class="solution-box hidden" data-mutation-solution-box="${escapeHtml(taskId)}"></div>
+      </article>
+    `;
+  }
+
+  function renderMutationTaskBody(moduleData, task, taskId) {
+    if (task.type === "dragDropOrder") {
+      return `
+        <ol class="comparison-sort-list mutation-sort-list" data-mutation-sort="${escapeHtml(taskId)}">
+          ${randomShuffle(normalizeList(task.cards)).map((card) => `
+            <li class="comparison-sort-item" draggable="true" data-sort-value="${escapeHtml(card.id)}">
+              <span class="sort-handle" aria-hidden="true">↕</span><span>${escapeHtml(card.text)}</span>
+            </li>
+          `).join("")}
+        </ol>
+      `;
+    }
+    if (task.type === "matching") {
+      const definitions = randomShuffle(normalizeList(task.definitions));
+      return `
+        <div class="table-scroll"><table class="mini-table comparison-input-table">
+          <thead><tr><th>Fachbegriff</th><th>Erklärung</th></tr></thead>
+          <tbody>${normalizeList(task.terms).map((term) => `
+            <tr data-mutation-row="${escapeHtml(term.id)}">
+              <td>${escapeHtml(term.text)}</td>
+              <td><select data-mutation-input="${escapeHtml(taskId)}" data-mutation-key="${escapeHtml(term.id)}">
+                <option value="">Auswählen</option>
+                ${definitions.map((definition) => `<option value="${escapeHtml(definition.id)}">${escapeHtml(definition.text)}</option>`).join("")}
+              </select></td>
+            </tr>
+          `).join("")}</tbody>
+        </table></div>
+      `;
+    }
+    if (task.type === "dropdownTable") {
+      const options = randomShuffle(task.options);
+      return `
+        ${renderMutationTypeTableFigure()}
+        <div class="table-scroll"><table class="mini-table comparison-input-table">
+          <thead><tr><th>Veränderung</th><th>Mutationstyp</th></tr></thead>
+          <tbody>${normalizeList(task.rows).map((row) => `
+            <tr data-mutation-row="${escapeHtml(row.id)}">
+              <td>${escapeHtml(row.prompt)}</td>
+              <td><select data-mutation-input="${escapeHtml(taskId)}" data-mutation-key="${escapeHtml(row.id)}">
+                <option value="">Auswählen</option>
+                ${options.map((option) => `<option value="${escapeHtml(option)}">${escapeHtml(option)}</option>`).join("")}
+              </select></td>
+            </tr>
+          `).join("")}</tbody>
+        </table></div>
+      `;
+    }
+    if (task.type === "codonAnalysis") {
+      return `
+        ${renderMutationAssetFigures(moduleData, task)}
+        ${renderMutationTypeTableFigure()}
+        <div class="sequence-grid">
+          ${normalizeList(task.sequences).map((sequence) => `<article class="sequence-card"><strong>${escapeHtml(sequence.label)}</strong><code>${escapeHtml(sequence.sequence)}</code></article>`).join("")}
+        </div>
+        ${task.additionalInfo ? `<article class="exam-material-card"><p>${escapeHtml(task.additionalInfo)}</p></article>` : ""}
+        <div class="mutation-input-grid">
+          ${normalizeList(task.inputs).map((input) => `
+            <label class="field-label">${escapeHtml(input.label)}
+              ${input.inputType === "textarea"
+                ? `<textarea rows="5" data-mutation-input="${escapeHtml(taskId)}" data-mutation-key="${escapeHtml(input.id)}"></textarea>`
+                : `<input type="text" data-mutation-input="${escapeHtml(taskId)}" data-mutation-key="${escapeHtml(input.id)}">`}
+            </label>
+          `).join("")}
+        </div>
+      `;
+    }
+    if (task.type === "memoryCloze") {
+      return `
+        <div data-mutation-memory-intro="${escapeHtml(taskId)}">
+          <p class="notice">Lies den folgenden Text aufmerksam durch. Es wird dir anschließend ein Lückentext angezeigt, den du aus dem Gedächtnis mit den Informationen aus dem Infotext ergänzen sollst.</p>
+          <article class="comparison-info-card">
+            <h4>${escapeHtml((task.phase1 && task.phase1.title) || "Infotext")}</h4>
+            ${normalizeList(task.phase1 && task.phase1.body).map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`).join("")}
+          </article>
+          <button class="primary-button" type="button" data-mutation-continue="${escapeHtml(taskId)}">${escapeHtml((task.phase1 && task.phase1.buttonText) || "Weiter zur Aufgabe")}</button>
+        </div>
+        <div class="hidden" data-mutation-cloze="${escapeHtml(taskId)}">
+          <p>${escapeHtml(task.phase2 && task.phase2.instruction || "")}</p>
+          <div class="cloze-box">${renderMutationClozeText(task)}</div>
+        </div>
+      `;
+    }
+    if (task.type === "extendedTask") {
+      return `
+        ${renderMutationAssetFigures(moduleData, task)}
+        ${normalizeList(task.material).map((paragraph) => `<article class="exam-material-card"><p>${escapeHtml(paragraph)}</p></article>`).join("")}
+        ${renderMutationTable(task.table)}
+        ${normalizeList(task.questions).length ? `<h4>Aufgabenstellung</h4>${renderList(task.questions)}` : ""}
+        <label class="field-label">Antwort
+          <textarea rows="10" data-mutation-input="${escapeHtml(taskId)}" data-mutation-key="answer"></textarea>
+        </label>
+      `;
+    }
+    return `<textarea rows="6" data-mutation-input="${escapeHtml(taskId)}" data-mutation-key="answer"></textarea>`;
+  }
+
+  function renderMutationAssetFigures(moduleData, task) {
+    return normalizeList(task.materials).map((material) => {
+      const asset = moduleData.assets && moduleData.assets[material.assetRef];
+      if (!asset) return "";
+      const src = material.assetRef === "aminosaeuretabelle" ? "assets/images/Aminosäurentabelle.png" : asset.path;
+      const title = material.assetRef === "codesonne" ? "Codesonne anzeigen" : "Aminosäurentabelle anzeigen";
+      return `
+        <details class="mutation-asset-toggle">
+          <summary>${escapeHtml(title)}</summary>
+          <figure class="exam-image-card mutation-asset-card">
+            <img src="${escapeHtml(src)}" alt="${escapeHtml(asset.alt || material.assetRef)}" onerror="this.style.display='none'; this.parentElement.querySelector('.image-error').classList.remove('hidden');">
+            <figcaption>${escapeHtml(asset.alt || material.assetRef)}</figcaption>
+            <p class="image-error hidden">Dieses Hilfsbild konnte nicht geladen werden.</p>
+          </figure>
+        </details>
+      `;
+    }).join("");
+  }
+
+  function renderMutationTypeTableFigure() {
+    return `
+      <details class="mutation-asset-toggle">
+        <summary>Mutationstypen-Tabelle anzeigen</summary>
+        <figure class="exam-image-card mutation-asset-card">
+          <img src="assets/images/mutationen_tabelle-gekürzt.png" alt="Tabelle mit Mutationstypen und ihren möglichen Folgen" onerror="this.style.display='none'; this.parentElement.querySelector('.image-error').classList.remove('hidden');">
+          <figcaption>Tabelle mit Mutationstypen und ihren möglichen Folgen</figcaption>
+          <p class="image-error hidden">Dieses Hilfsbild konnte nicht geladen werden.</p>
+        </figure>
+      </details>
+    `;
+  }
+
+  function renderMutationTable(table) {
+    if (!table) return "";
+    return `
+      <div class="table-scroll"><table class="mini-table">
+        <thead><tr>${normalizeList(table.columns).map((column) => `<th>${escapeHtml(column)}</th>`).join("")}</tr></thead>
+        <tbody>${normalizeList(table.rows).map((row) => `<tr>${normalizeList(row).map((cell) => `<td>${escapeHtml(cell)}</td>`).join("")}</tr>`).join("")}</tbody>
+      </table></div>
+    `;
+  }
+
+  function renderMutationClozeText(task) {
+    const blanks = new Map(normalizeList(task.phase2 && task.phase2.blanks).map((blank) => [blank.id, blank]));
+    return String((task.phase2 && task.phase2.clozeText) || "").replace(/\{\{(.*?)\}\}/g, (_, id) => {
+      const blank = blanks.get(id);
+      return `<input class="cloze-input" type="text" data-mutation-input="${escapeHtml(task.id)}" data-mutation-key="${escapeHtml(id)}" aria-label="${escapeHtml(id)}">`;
+    });
+  }
+
+  function bindMutationEvents(moduleData) {
+    const tasks = normalizeList(moduleData.tasks).filter((task) => task.type !== "extendedTask");
+    bindMutationSortLists();
+    elements.mutationModuleContainer.querySelectorAll("[data-mutation-continue]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const taskId = button.dataset.mutationContinue;
+        const intro = elements.mutationModuleContainer.querySelector(`[data-mutation-memory-intro="${cssEscape(taskId)}"]`);
+        const cloze = elements.mutationModuleContainer.querySelector(`[data-mutation-cloze="${cssEscape(taskId)}"]`);
+        const actions = elements.mutationModuleContainer.querySelector(`[data-mutation-actions="${cssEscape(taskId)}"]`);
+        if (intro) intro.classList.add("hidden");
+        if (cloze) cloze.classList.remove("hidden");
+        if (actions) actions.classList.remove("hidden");
+      });
+    });
+    elements.mutationModuleContainer.querySelectorAll("[data-mutation-check]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const task = tasks.find((item) => (item.id || "") === button.dataset.mutationCheck);
+        const feedback = elements.mutationModuleContainer.querySelector(`[data-mutation-feedback="${cssEscape(button.dataset.mutationCheck)}"]`);
+        if (!task || !feedback) return;
+        feedback.classList.add("hidden");
+        feedback.innerHTML = "";
+        checkMutationTask(task, feedback);
+      });
+    });
+    elements.mutationModuleContainer.querySelectorAll("[data-mutation-solution]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const task = tasks.find((item) => (item.id || "") === button.dataset.mutationSolution);
+        const box = elements.mutationModuleContainer.querySelector(`[data-mutation-solution-box="${cssEscape(button.dataset.mutationSolution)}"]`);
+        if (!task || !box) return;
+        box.classList.toggle("hidden");
+        if (!box.classList.contains("hidden")) {
+          box.innerHTML = renderMutationSolution(task);
+        }
+      });
+    });
+  }
+
+  function bindMutationSortLists() {
+    elements.mutationModuleContainer.querySelectorAll(".mutation-sort-list").forEach((list) => {
+      list.querySelectorAll(".comparison-sort-item").forEach((item) => {
+        item.addEventListener("dragstart", () => item.classList.add("is-dragging"));
+        item.addEventListener("dragend", () => item.classList.remove("is-dragging"));
+      });
+      list.addEventListener("dragover", (event) => {
+        event.preventDefault();
+        const dragging = list.querySelector(".is-dragging");
+        const afterElement = getSortAfterElement(list, event.clientY);
+        if (!dragging) return;
+        if (!afterElement) list.append(dragging);
+        else list.insertBefore(dragging, afterElement);
+      });
+    });
+  }
+
+  function checkMutationTask(task, feedback) {
+    if (task.type === "dragDropOrder") {
+      markMutationSort(task, task.correctOrder);
+      return;
+    }
+    if (task.type === "matching") {
+      markMutationRows(task, (key, value) => value === task.correctMatches[key]);
+      return;
+    }
+    if (task.type === "dropdownTable") {
+      const answers = new Map(normalizeList(task.rows).map((row) => [row.id, row.answer]));
+      markMutationRows(task, (key, value) => value === answers.get(key));
+      return;
+    }
+    if (task.type === "codonAnalysis") {
+      markMutationInputs(task);
+      return;
+    }
+    if (task.type === "memoryCloze") {
+      markMutationCloze(task);
+      return;
+    }
+    if (task.type === "extendedTask") {
+      feedback.classList.remove("hidden");
+      feedback.innerHTML = `<p>Vergleiche deine Antwort mit der Musterlösung bzw. dem Erwartungshorizont.</p>`;
+    }
+  }
+
+  function markMutationSort(task, expectedOrder) {
+    const list = elements.mutationModuleContainer.querySelector(`[data-mutation-sort="${cssEscape(task.id)}"]`);
+    if (!list) return;
+    Array.from(list.querySelectorAll("[data-sort-value]")).forEach((item, index) => {
+      item.classList.remove("is-correct", "is-incorrect");
+      item.classList.add(item.dataset.sortValue === expectedOrder[index] ? "is-correct" : "is-incorrect");
+    });
+  }
+
+  function markMutationRows(task, isCorrect) {
+    elements.mutationModuleContainer.querySelectorAll(`[data-mutation-input="${cssEscape(task.id)}"]`).forEach((field) => {
+      const row = field.closest("tr");
+      const correct = isCorrect(field.dataset.mutationKey, field.value);
+      if (row) {
+        row.classList.remove("is-correct", "is-incorrect");
+        row.classList.add(correct ? "is-correct" : "is-incorrect");
+      }
+      field.classList.remove("is-correct", "is-incorrect");
+      field.classList.add(correct ? "is-correct" : "is-incorrect");
+    });
+  }
+
+  function markMutationInputs(task) {
+    normalizeList(task.inputs).forEach((input) => {
+      const field = elements.mutationModuleContainer.querySelector(`[data-mutation-input="${cssEscape(task.id)}"][data-mutation-key="${cssEscape(input.id)}"]`);
+      if (!field) return;
+      let correct = false;
+      if (input.teacherCheck) {
+        const normalized = normalizeMutationAnswer(field.value);
+        const found = normalizeList(input.keywords).filter((keyword) => normalized.includes(normalizeMutationAnswer(keyword)));
+        correct = found.length >= Math.min(3, normalizeList(input.keywords).length);
+      } else {
+        correct = normalizeList(input.acceptedAnswers).some((answer) => normalizeMutationAnswer(answer) === normalizeMutationAnswer(field.value));
+      }
+      field.classList.remove("is-correct", "is-incorrect");
+      field.classList.add(correct ? "is-correct" : "is-incorrect");
+    });
+  }
+
+  function markMutationCloze(task) {
+    normalizeList(task.phase2 && task.phase2.blanks).forEach((blank) => {
+      const field = elements.mutationModuleContainer.querySelector(`[data-mutation-input="${cssEscape(task.id)}"][data-mutation-key="${cssEscape(blank.id)}"]`);
+      if (!field) return;
+      const correct = normalizeList(blank.acceptedAnswers).some((answer) => normalizeMutationAnswer(answer) === normalizeMutationAnswer(field.value));
+      field.classList.remove("is-correct", "is-incorrect");
+      field.classList.add(correct ? "is-correct" : "is-incorrect");
+    });
+  }
+
+  function normalizeMutationAnswer(value) {
+    return normalizeText(value)
+      .replace(/ä/g, "ae")
+      .replace(/ö/g, "oe")
+      .replace(/ü/g, "ue")
+      .replace(/[^a-z0-9]/g, "");
+  }
+
+  function renderMutationSolution(task) {
+    if (task.type === "dragDropOrder") {
+      const textById = new Map(normalizeList(task.cards).map((card) => [card.id, card.text]));
+      return `<h4>Lösung</h4><ol>${normalizeList(task.correctOrder).map((id) => `<li>${escapeHtml(textById.get(id) || id)}</li>`).join("")}</ol>`;
+    }
+    if (task.type === "matching") {
+      const definitions = new Map(normalizeList(task.definitions).map((definition) => [definition.id, definition.text]));
+      return `<h4>Lösung</h4><div class="table-scroll"><table class="mini-table"><tbody>${normalizeList(task.terms).map((term) => `<tr><td>${escapeHtml(term.text)}</td><td>${escapeHtml(definitions.get(task.correctMatches[term.id]) || "")}</td></tr>`).join("")}</tbody></table></div>`;
+    }
+    if (task.type === "dropdownTable") {
+      return `<h4>Lösung</h4><ul>${normalizeList(task.rows).map((row) => `<li>${escapeHtml(row.prompt)}: ${escapeHtml(row.answer)}</li>`).join("")}</ul>`;
+    }
+    if (task.type === "codonAnalysis") {
+      return `<h4>Musterlösung</h4><p>${escapeHtml(task.teacherSolution || "")}</p>`;
+    }
+    if (task.type === "memoryCloze") {
+      return `<h4>Lösung</h4><ul>${normalizeList(task.phase2 && task.phase2.blanks).map((blank) => `<li>${escapeHtml(blank.id)}: ${escapeHtml(normalizeList(blank.acceptedAnswers).join(" / "))}</li>`).join("")}</ul>`;
+    }
+    if (task.type === "extendedTask") {
+      const solution = task.teacherSolution || {};
+      return `<h4>Musterlösung / Erwartungshorizont</h4>${Object.keys(solution).map((key) => `<h5>${escapeHtml(key)}</h5><p>${escapeHtml(solution[key])}</p>`).join("")}`;
+    }
+    return `<h4>Lösung</h4><pre>${escapeHtml(JSON.stringify(task, null, 2))}</pre>`;
   }
 
   function renderExamTrainingOverview() {

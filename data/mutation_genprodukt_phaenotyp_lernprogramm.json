@@ -1,0 +1,525 @@
+{
+  "schemaVersion": "1.0",
+  "moduleId": "mutation_genprodukt_phaenotyp",
+  "title": "Mutation – Genprodukt – Phänotyp",
+  "subtitle": "Wie Veränderungen der DNA die Proteinfunktion und Merkmale beeinflussen können",
+  "targetGroup": "Biologie GK Q1",
+  "estimatedTimeMinutes": 35,
+  "assets": {
+    "codesonne": {
+      "path": "assets/images/Codesonne.png",
+      "alt": "Codesonne zur Übersetzung von mRNA-Codons in Aminosäuren"
+    },
+    "aminosaeuretabelle": {
+      "path": "assets/images/Aminosäuretabelle.png",
+      "alt": "Tabelle mit 3-Buchstaben-Codes und zugehörigen Aminosäuren"
+    }
+  },
+  "intro": {
+    "type": "infoText",
+    "title": "Mutation – Genprodukt – Phänotyp",
+    "body": [
+      "Eine Genmutation ist eine Veränderung der Basensequenz eines Gens. Dadurch kann sich auch die mRNA-Sequenz verändern. Wird diese mRNA bei der Translation abgelesen, kann eine veränderte Aminosäuresequenz entstehen.",
+      "Die Folgen einer Mutation können unterschiedlich sein: Manchmal bleibt die Aminosäuresequenz gleich, manchmal wird eine Aminosäure ausgetauscht oder die Translation endet vorzeitig. Dadurch kann sich die Struktur und Funktion des entstehenden Proteins verändern.",
+      "Wenn ein Protein seine Aufgabe nicht mehr richtig erfüllen kann, kann sich auch ein Merkmal des Organismus verändern. Eine Mutation wirkt also nicht direkt auf den Phänotyp, sondern über die Kette: DNA → mRNA → Aminosäuresequenz → Protein → Merkmal."
+    ]
+  },
+  "tasks": [
+    {
+      "id": "aufgabe_1_wirkungskette_ordnen",
+      "title": "Aufgabe 1: Wirkungskette ordnen",
+      "type": "dragDropOrder",
+      "instruction": "Bringe die Schritte in die richtige Reihenfolge. Ziehe die Kärtchen so, dass die Wirkungskette von einer Mutation bis zu einer möglichen Veränderung des Phänotyps entsteht.",
+      "cards": [
+        {
+          "id": "card_aminosaeuresequenz",
+          "text": "Die Aminosäuresequenz des Proteins kann sich verändern."
+        },
+        {
+          "id": "card_dna",
+          "text": "Die DNA-Sequenz eines Gens verändert sich."
+        },
+        {
+          "id": "card_mrna",
+          "text": "Die mRNA-Sequenz kann sich verändern."
+        },
+        {
+          "id": "card_proteinfunktion",
+          "text": "Die Funktion des Proteins kann sich verändern."
+        },
+        {
+          "id": "card_merkmal",
+          "text": "Ein Merkmal des Organismus kann sich verändern."
+        },
+        {
+          "id": "card_translation",
+          "text": "Die mRNA wird bei der Translation abgelesen."
+        }
+      ],
+      "correctOrder": [
+        "card_dna",
+        "card_mrna",
+        "card_translation",
+        "card_aminosaeuresequenz",
+        "card_proteinfunktion",
+        "card_merkmal"
+      ],
+      "checkBehavior": {
+        "mode": "perPosition",
+        "correctClass": "is-correct",
+        "incorrectClass": "is-incorrect",
+        "correctColor": "green",
+        "incorrectColor": "red",
+        "showModelSolution": false
+      }
+    },
+    {
+      "id": "aufgabe_2_fachbegriffe_zuordnen",
+      "title": "Aufgabe 2: Fachbegriffe zuordnen",
+      "type": "matching",
+      "instruction": "Ordne jedem Fachbegriff die passende Erklärung zu.",
+      "terms": [
+        {
+          "id": "term_genmutation",
+          "text": "Genmutation"
+        },
+        {
+          "id": "term_genprodukt",
+          "text": "Genprodukt"
+        },
+        {
+          "id": "term_phaenotyp",
+          "text": "Phänotyp"
+        },
+        {
+          "id": "term_codon",
+          "text": "Codon"
+        },
+        {
+          "id": "term_stoppcodon",
+          "text": "Stoppcodon"
+        },
+        {
+          "id": "term_aminosaeuresequenz",
+          "text": "Aminosäuresequenz"
+        }
+      ],
+      "definitions": [
+        {
+          "id": "def_genmutation",
+          "text": "Veränderung der Basensequenz eines Gens"
+        },
+        {
+          "id": "def_genprodukt",
+          "text": "Produkt, das mithilfe der Information eines Gens gebildet wird, häufig ein Protein"
+        },
+        {
+          "id": "def_phaenotyp",
+          "text": "sichtbares oder messbares Merkmal eines Organismus"
+        },
+        {
+          "id": "def_codon",
+          "text": "Basentriplett der mRNA, das für eine Aminosäure oder ein Stopp-Signal codiert"
+        },
+        {
+          "id": "def_stoppcodon",
+          "text": "Codon, das die Translation beendet"
+        },
+        {
+          "id": "def_aminosaeuresequenz",
+          "text": "Reihenfolge der Aminosäuren in einem Protein"
+        }
+      ],
+      "correctMatches": {
+        "term_genmutation": "def_genmutation",
+        "term_genprodukt": "def_genprodukt",
+        "term_phaenotyp": "def_phaenotyp",
+        "term_codon": "def_codon",
+        "term_stoppcodon": "def_stoppcodon",
+        "term_aminosaeuresequenz": "def_aminosaeuresequenz"
+      },
+      "checkBehavior": {
+        "mode": "perMatch",
+        "correctClass": "is-correct",
+        "incorrectClass": "is-incorrect",
+        "correctColor": "green",
+        "incorrectColor": "red",
+        "showModelSolution": false
+      }
+    },
+    {
+      "id": "aufgabe_3_mutationstypen_erkennen",
+      "title": "Aufgabe 3: Mutationstypen erkennen",
+      "type": "dropdownTable",
+      "instruction": "Wähle zu jeder Veränderung den passenden Mutationstyp aus.",
+      "options": [
+        "stille Mutation",
+        "Missense-Mutation",
+        "Nonsense-Mutation",
+        "Rastermutation"
+      ],
+      "rows": [
+        {
+          "id": "row_still",
+          "prompt": "Ein Codon verändert sich, codiert aber weiterhin für dieselbe Aminosäure.",
+          "answer": "stille Mutation"
+        },
+        {
+          "id": "row_missense",
+          "prompt": "Ein Codon verändert sich und codiert für eine andere Aminosäure.",
+          "answer": "Missense-Mutation"
+        },
+        {
+          "id": "row_nonsense",
+          "prompt": "Ein Codon verändert sich zu einem Stoppcodon.",
+          "answer": "Nonsense-Mutation"
+        },
+        {
+          "id": "row_raster",
+          "prompt": "Eine Base wird eingefügt oder entfernt, sodass sich das Leseraster verschiebt.",
+          "answer": "Rastermutation"
+        }
+      ],
+      "checkBehavior": {
+        "mode": "perDropdown",
+        "correctClass": "is-correct",
+        "incorrectClass": "is-incorrect",
+        "correctColor": "green",
+        "incorrectColor": "red",
+        "showModelSolution": false
+      }
+    },
+    {
+      "id": "aufgabe_4_stille_mutation",
+      "title": "Aufgabe 4: Stille Mutation auswerten",
+      "type": "codonAnalysis",
+      "instruction": "Bestimme mithilfe der Codesonne und der Aminosäuretabelle die Aminosäuresequenz der normalen und der mutierten mRNA. Erkläre anschließend, warum diese Mutation vermutlich keine Auswirkung auf das Protein hat.",
+      "materials": [
+        {
+          "assetRef": "codesonne"
+        },
+        {
+          "assetRef": "aminosaeuretabelle"
+        }
+      ],
+      "sequences": [
+        {
+          "label": "Normale mRNA",
+          "sequence": "5' – AUG UAC GGU UAA – 3'"
+        },
+        {
+          "label": "Mutierte mRNA",
+          "sequence": "5' – AUG UAU GGU UAA – 3'"
+        }
+      ],
+      "inputs": [
+        {
+          "id": "normal_sequence",
+          "label": "Aminosäuresequenz der normalen mRNA",
+          "inputType": "text",
+          "acceptedAnswers": [
+            "Methionin – Tyrosin – Glycin",
+            "Methionin-Tyrosin-Glycin",
+            "Met – Tyr – Gly",
+            "Met-Tyr-Gly"
+          ]
+        },
+        {
+          "id": "mutated_sequence",
+          "label": "Aminosäuresequenz der mutierten mRNA",
+          "inputType": "text",
+          "acceptedAnswers": [
+            "Methionin – Tyrosin – Glycin",
+            "Methionin-Tyrosin-Glycin",
+            "Met – Tyr – Gly",
+            "Met-Tyr-Gly"
+          ]
+        },
+        {
+          "id": "explanation",
+          "label": "Erklärung",
+          "inputType": "textarea",
+          "teacherCheck": true,
+          "keywords": [
+            "UAC",
+            "UAU",
+            "Tyrosin",
+            "gleiche Aminosäure",
+            "stille Mutation",
+            "Protein unverändert"
+          ]
+        }
+      ],
+      "teacherSolution": "Die normale mRNA codiert für Methionin – Tyrosin – Glycin. Die mutierte mRNA codiert ebenfalls für Methionin – Tyrosin – Glycin. Obwohl sich ein Codon verändert hat, bleibt die Aminosäuresequenz gleich, weil UAC und UAU beide für Tyrosin codieren. Es handelt sich um eine stille Mutation. Das Protein bleibt wahrscheinlich unverändert.",
+      "checkBehavior": {
+        "mode": "perInput",
+        "correctClass": "is-correct",
+        "incorrectClass": "is-incorrect",
+        "correctColor": "green",
+        "incorrectColor": "red",
+        "showModelSolution": false
+      }
+    },
+    {
+      "id": "aufgabe_5_missense_mutation",
+      "title": "Aufgabe 5: Missense-Mutation auswerten",
+      "type": "codonAnalysis",
+      "instruction": "Bestimme mithilfe der Codesonne und der Aminosäuretabelle die Aminosäuresequenz der normalen und der mutierten mRNA. Erkläre, welche Folge diese Mutation für das Protein haben kann.",
+      "materials": [
+        {
+          "assetRef": "codesonne"
+        },
+        {
+          "assetRef": "aminosaeuretabelle"
+        }
+      ],
+      "sequences": [
+        {
+          "label": "Normale mRNA",
+          "sequence": "5' – AUG UAC GAA UGC UAA – 3'"
+        },
+        {
+          "label": "Mutierte mRNA",
+          "sequence": "5' – AUG UAC AAA UGC UAA – 3'"
+        }
+      ],
+      "additionalInfo": "Die dritte Aminosäure liegt in einem wichtigen Bereich des Proteins.",
+      "inputs": [
+        {
+          "id": "normal_sequence",
+          "label": "Aminosäuresequenz der normalen mRNA",
+          "inputType": "text",
+          "acceptedAnswers": [
+            "Methionin – Tyrosin – Glutaminsäure – Cystein",
+            "Methionin-Tyrosin-Glutaminsäure-Cystein",
+            "Met – Tyr – Glu – Cys",
+            "Met-Tyr-Glu-Cys"
+          ]
+        },
+        {
+          "id": "mutated_sequence",
+          "label": "Aminosäuresequenz der mutierten mRNA",
+          "inputType": "text",
+          "acceptedAnswers": [
+            "Methionin – Tyrosin – Lysin – Cystein",
+            "Methionin-Tyrosin-Lysin-Cystein",
+            "Met – Tyr – Lys – Cys",
+            "Met-Tyr-Lys-Cys"
+          ]
+        },
+        {
+          "id": "explanation",
+          "label": "Erklärung",
+          "inputType": "textarea",
+          "teacherCheck": true,
+          "keywords": [
+            "GAA",
+            "AAA",
+            "Glutaminsäure",
+            "Lysin",
+            "andere Aminosäure",
+            "Missense-Mutation",
+            "Struktur",
+            "Funktion"
+          ]
+        }
+      ],
+      "teacherSolution": "Die normale mRNA codiert für Methionin – Tyrosin – Glutaminsäure – Cystein. Die mutierte mRNA codiert für Methionin – Tyrosin – Lysin – Cystein. Durch die Mutation wird also eine Aminosäure ausgetauscht. Es handelt sich um eine Missense-Mutation. Da die veränderte Aminosäure in einem wichtigen Bereich des Proteins liegt, kann sich die Struktur oder Funktion des Proteins verändern.",
+      "checkBehavior": {
+        "mode": "perInput",
+        "correctClass": "is-correct",
+        "incorrectClass": "is-incorrect",
+        "correctColor": "green",
+        "incorrectColor": "red",
+        "showModelSolution": false
+      }
+    },
+    {
+      "id": "aufgabe_6_nonsense_mutation",
+      "title": "Aufgabe 6: Nonsense-Mutation auswerten",
+      "type": "codonAnalysis",
+      "instruction": "Bestimme mithilfe der Codesonne und der Aminosäuretabelle die Aminosäuresequenz der normalen und der mutierten mRNA. Erkläre, warum diese Mutation meist starke Auswirkungen auf das Protein hat.",
+      "materials": [
+        {
+          "assetRef": "codesonne"
+        },
+        {
+          "assetRef": "aminosaeuretabelle"
+        }
+      ],
+      "sequences": [
+        {
+          "label": "Normale mRNA",
+          "sequence": "5' – AUG UAC GGU GAA UGC UAA – 3'"
+        },
+        {
+          "label": "Mutierte mRNA",
+          "sequence": "5' – AUG UAC UGA GAA UGC UAA – 3'"
+        }
+      ],
+      "inputs": [
+        {
+          "id": "normal_sequence",
+          "label": "Aminosäuresequenz der normalen mRNA",
+          "inputType": "text",
+          "acceptedAnswers": [
+            "Methionin – Tyrosin – Glycin – Glutaminsäure – Cystein",
+            "Methionin-Tyrosin-Glycin-Glutaminsäure-Cystein",
+            "Met – Tyr – Gly – Glu – Cys",
+            "Met-Tyr-Gly-Glu-Cys"
+          ]
+        },
+        {
+          "id": "mutated_sequence",
+          "label": "Aminosäuresequenz der mutierten mRNA",
+          "inputType": "text",
+          "acceptedAnswers": [
+            "Methionin – Tyrosin",
+            "Methionin-Tyrosin",
+            "Met – Tyr",
+            "Met-Tyr"
+          ]
+        },
+        {
+          "id": "explanation",
+          "label": "Erklärung",
+          "inputType": "textarea",
+          "teacherCheck": true,
+          "keywords": [
+            "UGA",
+            "Stoppcodon",
+            "vorzeitig",
+            "Translation endet",
+            "Nonsense-Mutation",
+            "verkürzt",
+            "nicht funktionsfähig"
+          ]
+        }
+      ],
+      "teacherSolution": "Die normale mRNA codiert für Methionin – Tyrosin – Glycin – Glutaminsäure – Cystein. Bei der mutierten mRNA entsteht an dritter Stelle das Stoppcodon UGA. Die Translation endet dadurch bereits nach Methionin – Tyrosin. Das Protein ist stark verkürzt und wahrscheinlich nicht funktionsfähig. Es handelt sich um eine Nonsense-Mutation.",
+      "checkBehavior": {
+        "mode": "perInput",
+        "correctClass": "is-correct",
+        "incorrectClass": "is-incorrect",
+        "correctColor": "green",
+        "incorrectColor": "red",
+        "showModelSolution": false
+      }
+    },
+    {
+      "id": "aufgabe_7_gedaechtnis_lueckentext",
+      "title": "Aufgabe 7: Infotext lesen – Lückentext aus dem Gedächtnis ergänzen",
+      "type": "memoryCloze",
+      "phase1": {
+        "title": "Infotext",
+        "body": [
+          "Proteine erfüllen in Zellen viele wichtige Aufgaben. Einige Proteine wirken als Enzyme. Enzyme beschleunigen bestimmte chemische Reaktionen. Damit ein Enzym seine Aufgabe erfüllen kann, muss seine räumliche Form passen. Besonders wichtig ist dabei oft das aktive Zentrum. An dieser Stelle bindet ein bestimmter Ausgangsstoff. Dieser Ausgangsstoff wird auch Substrat genannt.",
+          "Die Form eines Proteins hängt von seiner Aminosäuresequenz ab. Wenn sich durch eine Mutation die Aminosäuresequenz verändert, kann sich dadurch auch die räumliche Struktur des Proteins verändern. Manchmal bleibt die Veränderung ohne erkennbare Wirkung. Wenn aber eine wichtige Stelle des Proteins betroffen ist, kann die Funktion deutlich eingeschränkt sein.",
+          "Bei einem Enzym kann eine veränderte Proteinstruktur dazu führen, dass das Substrat nicht mehr richtig an das aktive Zentrum bindet. Dann kann das Enzym seine Reaktion nicht mehr oder nur noch eingeschränkt durchführen. Dadurch kann sich in der Zelle weniger Produkt bilden. Wenn dieses Produkt für ein Merkmal wichtig ist, kann die Mutation schließlich auch den Phänotyp beeinflussen."
+        ],
+        "buttonText": "Weiter zur Aufgabe"
+      },
+      "phase2": {
+        "instruction": "Ergänze die fehlenden Fachbegriffe aus dem Gedächtnis.",
+        "clozeText": "Eine Mutation kann die {{blank1}} eines Proteins verändern. Dadurch kann sich auch die räumliche {{blank2}} des Proteins verändern. Wenn das aktive Zentrum eines Enzyms verändert ist, kann der {{blank3}} möglicherweise nicht mehr richtig binden. Das Enzym arbeitet dann nicht mehr richtig. Dadurch kann auch ein {{blank4}} des Organismus verändert sein.",
+        "blanks": [
+          {
+            "id": "blank1",
+            "acceptedAnswers": [
+              "Aminosäuresequenz"
+            ]
+          },
+          {
+            "id": "blank2",
+            "acceptedAnswers": [
+              "Struktur",
+              "Form"
+            ]
+          },
+          {
+            "id": "blank3",
+            "acceptedAnswers": [
+              "Ausgangsstoff",
+              "Substrat"
+            ]
+          },
+          {
+            "id": "blank4",
+            "acceptedAnswers": [
+              "Merkmal",
+              "Phänotyp"
+            ]
+          }
+        ]
+      },
+      "behavior": {
+        "onContinue": "hideTextShowCloze",
+        "checkButtonText": "Prüfen",
+        "checkBehavior": {
+          "mode": "perBlank",
+          "correctClass": "is-correct",
+          "incorrectClass": "is-incorrect",
+          "correctColor": "green",
+          "incorrectColor": "red",
+          "showModelSolution": false
+        }
+      }
+    },
+    {
+      "id": "abschlussaufgabe_mutation_protein_merkmal",
+      "title": "Abschlussaufgabe: Mutation, Protein und Merkmal",
+      "type": "extendedTask",
+      "level": "AFB II–III",
+      "material": [
+        "Ein Gen enthält die Information für ein Enzym, das an der Bildung eines dunklen Farbstoffs beteiligt ist. Das Enzym wandelt einen farblosen Ausgangsstoff in einen dunklen Farbstoff um. Nur wenn das Enzym richtig gebaut ist, kann der Farbstoff gebildet werden.",
+        "Bei drei Individuen treten unterschiedliche Mutationen in diesem Gen auf. Die folgende Tabelle zeigt jeweils einen Ausschnitt der mRNA.",
+        "Zusatzinformation: Die vierte Aminosäure ist Teil des aktiven Zentrums des Enzyms. Wird diese Aminosäure verändert, kann das Enzym den Ausgangsstoff nicht mehr richtig binden."
+      ],
+      "materials": [
+        {
+          "assetRef": "codesonne"
+        },
+        {
+          "assetRef": "aminosaeuretabelle"
+        }
+      ],
+      "table": {
+        "columns": [
+          "Variante",
+          "mRNA-Sequenz"
+        ],
+        "rows": [
+          [
+            "Normalform",
+            "5' – AUG UAC GGU GAA UGC UAA – 3'"
+          ],
+          [
+            "Mutation A",
+            "5' – AUG UAU GGU GAA UGC UAA – 3'"
+          ],
+          [
+            "Mutation B",
+            "5' – AUG UAC GGU AAA UGC UAA – 3'"
+          ],
+          [
+            "Mutation C",
+            "5' – AUG UAC UGA GAA UGC UAA – 3'"
+          ]
+        ]
+      },
+      "questions": [
+        "Bestimmen Sie für die Normalform und die drei Mutationen jeweils die Aminosäuresequenz.",
+        "Ordnen Sie die Mutationen A, B und C jeweils einem Mutationstyp zu.",
+        "Erläutern Sie für jede Mutation, welche Folgen sie für das Enzym und die Farbstoffbildung haben kann.",
+        "Beurteilen Sie die Aussage: „Jede Mutation führt automatisch zu einem veränderten Merkmal.“"
+      ],
+      "teacherSolution": {
+        "normalform": "AUG UAC GGU GAA UGC UAA codiert für Methionin – Tyrosin – Glycin – Glutaminsäure – Cystein – Stopp. Es entsteht ein vollständiges Enzym, das den Farbstoff bilden kann.",
+        "mutationA": "AUG UAU GGU GAA UGC UAA codiert ebenfalls für Methionin – Tyrosin – Glycin – Glutaminsäure – Cystein – Stopp. UAC und UAU codieren beide für Tyrosin. Es handelt sich um eine stille Mutation. Die Aminosäuresequenz bleibt gleich. Das Enzym bleibt wahrscheinlich funktionsfähig. Die Farbstoffbildung ist vermutlich nicht verändert.",
+        "mutationB": "AUG UAC GGU AAA UGC UAA codiert für Methionin – Tyrosin – Glycin – Lysin – Cystein – Stopp. Statt Glutaminsäure wird Lysin eingebaut. Es handelt sich um eine Missense-Mutation. Da die vierte Aminosäure Teil des aktiven Zentrums ist, kann die Funktion des Enzyms beeinträchtigt sein. Der Ausgangsstoff kann möglicherweise nicht mehr richtig binden. Die Farbstoffbildung kann vermindert oder verhindert sein.",
+        "mutationC": "AUG UAC UGA GAA UGC UAA führt nach Methionin – Tyrosin zu einem Stoppcodon. Die Translation endet vorzeitig. Es handelt sich um eine Nonsense-Mutation. Das Protein ist stark verkürzt und wahrscheinlich nicht funktionsfähig. Der Farbstoff wird vermutlich nicht oder kaum gebildet.",
+        "beurteilung": "Die Aussage ist zu pauschal und daher falsch. Mutationen können unterschiedliche Folgen haben. Manche Mutationen verändern die Aminosäuresequenz nicht und bleiben ohne erkennbare Wirkung. Andere Mutationen verändern eine Aminosäure oder erzeugen ein vorzeitiges Stoppcodon. Dadurch können Proteinstruktur und Proteinfunktion verändert werden. Nur wenn sich die Proteinfunktion für die Zelle oder den Organismus auswirkt, kann auch der Phänotyp verändert sein."
+      }
+    }
+  ]
+}

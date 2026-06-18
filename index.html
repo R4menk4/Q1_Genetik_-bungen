@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="app-version" content="operatoren-trainer-aktiv-20260613-2">
     <title>Klausurtrainer Molekulargenetik</title>
-    <link rel="stylesheet" href="style.css?v=20260613-operatoren-2">
+    <link rel="stylesheet" href="style.css?v=20260618-mutation">
   </head>
   <body>
     <header class="site-header">
@@ -85,12 +85,39 @@
           <div id="operatorTrainingContainer" class="operator-training-container" aria-live="polite"></div>
         </div>
       </section>
+
+      <section id="comparisonModuleView" class="view" aria-labelledby="comparisonModuleTitle">
+        <div class="task-shell">
+          <div class="task-toolbar">
+            <button class="secondary-button" type="button" id="comparisonBackHomeButton">ZurÃ¼ck zur Startseite</button>
+          </div>
+          <div id="comparisonModuleContainer" class="comparison-module-container" aria-live="polite"></div>
+        </div>
+      </section>
+
+      <section id="splicingModuleView" class="view" aria-labelledby="splicingModuleTitle">
+        <div class="task-shell">
+          <div class="task-toolbar">
+            <button class="secondary-button" type="button" id="splicingBackHomeButton">ZurÃ¼ck zur Startseite</button>
+          </div>
+          <div id="splicingModuleContainer" class="comparison-module-container" aria-live="polite"></div>
+        </div>
+      </section>
+
+      <section id="mutationModuleView" class="view" aria-labelledby="mutationModuleTitle">
+        <div class="task-shell">
+          <div class="task-toolbar">
+            <button class="secondary-button" type="button" id="mutationBackHomeButton">ZurÃ¼ck zur Startseite</button>
+          </div>
+          <div id="mutationModuleContainer" class="comparison-module-container" aria-live="polite"></div>
+        </div>
+      </section>
     </main>
 
     <template id="messageTemplate">
       <div class="message-box"></div>
     </template>
 
-    <script src="script.js?v=20260613-operatoren-2"></script>
+    <script src="script.js?v=20260618-mutation"></script>
   </body>
 </html>

@@ -1,0 +1,292 @@
+{
+    "id": "praemrna_spleissen",
+    "title": "pr\u00e4-mRNA und alternatives Splei\u00dfen",
+    "subtitle": "Prozessierung der pr\u00e4-mRNA bei Eukaryoten",
+    "category": "Proteinbiosynthese",
+    "level": "Q1 Biologie Grundkurs",
+    "description": "Diese Kachel sichert die Grundlagen zur Prozessierung der pr\u00e4-mRNA bei Eukaryoten. Die Aufgaben bereiten auf eine materialgest\u00fctzte Abschlussaufgabe zum alternativen Splei\u00dfen vor, ohne deren L\u00f6sung vorwegzunehmen.",
+    "learning_goals": [
+        "Ich kann pr\u00e4-mRNA und reife mRNA unterscheiden.",
+        "Ich kann Exons und Introns unterscheiden.",
+        "Ich kann den Ablauf der Prozessierung in die richtige Reihenfolge bringen.",
+        "Ich kann erkl\u00e4ren, welche Abschnitte nach dem Splei\u00dfen in der reifen mRNA erhalten bleiben.",
+        "Ich kann fachlich richtige und falsche Aussagen zur Prozessierung der pr\u00e4-mRNA erkennen."
+    ],
+    "intro_text": "Bei Eukaryoten entsteht bei der Transkription zun\u00e4chst eine pr\u00e4-mRNA. Diese wird im Zellkern weiterverarbeitet, bevor sie als reife mRNA f\u00fcr die Translation genutzt werden kann. Dabei spielen Exons, Introns und das Splei\u00dfen eine wichtige Rolle.",
+    "tasks": [
+        {
+            "id": "spleissen_01_begriffe",
+            "title": "Fachbegriffe sichern",
+            "type": "matching",
+            "afB": "I",
+            "instruction": "Ordne jedem Fachbegriff die passende Definition zu.",
+            "terms": [
+                {
+                    "id": "prae_mrna",
+                    "term": "pr\u00e4-mRNA",
+                    "definition": "erste RNA-Abschrift bei Eukaryoten, noch nicht fertig verarbeitet"
+                },
+                {
+                    "id": "reife_mrna",
+                    "term": "reife mRNA",
+                    "definition": "verarbeitete mRNA, die f\u00fcr die Translation genutzt werden kann"
+                },
+                {
+                    "id": "exon",
+                    "term": "Exon",
+                    "definition": "Abschnitt, der in der reifen mRNA erhalten bleibt"
+                },
+                {
+                    "id": "intron",
+                    "term": "Intron",
+                    "definition": "Abschnitt, der bei der Prozessierung entfernt wird"
+                },
+                {
+                    "id": "spleissen",
+                    "term": "Splei\u00dfen",
+                    "definition": "Entfernen von Introns und Verbinden von Exons"
+                },
+                {
+                    "id": "alternatives_spleissen",
+                    "term": "alternatives Splei\u00dfen",
+                    "definition": "unterschiedliche Verarbeitung derselben pr\u00e4-mRNA"
+                }
+            ],
+            "feedback": {
+                "correct": "Richtig. Du hast die zentralen Fachbegriffe zur Prozessierung der pr\u00e4-mRNA sicher zugeordnet.",
+                "incorrect": "Pr\u00fcfe noch einmal genau, welche Abschnitte entfernt werden und welche in der reifen mRNA erhalten bleiben."
+            }
+        },
+        {
+            "id": "spleissen_02_exons_introns_erkennen",
+            "title": "Exons und Introns erkennen",
+            "type": "classification",
+            "afB": "I-II",
+            "instruction": "Ordne die Abschnitte A\u2013E den Begriffen Exon oder Intron zu.",
+            "material": {
+                "label": "Material: pr\u00e4-mRNA",
+                "sequence": [
+                    {
+                        "id": "A",
+                        "label": "Abschnitt A"
+                    },
+                    {
+                        "id": "B",
+                        "label": "Abschnitt B"
+                    },
+                    {
+                        "id": "C",
+                        "label": "Abschnitt C"
+                    },
+                    {
+                        "id": "D",
+                        "label": "Abschnitt D"
+                    },
+                    {
+                        "id": "E",
+                        "label": "Abschnitt E"
+                    }
+                ],
+                "info": "Die Abschnitte A, C und E bleiben in der reifen mRNA erhalten. Die Abschnitte B und D werden entfernt."
+            },
+            "categories": [
+                {
+                    "id": "exon",
+                    "label": "Exon"
+                },
+                {
+                    "id": "intron",
+                    "label": "Intron"
+                }
+            ],
+            "items": [
+                {
+                    "id": "A",
+                    "label": "Abschnitt A",
+                    "correctCategory": "exon"
+                },
+                {
+                    "id": "B",
+                    "label": "Abschnitt B",
+                    "correctCategory": "intron"
+                },
+                {
+                    "id": "C",
+                    "label": "Abschnitt C",
+                    "correctCategory": "exon"
+                },
+                {
+                    "id": "D",
+                    "label": "Abschnitt D",
+                    "correctCategory": "intron"
+                },
+                {
+                    "id": "E",
+                    "label": "Abschnitt E",
+                    "correctCategory": "exon"
+                }
+            ],
+            "feedback": {
+                "correct": "Richtig. Exons bleiben in der reifen mRNA erhalten, Introns werden entfernt.",
+                "incorrect": "Nutze die Zusatzinformation: Welche Abschnitte bleiben in der reifen mRNA erhalten?"
+            }
+        },
+        {
+            "id": "spleissen_03_reihenfolge",
+            "title": "Reihenfolge der Prozessierung ordnen",
+            "type": "ordering",
+            "afB": "I-II",
+            "instruction": "Bringe die Schritte in die richtige Reihenfolge.",
+            "items": [
+                {
+                    "id": "step_1",
+                    "text": "Transkription eines Gens im Zellkern",
+                    "order": 1
+                },
+                {
+                    "id": "step_2",
+                    "text": "Bildung einer pr\u00e4-mRNA",
+                    "order": 2
+                },
+                {
+                    "id": "step_3",
+                    "text": "Entfernen der Introns",
+                    "order": 3
+                },
+                {
+                    "id": "step_4",
+                    "text": "Verbinden der Exons",
+                    "order": 4
+                },
+                {
+                    "id": "step_5",
+                    "text": "Entstehung einer reifen mRNA",
+                    "order": 5
+                },
+                {
+                    "id": "step_6",
+                    "text": "Transport der reifen mRNA aus dem Zellkern",
+                    "order": 6
+                },
+                {
+                    "id": "step_7",
+                    "text": "Translation am Ribosom",
+                    "order": 7
+                }
+            ],
+            "feedback": {
+                "correct": "Richtig. Die Prozessierung findet nach der Transkription und vor der Translation statt.",
+                "incorrect": "Denke daran: Bei Eukaryoten entsteht zuerst im Zellkern eine pr\u00e4-mRNA. Erst danach kann eine reife mRNA entstehen und den Zellkern verlassen."
+            }
+        },
+        {
+            "id": "spleissen_04_dragdrop_reife_mrna",
+            "title": "Reife mRNA zusammensetzen",
+            "type": "drag_and_drop_sequence",
+            "afB": "II",
+            "instruction": "Ziehe die Abschnitte in die richtige Reihenfolge, sodass die reife mRNA nach dem Splei\u00dfen entsteht.",
+            "material": {
+                "label": "pr\u00e4-mRNA",
+                "sequence": [
+                    "Exon 1",
+                    "Intron 1",
+                    "Exon 2",
+                    "Intron 2",
+                    "Exon 3"
+                ]
+            },
+            "dragItems": [
+                {
+                    "id": "exon_1",
+                    "label": "Exon 1"
+                },
+                {
+                    "id": "intron_1",
+                    "label": "Intron 1"
+                },
+                {
+                    "id": "exon_2",
+                    "label": "Exon 2"
+                },
+                {
+                    "id": "intron_2",
+                    "label": "Intron 2"
+                },
+                {
+                    "id": "exon_3",
+                    "label": "Exon 3"
+                }
+            ],
+            "dropZone": {
+                "label": "reife mRNA",
+                "slots": 3
+            },
+            "solution": [
+                "exon_1",
+                "exon_2",
+                "exon_3"
+            ],
+            "feedback": {
+                "correct": "Richtig. Die Introns wurden entfernt, die Exons wurden zur reifen mRNA verbunden.",
+                "incorrect": "Pr\u00fcfe noch einmal: Welche Abschnitte bleiben nach dem Splei\u00dfen erhalten, und welche werden entfernt?"
+            }
+        },
+        {
+            "id": "spleissen_05_aussagen_pruefen",
+            "title": "Aussagen pr\u00fcfen",
+            "type": "true_false",
+            "afB": "I-II",
+            "instruction": "Entscheide, ob die Aussagen fachlich richtig oder falsch sind.",
+            "statements": [
+                {
+                    "id": "aussage_1",
+                    "text": "Die pr\u00e4-mRNA ist bereits die fertige mRNA f\u00fcr die Translation.",
+                    "correct": false,
+                    "correction": "Die pr\u00e4-mRNA muss bei Eukaryoten zuerst verarbeitet werden, bevor eine reife mRNA entsteht."
+                },
+                {
+                    "id": "aussage_2",
+                    "text": "Introns werden bei der Prozessierung entfernt.",
+                    "correct": true
+                },
+                {
+                    "id": "aussage_3",
+                    "text": "Exons bleiben in der reifen mRNA erhalten.",
+                    "correct": true
+                },
+                {
+                    "id": "aussage_4",
+                    "text": "Bei Eukaryoten findet die Prozessierung vor der Translation statt.",
+                    "correct": true
+                },
+                {
+                    "id": "aussage_5",
+                    "text": "Die reife mRNA enth\u00e4lt immer alle Abschnitte der pr\u00e4-mRNA.",
+                    "correct": false,
+                    "correction": "Bei der Prozessierung werden bestimmte Abschnitte der pr\u00e4-mRNA entfernt."
+                },
+                {
+                    "id": "aussage_6",
+                    "text": "Die Reihenfolge der Codons in der mRNA beeinflusst die Aminos\u00e4uresequenz.",
+                    "correct": true
+                }
+            ],
+            "feedback": {
+                "correct": "Richtig. Du kannst zentrale Aussagen zur Prozessierung der pr\u00e4-mRNA sicher pr\u00fcfen.",
+                "incorrect": "\u00dcberpr\u00fcfe besonders den Unterschied zwischen pr\u00e4-mRNA und reifer mRNA sowie die Rolle von Exons und Introns."
+            }
+        }
+    ],
+    "final_task": {
+        "id": "spleissen_abschlussaufgabe",
+        "title": "Abschlussaufgabe: Prozessierung der pr\u00e4-mRNA und alternatives Splei\u00dfen",
+        "type": "free_text",
+        "afB": "II-III",
+        "context_text": "Die Anzahl der Gene eines Lebewesens ist begrenzt. Trotzdem k\u00f6nnen eukaryotische Zellen eine gro\u00dfe Vielfalt unterschiedlicher Proteine bilden. Diese Proteinvielfalt ist wichtig, weil verschiedene Zelltypen unterschiedliche Aufgaben erf\u00fcllen und daf\u00fcr jeweils bestimmte Proteine ben\u00f6tigen. Bei Eukaryoten wird die genetische Information nicht immer unmittelbar nach der Transkription in ein Protein \u00fcbersetzt. Zwischen der Bildung einer ersten RNA-Abschrift und der Translation k\u00f6nnen weitere Verarbeitungsschritte stattfinden. Das folgende Material zeigt modellhaft, wie ausgehend von derselben genetischen Information unterschiedliche mRNA-Molek\u00fcle entstehen k\u00f6nnen.",
+        "tasks": [
+            "Beschreiben Sie das in Material 1 dargestellte Modell zur Prozessierung der pr\u00e4-mRNA.",
+            "Erl\u00e4utern Sie mithilfe von Material 1, warum eukaryotische Zellen trotz begrenzter DNA-Menge verschiedene Proteinvarianten bilden k\u00f6nnen."
+        ],
+        "sample_solution": "Bei der Transkription entsteht bei Eukaryoten zun\u00e4chst eine pr\u00e4-mRNA. Diese enth\u00e4lt verschiedene Abschnitte, von denen nicht alle in der reifen mRNA erhalten bleiben. Bei der Prozessierung werden bestimmte Abschnitte entfernt und andere Abschnitte miteinander verbunden. Beim alternativen Splei\u00dfen k\u00f6nnen aus derselben pr\u00e4-mRNA unterschiedliche reife mRNA-Molek\u00fcle entstehen, weil verschiedene Kombinationen von Exons erhalten bleiben. Da die reife mRNA bei der Translation in Codons abgelesen wird, kann eine unterschiedliche mRNA-Sequenz zu unterschiedlichen Aminos\u00e4uresequenzen f\u00fchren. Dadurch k\u00f6nnen aus derselben genetischen Information verschiedene Proteinvarianten entstehen. So kann eine eukaryotische Zelle trotz begrenzter Genanzahl eine gr\u00f6\u00dfere Vielfalt an Proteinen bilden."
+    }
+}

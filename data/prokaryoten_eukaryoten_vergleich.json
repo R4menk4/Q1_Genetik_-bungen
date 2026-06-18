@@ -1,0 +1,316 @@
+{
+    "schemaVersion": "1.0",
+    "moduleId": "prokaryoten_eukaryoten_vergleich",
+    "title": "Prokaryoten und Eukaryoten im Vergleich",
+    "subtitle": "Warum laufen Transkription und Translation nicht in allen Zellen gleich ab?",
+    "topic": "Proteinbiosynthese",
+    "targetGroup": "Q1 Biologie Grundkurs",
+    "estimatedTimeMinutes": 25,
+    "learningGoals": [
+        "Ich kann Prokaryoten und Eukaryoten anhand des Zellkerns unterscheiden.",
+        "Ich kann die Orte von Transkription und Translation bei Prokaryoten und Eukaryoten benennen.",
+        "Ich kann erkl\u00e4ren, warum Transkription und Translation bei Prokaryoten gekoppelt ablaufen k\u00f6nnen.",
+        "Ich kann die r\u00e4umliche Trennung von Transkription und Translation bei Eukaryoten erl\u00e4utern."
+    ],
+    "introText": {
+        "heading": "Grundidee",
+        "body": "Die Proteinbiosynthese l\u00e4uft bei allen Lebewesen nach dem gleichen Grundprinzip ab: Die genetische Information der DNA wird zun\u00e4chst in eine mRNA umgeschrieben und anschlie\u00dfend an Ribosomen in eine Aminos\u00e4urekette \u00fcbersetzt. Dennoch gibt es wichtige Unterschiede zwischen Prokaryoten und Eukaryoten. Prokaryoten, zum Beispiel Bakterien, besitzen keinen Zellkern. Ihre DNA liegt frei im Zellplasma. Deshalb k\u00f6nnen Transkription und Translation im gleichen Zellbereich stattfinden und zeitlich gekoppelt ablaufen. Eukaryoten besitzen dagegen einen Zellkern. Bei ihnen findet die Transkription im Zellkern statt, w\u00e4hrend die Translation an Ribosomen im Cytoplasma oder am rauen endoplasmatischen Retikulum abl\u00e4uft. Dadurch sind Transkription und Translation r\u00e4umlich und zeitlich getrennt."
+    },
+    "activities": [
+        {
+            "id": "aufgabe_1_fachbegriffe",
+            "title": "Fachbegriffe zuordnen",
+            "type": "matching",
+            "afb": "I",
+            "instruction": "Ordne die Fachbegriffe den passenden Definitionen zu.",
+            "items": [
+                {
+                    "term": "Prokaryot",
+                    "definition": "Zelle ohne Zellkern"
+                },
+                {
+                    "term": "Eukaryot",
+                    "definition": "Zelle mit Zellkern"
+                },
+                {
+                    "term": "Transkription",
+                    "definition": "Bildung einer mRNA anhand der DNA"
+                },
+                {
+                    "term": "Translation",
+                    "definition": "\u00dcbersetzung der mRNA in eine Aminos\u00e4urekette"
+                },
+                {
+                    "term": "Ribosom",
+                    "definition": "Ort der Translation"
+                },
+                {
+                    "term": "Zellkern",
+                    "definition": "Zellbereich, in dem bei Eukaryoten die DNA liegt"
+                },
+                {
+                    "term": "mRNA",
+                    "definition": "Abschrift eines Gens, die zur Translation genutzt wird"
+                }
+            ],
+            "feedback": {
+                "correct": "Richtig. Die Grundbegriffe sind sicher zugeordnet.",
+                "incorrect": "Pr\u00fcfe besonders, ob der Begriff einen Zelltyp, eine Struktur oder einen Vorgang beschreibt."
+            }
+        },
+        {
+            "id": "aufgabe_2_bildbeschriftung",
+            "title": "Vergleichsgrafik beschriften",
+            "type": "image_labeling",
+            "afb": "I",
+            "instruction": "Ordne die Begriffe den markierten Strukturen oder Vorg\u00e4ngen in der Vergleichsgrafik zu.",
+            "image": {
+                "src": "assets/images/eukaryotische_zelle_nummeriert.png",
+                "alt": "Nummerierte Grafik einer eukaryotischen Zelle mit Strukturen und Vorg\u00e4ngen der Proteinbiosynthese"
+            },
+            "labels": [
+                {
+                    "id": "label_dna",
+                    "text": "DNA"
+                },
+                {
+                    "id": "label_zellplasma",
+                    "text": "Zellplasma"
+                },
+                {
+                    "id": "label_rna_polymerase",
+                    "text": "RNA-Polymerase"
+                },
+                {
+                    "id": "label_mrna",
+                    "text": "mRNA"
+                },
+                {
+                    "id": "label_ribosom",
+                    "text": "Ribosom"
+                },
+                {
+                    "id": "label_transkription",
+                    "text": "Transkription"
+                },
+                {
+                    "id": "label_translation",
+                    "text": "Translation"
+                },
+                {
+                    "id": "label_zellkern",
+                    "text": "Zellkern"
+                }
+            ],
+            "labelSolutions": {
+                "1": "DNA",
+                "2": "RNA-Polymerase",
+                "3": "Transkription",
+                "4": "Zellkern",
+                "5": "mRNA",
+                "6": "Translation",
+                "7": "Ribosom",
+                "8": "Zellplasma"
+            },
+            "solutionNote": "Die genaue Zuordnung h\u00e4ngt von der verwendeten Grafik ab. Entscheidend ist, dass bei Prokaryoten DNA, mRNA und Ribosomen im Zellplasma liegen, w\u00e4hrend bei Eukaryoten die DNA im Zellkern liegt und die Ribosomen au\u00dferhalb des Zellkerns arbeiten.",
+            "feedback": {
+                "correct": "Richtig. Du erkennst die Orte der Proteinbiosynthese in beiden Zelltypen.",
+                "incorrect": "Achte darauf, dass Eukaryoten einen Zellkern besitzen, Prokaryoten aber nicht."
+            }
+        },
+        {
+            "id": "aufgabe_3_drag_drop_vergleich",
+            "title": "Prokaryoten und Eukaryoten vergleichen",
+            "type": "drag_drop_table",
+            "afb": "I-II",
+            "instruction": "Ziehe die Aussagen an die passende Stelle in der Vergleichstabelle.",
+            "columns": [
+                "Merkmal",
+                "Prokaryoten",
+                "Eukaryoten"
+            ],
+            "rows": [
+                {
+                    "feature": "Zellkern",
+                    "prokaryotes": "kein Zellkern",
+                    "eukaryotes": "Zellkern vorhanden"
+                },
+                {
+                    "feature": "Ort der DNA",
+                    "prokaryotes": "frei im Zellplasma",
+                    "eukaryotes": "im Zellkern"
+                },
+                {
+                    "feature": "Ort der Transkription",
+                    "prokaryotes": "Zellplasma",
+                    "eukaryotes": "Zellkern"
+                },
+                {
+                    "feature": "Ort der Translation",
+                    "prokaryotes": "Zellplasma",
+                    "eukaryotes": "Cytoplasma / raues ER"
+                },
+                {
+                    "feature": "R\u00e4umliche Trennung von Transkription und Translation",
+                    "prokaryotes": "nein",
+                    "eukaryotes": "ja"
+                },
+                {
+                    "feature": "Kopplung von Transkription und Translation m\u00f6glich?",
+                    "prokaryotes": "ja",
+                    "eukaryotes": "nein"
+                },
+                {
+                    "feature": "mRNA-Verarbeitung vor der Translation",
+                    "prokaryotes": "kaum / keine wie bei Eukaryoten",
+                    "eukaryotes": "ja, Prozessierung zur reifen mRNA"
+                }
+            ],
+            "dragItems": [
+                "kein Zellkern",
+                "Zellkern vorhanden",
+                "frei im Zellplasma",
+                "im Zellkern",
+                "Zellplasma",
+                "Zellkern",
+                "Zellplasma",
+                "Cytoplasma / raues ER",
+                "nein",
+                "ja",
+                "ja",
+                "nein",
+                "kaum / keine wie bei Eukaryoten",
+                "ja, Prozessierung zur reifen mRNA"
+            ],
+            "feedback": {
+                "correct": "Richtig. Der zentrale Unterschied ist die r\u00e4umliche Trennung bei Eukaryoten durch den Zellkern.",
+                "incorrect": "Vergleiche noch einmal die Orte: Bei Prokaryoten findet beides im Zellplasma statt, bei Eukaryoten nicht."
+            }
+        },
+        {
+            "id": "aufgabe_4_ablaeufe_sortieren",
+            "title": "Abl\u00e4ufe sortieren",
+            "type": "sequencing",
+            "afb": "II",
+            "instruction": "Bringe die Schritte der Proteinbiosynthese bei Prokaryoten und Eukaryoten in die richtige Reihenfolge.",
+            "sequences": [
+                {
+                    "id": "prokaryoten_ablauf",
+                    "title": "Ablauf bei Prokaryoten",
+                    "steps": [
+                        "DNA liegt frei im Zellplasma.",
+                        "RNA-Polymerase bildet mRNA.",
+                        "Ribosomen binden bereits an die entstehende mRNA.",
+                        "Translation beginnt, w\u00e4hrend die mRNA noch gebildet wird.",
+                        "Eine Aminos\u00e4urekette entsteht."
+                    ]
+                },
+                {
+                    "id": "eukaryoten_ablauf",
+                    "title": "Ablauf bei Eukaryoten",
+                    "steps": [
+                        "DNA liegt im Zellkern.",
+                        "Transkription findet im Zellkern statt.",
+                        "Es entsteht zun\u00e4chst eine RNA-Vorstufe.",
+                        "Die RNA wird verarbeitet.",
+                        "Die reife mRNA verl\u00e4sst den Zellkern.",
+                        "Translation findet an Ribosomen im Cytoplasma statt.",
+                        "Eine Aminos\u00e4urekette entsteht."
+                    ]
+                }
+            ],
+            "feedback": {
+                "correct": "Richtig. Bei Prokaryoten k\u00f6nnen Transkription und Translation gekoppelt sein, bei Eukaryoten sind sie getrennt.",
+                "incorrect": "Achte darauf, dass die eukaryotische mRNA erst den Zellkern verlassen muss, bevor sie translatiert wird."
+            }
+        },
+        {
+            "id": "aufgabe_5_richtig_falsch",
+            "title": "Aussagen pr\u00fcfen",
+            "type": "true_false_correction",
+            "afb": "I-II",
+            "instruction": "Entscheide, ob die Aussagen richtig oder falsch sind. Korrigiere falsche Aussagen.",
+            "statements": [
+                {
+                    "text": "Prokaryoten besitzen keinen Zellkern.",
+                    "isCorrect": true,
+                    "correction": ""
+                },
+                {
+                    "text": "Bei Eukaryoten findet die Translation im Zellkern statt.",
+                    "isCorrect": false,
+                    "correction": "Bei Eukaryoten findet die Translation an Ribosomen im Cytoplasma oder am rauen ER statt."
+                },
+                {
+                    "text": "Bei Prokaryoten k\u00f6nnen Transkription und Translation gleichzeitig ablaufen.",
+                    "isCorrect": true,
+                    "correction": ""
+                },
+                {
+                    "text": "Eukaryoten k\u00f6nnen Transkription und Translation koppeln, weil sie einen Zellkern besitzen.",
+                    "isCorrect": false,
+                    "correction": "Der Zellkern trennt Transkription und Translation r\u00e4umlich; deshalb ist eine Kopplung wie bei Prokaryoten nicht m\u00f6glich."
+                },
+                {
+                    "text": "Die mRNA muss bei Eukaryoten den Zellkern verlassen, bevor sie translatiert werden kann.",
+                    "isCorrect": true,
+                    "correction": ""
+                },
+                {
+                    "text": "Bei Prokaryoten befinden sich DNA, mRNA und Ribosomen im gleichen Zellbereich.",
+                    "isCorrect": true,
+                    "correction": ""
+                }
+            ],
+            "feedback": {
+                "correct": "Richtig eingeordnet.",
+                "incorrect": "\u00dcberpr\u00fcfe besonders die Rolle des Zellkerns und den Ort der Translation."
+            }
+        },
+        {
+            "id": "aufgabe_6_kurze_begruendung",
+            "title": "Kopplung erkl\u00e4ren",
+            "type": "short_answer",
+            "afb": "II",
+            "instruction": "Erkl\u00e4re in 2\u20133 S\u00e4tzen, warum Transkription und Translation bei Prokaryoten gekoppelt ablaufen k\u00f6nnen.",
+            "expectedAnswer": "Prokaryoten besitzen keinen Zellkern. Deshalb liegen DNA, mRNA und Ribosomen im gleichen Zellbereich, dem Zellplasma. Ribosomen k\u00f6nnen daher bereits an die entstehende mRNA binden, w\u00e4hrend diese noch transkribiert wird.",
+            "keywords": [
+                "kein Zellkern",
+                "Zellplasma",
+                "DNA",
+                "mRNA",
+                "Ribosomen",
+                "gleichzeitig",
+                "gekoppelt"
+            ],
+            "feedback": {
+                "full": "Sehr gut. Du erkl\u00e4rst den Zusammenhang zwischen fehlendem Zellkern, gemeinsamem Zellraum und Kopplung der Vorg\u00e4nge.",
+                "partial": "Der Ansatz stimmt. Erg\u00e4nze noch, dass DNA, mRNA und Ribosomen im gleichen Zellraum liegen.",
+                "hint": "Beginne mit dem entscheidenden Unterschied: Prokaryoten besitzen keinen Zellkern."
+            }
+        }
+    ],
+    "finalTask": {
+        "id": "abschlussaufgabe_prokaryoten_eukaryoten",
+        "title": "Abschlussaufgabe: Proteinbiosynthese bei Prokaryoten und Eukaryoten",
+        "type": "extended_response",
+        "afb": "II-III",
+        "material": "Bakterien k\u00f6nnen sich oft sehr schnell an ver\u00e4nderte Umweltbedingungen anpassen. Gelangt zum Beispiel ein bestimmter N\u00e4hrstoff in die Umgebung, k\u00f6nnen passende Enzyme teilweise innerhalb kurzer Zeit gebildet werden. Eukaryotische Zellen, zum Beispiel menschliche Zellen, besitzen dagegen einen Zellkern. Dort findet die Transkription statt, w\u00e4hrend die Translation an Ribosomen im Cytoplasma abl\u00e4uft.\n\nIn einer prokaryotischen Zelle liegt die DNA frei im Zellplasma. Transkription und Translation finden im selben Zellbereich statt. Ribosomen k\u00f6nnen bereits an eine mRNA binden, w\u00e4hrend diese noch von der RNA-Polymerase hergestellt wird.\n\nIn einer eukaryotischen Zelle liegt die DNA im Zellkern. Die Transkription findet im Zellkern statt. Die entstehende RNA wird anschlie\u00dfend verarbeitet und verl\u00e4sst als reife mRNA den Zellkern. Erst danach kann sie im Cytoplasma an Ribosomen translatiert werden.",
+        "instruction": "Erl\u00e4utere mithilfe des Materials, warum Prokaryoten h\u00e4ufig schneller mit der Bildung bestimmter Proteine auf Umweltver\u00e4nderungen reagieren k\u00f6nnen als Eukaryoten. Gehe dabei auf den Ort von Transkription und Translation, die Kopplung beider Vorg\u00e4nge sowie die Bedeutung des Zellkerns ein.",
+        "expectedAnswer": "Prokaryoten besitzen keinen Zellkern, deshalb liegt ihre DNA frei im Zellplasma. Transkription und Translation finden dort im gleichen Zellraum statt. Dadurch k\u00f6nnen Ribosomen bereits an die mRNA binden, w\u00e4hrend diese noch hergestellt wird. Die Proteinbiosynthese kann also sehr schnell beginnen. Bei Eukaryoten liegt die DNA dagegen im Zellkern. Die Transkription findet im Zellkern statt, die Translation aber im Cytoplasma. Die mRNA muss erst gebildet, verarbeitet und aus dem Zellkern transportiert werden, bevor sie translatiert werden kann. Deshalb sind Transkription und Translation bei Eukaryoten r\u00e4umlich und zeitlich getrennt. Diese Trennung erm\u00f6glicht zus\u00e4tzliche Kontrolle, kann aber dazu f\u00fchren, dass die Bildung eines Proteins langsamer beginnt als bei Prokaryoten.",
+        "assessmentCriteria": [
+            "nennt den fehlenden Zellkern bei Prokaryoten",
+            "nennt die Lage der DNA im Zellplasma bei Prokaryoten",
+            "nennt Transkription und Translation im gleichen Zellraum bei Prokaryoten",
+            "erkl\u00e4rt die Kopplung beider Vorg\u00e4nge",
+            "nennt Zellkern und r\u00e4umliche Trennung bei Eukaryoten",
+            "nennt mRNA-Verarbeitung und Transport aus dem Zellkern",
+            "leitet daraus einen m\u00f6glichen Geschwindigkeitsvorteil bei Prokaryoten ab"
+        ]
+    },
+    "teacherNotes": [
+        "Aufgabe 7 aus der Planungsphase wurde bewusst nicht aufgenommen, damit die Abschlussaufgabe nicht vorweggenommen wird.",
+        "Aufgabe 3 ist als Drag-and-Drop-Tabelle angelegt.",
+        "Die Bildbeschriftung in Aufgabe 2 ben\u00f6tigt eine passende Vergleichsgrafik. Der angegebene Pfad ist ein Platzhalter."
+    ]
+}
