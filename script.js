@@ -2261,7 +2261,7 @@
   function renderExamMatching(task, question, questionId) {
     const matching = question.solution && question.solution.answer ? question.solution.answer : {};
     const keys = Object.keys(matching);
-    const options = stableShuffle(Object.values(matching), `${task.id}_${questionId}_matching`);
+    const options = randomShuffle(Object.values(matching));
     const stored = (getExamAnswers(task.id).matching || {})[questionId] || {};
     if (!keys.length) {
       return `<textarea data-question-id="${escapeHtml(questionId)}" rows="5" placeholder="Zuordnung eingeben"></textarea>`;
@@ -2536,7 +2536,7 @@
   function getExamDropdownOptions(task) {
     const options = normalizeList(task.dropdownOptions);
     if (task.shuffleDropdownOptions) {
-      return stableShuffle(options, `${task.id}_dropdown_options`);
+      return randomShuffle(options);
     }
     return options;
   }
@@ -3311,7 +3311,7 @@
       bank.innerHTML = "<h4>Begriffe</h4>";
       const chipWrap = document.createElement("div");
       chipWrap.className = "chip-wrap";
-      terms.filter((term) => !assignedTerms.has(term)).forEach((term) => {
+      randomShuffle(terms.filter((term) => !assignedTerms.has(term))).forEach((term) => {
         chipWrap.append(createDraggableChip(term, selectedTerm, () => {
           selectedTerm = selectedTerm === term ? "" : term;
           render();
@@ -3490,7 +3490,7 @@
       bank.innerHTML = "<h4>Fachbegriffe</h4>";
       const chipWrap = document.createElement("div");
       chipWrap.className = "term-chip-list";
-      terms.filter((term) => !assignedTerms.has(term)).forEach((term) => {
+      randomShuffle(terms.filter((term) => !assignedTerms.has(term))).forEach((term) => {
         chipWrap.append(createDraggableChip(term, selectedTerm, () => {
           selectedTerm = selectedTerm === term ? "" : term;
           render();
@@ -3632,7 +3632,7 @@
       bank.innerHTML = "<h4>Definitionen</h4>";
       const chipWrap = document.createElement("div");
       chipWrap.className = "definition-card-list";
-      definitions.filter((definition) => !assignedDefinitions.has(definition.id)).forEach((definition) => {
+      randomShuffle(definitions.filter((definition) => !assignedDefinitions.has(definition.id))).forEach((definition) => {
         const cardButton = createDraggableChip(definition.id, selectedDefinition, () => {
           selectedDefinition = selectedDefinition === definition.id ? "" : definition.id;
           render();
@@ -3919,7 +3919,7 @@
       bank.innerHTML = "<h4>Funktionskarten</h4>";
       const list = document.createElement("div");
       list.className = "function-card-list";
-      orderCards(functions, ["D", "F", "B", "E", "A", "C"]).filter((fn) => !assignedFunctions.has(fn.id)).forEach((fn) => {
+      randomShuffle(functions.filter((fn) => !assignedFunctions.has(fn.id))).forEach((fn) => {
         const chip = createDraggableChip(fn.id, selectedFunction, () => {
           selectedFunction = selectedFunction === fn.id ? "" : fn.id;
           render();
@@ -4422,7 +4422,7 @@
       bank.innerHTML = "<h4>Funktionskarten</h4>";
       const list = document.createElement("div");
       list.className = "function-card-list";
-      orderCards(functions, ["F", "C", "H", "A", "G", "D", "B", "E"]).filter((fn) => !assignedFunctions.has(fn.id)).forEach((fn) => {
+      randomShuffle(functions.filter((fn) => !assignedFunctions.has(fn.id))).forEach((fn) => {
         const chip = createDraggableChip(fn.id, selectedFunction, () => {
           selectedFunction = selectedFunction === fn.id ? "" : fn.id;
           render();
